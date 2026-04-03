@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Harvest Connect - Book Your Harvest</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e3e3de",
+                        "secondary-fixed-dim": "#ffb957",
+                        "primary-fixed-dim": "#88d982",
+                        "primary-fixed": "#a3f69c",
+                        "surface-tint": "#1b6d24",
+                        "outline": "#707a6c",
+                        "on-background": "#1a1c19",
+                        "tertiary-container": "#c24300",
+                        "on-secondary-container": "#694300",
+                        "surface-container": "#eeeee9",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#cbffc2",
+                        "tertiary-fixed": "#ffdbcf",
+                        "on-tertiary-fixed": "#380d00",
+                        "surface-container-high": "#e8e8e3",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-error": "#ffffff",
+                        "primary": "#0d631b",
+                        "primary-container": "#2e7d32",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-bright": "#fafaf5",
+                        "on-surface-variant": "#40493d",
+                        "secondary-container": "#fcab28",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005312",
+                        "surface-container-low": "#f4f4ef",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#ffddb5",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f1f1ec",
+                        "on-primary": "#ffffff",
+                        "background": "#fafaf5",
+                        "surface-container-highest": "#e3e3de",
+                        "outline-variant": "#bfcaba",
+                        "on-tertiary-container": "#ffeee8",
+                        "inverse-surface": "#2f312e",
+                        "on-primary-fixed": "#002204",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#993300",
+                        "surface-dim": "#dadad5",
+                        "inverse-primary": "#88d982",
+                        "surface": "#fafaf5",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#835400",
+                        "on-surface": "#1a1c19",
+                        "on-tertiary-fixed-variant": "#802a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-stone-50/60 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-200/50 active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-green-800">arrow_back</span>
+</button>
+<h1 class="text-xl font-extrabold text-green-900 tracking-tight font-headline">Book Your Harvest</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-stone-600">help_outline</span>
+</div>
+</header>
+<main class="max-w-2xl mx-auto pt-24 pb-32 px-4">
+<!-- Step Indicator -->
+<div class="mb-8 flex items-center gap-4 px-2">
+<div class="flex-1 h-2 rounded-full bg-primary-container"></div>
+<div class="flex-1 h-2 rounded-full bg-primary-container"></div>
+<div class="flex-1 h-2 rounded-full bg-surface-container-high"></div>
+</div>
+<section class="space-y-6">
+<!-- Machine Summary Card -->
+<div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col md:flex-row gap-6 items-center shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-outline-variant/10">
+<div class="w-full md:w-48 h-32 rounded-2xl overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Modern high-efficiency green John Deere harvester standing in a vast field of golden wheat at midday under a clear sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-fhvGT1UYK4ZfltLSNBN-Q__PjDA07vA-XOPrlMbDN0BhfgvL50XDZhgc1a8ITU45IDE_OUXZgfCXRS7HZfCSb9LymRIGecSCCmi-CUEJMqbnbr_toC85DfabAg4m4D6Pr5Z4LOKfqvrbQb00k4rCk77EL0ancWBY40n7r7_M7KwVyIUYh6zcjrwsR1rUNcjgi0lBF55y847i3cOzmXDv6wUlgeYkhWaUCjnDj84zmx-ggokwXvbb0aHk-F1Hq4fokAHBtpnxgC-Q"/>
+<div class="absolute top-2 left-2 bg-secondary-container px-3 py-1 rounded-full text-[10px] font-bold text-on-secondary-container tracking-wider uppercase">
+                        Selected
+                    </div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h2 class="text-2xl font-bold text-on-surface font-headline leading-tight">John Deere S700</h2>
+<p class="text-on-surface-variant flex items-center justify-center md:justify-start gap-2 mt-1">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">stars</span>
+                        Premium Performance Series
+                    </p>
+<div class="mt-4 flex flex-wrap justify-center md:justify-start gap-2">
+<span class="bg-surface-container px-3 py-1.5 rounded-xl text-xs font-semibold text-on-surface-variant">450 HP</span>
+<span class="bg-surface-container px-3 py-1.5 rounded-xl text-xs font-semibold text-on-surface-variant">12.5m Header</span>
+<span class="bg-surface-container px-3 py-1.5 rounded-xl text-xs font-semibold text-on-surface-variant">GPS Guided</span>
+</div>
+</div>
+</div>
+<!-- Land Size Input -->
+<div class="bg-surface-container-low rounded-[2rem] p-8">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">straighten</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-on-surface font-headline">Land Size</h3>
+<p class="text-sm text-on-surface-variant">Enter your total harvest area</p>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full h-20 bg-surface-container-highest border-none rounded-2xl px-8 text-3xl font-bold text-on-surface focus:ring-0 peer" id="land-size" placeholder="0.0" type="number"/>
+<div class="absolute right-8 top-1/2 -translate-y-1/2 text-lg font-bold text-on-surface-variant">
+                        acres
+                    </div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-secondary-container scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl"></div>
+</div>
+<div class="mt-6 flex flex-wrap gap-3">
+<button class="px-5 py-2.5 rounded-xl bg-surface-container-highest text-sm font-semibold text-on-surface hover:bg-stone-200 transition-colors">5 acres</button>
+<button class="px-5 py-2.5 rounded-xl bg-surface-container-highest text-sm font-semibold text-on-surface hover:bg-stone-200 transition-colors">10 acres</button>
+<button class="px-5 py-2.5 rounded-xl bg-surface-container-highest text-sm font-semibold text-on-surface hover:bg-stone-200 transition-colors">25 acres</button>
+<button class="px-5 py-2.5 rounded-xl bg-surface-container-highest text-sm font-semibold text-on-surface hover:bg-stone-200 transition-colors">Custom</button>
+</div>
+</div>
+<!-- Price Breakdown Section -->
+<div class="bg-surface-container-low rounded-[2rem] p-8 overflow-hidden relative">
+<h3 class="text-lg font-bold text-on-surface font-headline mb-6">Payment Summary</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="flex items-center gap-2">
+                            Base Rate <span class="text-xs font-normal opacity-60">(₹2,400 × acre)</span>
+</span>
+<span class="font-bold text-on-surface">₹ 0</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="flex items-center gap-2">
+                            Platform Fee
+                            <span class="material-symbols-outlined text-[16px]">info</span>
+</span>
+<span class="font-bold text-on-surface">₹ 150</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="flex items-center gap-2">
+                            Insurance Cover
+                        </span>
+<span class="font-bold text-primary">FREE</span>
+</div>
+<!-- Divider via background shift -->
+<div class="h-px bg-outline-variant/20 my-2"></div>
+<div class="flex justify-between items-end pt-2">
+<div>
+<span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest">Total Estimated</span>
+<div class="text-4xl font-extrabold text-green-900 font-headline">₹ 150</div>
+</div>
+<div class="text-right">
+<span class="text-[10px] block font-bold text-secondary bg-secondary-fixed/30 px-2 py-0.5 rounded-full mb-1">BEST PRICE</span>
+<span class="text-xs text-on-surface-variant">Incl. all taxes</span>
+</div>
+</div>
+</div>
+<!-- Subtle leaf pattern background -->
+<div class="absolute -bottom-6 -right-6 opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[180px]">eco</span>
+</div>
+</div>
+<!-- Important Info Notice -->
+<div class="flex gap-4 p-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest/50">
+<span class="material-symbols-outlined text-secondary-container">verified_user</span>
+<p class="text-xs leading-relaxed text-on-surface-variant">
+                    By booking, you agree to our <strong>Fair Crop Policy</strong>. The operator will reach your location within 24 hours of the scheduled time. Payments are held in escrow until completion.
+                </p>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl p-6 flex flex-col items-center justify-center gap-2 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
+<button class="w-full max-w-2xl h-16 rounded-2xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20">
+            Confirm &amp; Book Now
+            <span class="material-symbols-outlined">chevron_right</span>
+</button>
+<p class="text-[10px] text-on-surface-variant font-medium uppercase tracking-widest">Secure Payment Powered by HarvestLink</p>
+</footer>
+</body></html>

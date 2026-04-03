@@ -1,0 +1,98 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { TouchableOpacity, View, Text, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BookingForm } from '../../components/BookingForm';
+import { getHarvesterById } from '../../constants/harvesterData';
+
+export default function BookHarvester() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const harvester = getHarvesterById(id ?? '1');
+
+  if (!harvester) {
+    return (
+      <View className="flex-1 bg-[#fafaf5] items-center justify-center px-8">
+        <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
+        <Text className="text-[#40493d] text-lg font-bold mt-4 text-center">
+          Harvester not found
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mt-6 bg-[#0d631b] px-8 py-4 rounded-2xl"
+        >
+          <Text className="text-white font-bold">Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-[#fafaf5]">
+      <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar style="dark" translucent backgroundColor="transparent" />
+
+      {/* ── Header ── */}
+      <View
+        className="w-full flex-row items-center justify-between px-6 pb-4 bg-white/95"
+        style={{ paddingTop: Math.max(insets.top, 20) + 16, zIndex: 10 }}
+      >
+        <View className="flex-row items-center gap-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.85}
+            className="w-10 h-10 rounded-full items-center justify-center bg-[#e3e3de]/50"
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#0d631b" />
+          </TouchableOpacity>
+          <Text className="font-headline font-extrabold text-[#0d631b] tracking-tight text-xl">
+            Book Your Harvest
+          </Text>
+        </View>
+        <View className="w-10 h-10 rounded-full bg-[#f4f4ef] items-center justify-center">
+          <MaterialIcons name="help-outline" size={24} color="#40493d" />
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+        {/* Step Indicator */}
+        <View className="flex-row items-center gap-3 px-2 mb-8">
+          <View className="flex-1 h-2 rounded-full bg-[#2e7d32]" />
+          <View className="flex-1 h-2 rounded-full bg-[#2e7d32]" />
+          <View className="flex-1 h-2 rounded-full bg-[#e8e8e3]" />
+        </View>
+
+        {/* Form Container */}
+        <BookingForm harvester={harvester} pricePerAcre={parseInt(harvester.price.replace(/[^0-9]/g, ''), 10)} />
+      </ScrollView>
+
+      {/* Bottom Action Bar */}
+      <View
+        className="absolute bottom-0 left-0 w-full bg-white/95 px-6 pt-4 items-center z-50 border-t border-[#e8e8e3]/60"
+        style={{ 
+          paddingBottom: Math.max(insets.bottom, 24),
+          shadowColor: '#000', shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.04, elevation: 20
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={() => router.push(`/confirmation/${id}` as any)}
+          className="w-full max-w-2xl h-16 rounded-2xl flex-row items-center justify-center gap-3"
+          style={{ 
+            backgroundColor: '#0d631b',
+            shadowColor: '#0d631b', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 8
+          }}
+        >
+          <Text className="text-white font-bold text-lg">Confirm & Book Now</Text>
+          <MaterialIcons name="chevron-right" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text className="text-[10px] text-[#40493d] font-medium uppercase tracking-widest mt-3">
+          Secure Payment Powered by HarvestLink
+        </Text>
+      </View>
+    </View>
+  );
+}

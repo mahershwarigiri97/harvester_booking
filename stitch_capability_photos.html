@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#dadad5",
+                    "tertiary-container": "#c24300",
+                    "secondary-container": "#fcab28",
+                    "surface-container-low": "#f4f4ef",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-container-highest": "#e3e3de",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "outline": "#707a6c",
+                    "on-primary-fixed": "#002204",
+                    "primary-container": "#2e7d32",
+                    "outline-variant": "#bfcaba",
+                    "on-tertiary-container": "#ffeee8",
+                    "surface-variant": "#e3e3de",
+                    "secondary-fixed-dim": "#ffb957",
+                    "on-primary-container": "#cbffc2",
+                    "surface-container": "#eeeee9",
+                    "primary-fixed": "#a3f69c",
+                    "inverse-surface": "#2f312e",
+                    "tertiary-fixed": "#ffdbcf",
+                    "secondary": "#835400",
+                    "background": "#fafaf5",
+                    "tertiary": "#993300",
+                    "on-secondary-container": "#694300",
+                    "on-background": "#1a1c19",
+                    "surface": "#fafaf5",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e8e8e3",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#ffddb5",
+                    "on-surface-variant": "#40493d",
+                    "on-secondary-fixed": "#2a1800",
+                    "inverse-on-surface": "#f1f1ec",
+                    "on-tertiary-fixed": "#380d00",
+                    "inverse-primary": "#88d982",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#1b6d24",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "primary": "#0d631b",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "surface-bright": "#fafaf5",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#88d982",
+                    "on-surface": "#1a1c19"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen pb-32">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-[#fafaf5]/60 backdrop-blur-md shadow-sm">
+<div class="flex justify-between items-center px-6 h-16 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-800" data-icon="agriculture">agriculture</span>
+<h1 class="text-2xl font-bold tracking-tight text-green-900 font-headline">HarvestConnect</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100/50 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-stone-500" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-6 max-w-xl mx-auto">
+<!-- Progress Stepper -->
+<div class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-semibold text-primary font-headline tracking-wider uppercase">Step 3 of 3</span>
+<span class="text-sm font-medium text-on-surface-variant">Final Details</span>
+</div>
+<div class="flex gap-2 h-2 w-full">
+<div class="h-full flex-1 bg-primary rounded-full"></div>
+<div class="h-full flex-1 bg-primary rounded-full"></div>
+<div class="h-full flex-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="mb-8">
+<h2 class="text-3xl font-extrabold text-on-surface font-headline leading-tight mb-2">Work Capability</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed">Help farmers understand your machine's productivity and reliability.</p>
+</div>
+<!-- Capability Form Section -->
+<div class="space-y-8">
+<!-- Work Speed Input -->
+<div class="bg-surface-container-low rounded-3xl p-6 transition-all duration-200">
+<label class="block text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Work Speed</label>
+<div class="relative">
+<input class="w-full h-16 bg-surface-container-highest border-none rounded-2xl px-6 text-xl font-bold text-on-surface focus:ring-0 peer" placeholder="0.0" type="number"/>
+<div class="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">
+                        Acres / Hour
+                    </div>
+<div class="absolute bottom-0 left-0 h-0.5 w-0 bg-secondary-container transition-all duration-300 peer-focus:w-full"></div>
+</div>
+<p class="mt-3 text-sm text-on-surface-variant/80 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+                    Average speed for standard wheat or paddy harvest.
+                </p>
+</div>
+<!-- Image Upload Section -->
+<div class="space-y-4">
+<div class="flex justify-between items-end">
+<h3 class="text-xl font-bold font-headline text-on-surface">Upload Images</h3>
+<span class="text-sm font-medium text-primary">1-3 Photos required</span>
+</div>
+<!-- Bento-style Upload Grid -->
+<div class="grid grid-cols-12 gap-4 h-64 md:h-80">
+<!-- Main Feature Upload Slot -->
+<div class="col-span-8 h-full">
+<label class="relative flex flex-col items-center justify-center w-full h-full bg-surface-container-low rounded-[32px] border-2 border-dashed border-outline-variant hover:bg-surface-container transition-all cursor-pointer group">
+<input accept="image/*" class="hidden" type="file"/>
+<div class="flex flex-col items-center text-center p-6">
+<div class="w-16 h-16 rounded-full bg-primary-container/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="add_a_photo">add_a_photo</span>
+</div>
+<span class="text-on-surface font-bold">Front &amp; Side View</span>
+<span class="text-on-surface-variant text-sm mt-1">Primary Harvester Photo</span>
+</div>
+</label>
+</div>
+<!-- Side Upload Slots -->
+<div class="col-span-4 flex flex-col gap-4">
+<label class="flex-1 relative flex flex-col items-center justify-center bg-surface-container-low rounded-3xl border-2 border-dashed border-outline-variant hover:bg-surface-container transition-all cursor-pointer group">
+<input accept="image/*" class="hidden" type="file"/>
+<span class="material-symbols-outlined text-primary group-hover:rotate-12 transition-transform" data-icon="photo_camera">photo_camera</span>
+</label>
+<label class="flex-1 relative flex flex-col items-center justify-center bg-surface-container-low rounded-3xl border-2 border-dashed border-outline-variant hover:bg-surface-container transition-all cursor-pointer group">
+<input accept="image/*" class="hidden" type="file"/>
+<span class="material-symbols-outlined text-primary group-hover:rotate-12 transition-transform" data-icon="photo_camera">photo_camera</span>
+</label>
+</div>
+</div>
+<!-- Guidance Card -->
+<div class="bg-surface-container-low p-5 rounded-3xl flex gap-4 items-start">
+<div class="p-3 bg-secondary-fixed rounded-2xl">
+<span class="material-symbols-outlined text-on-secondary-fixed" data-icon="lightbulb">lightbulb</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface mb-1">Photo Tip</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed">Ensure photos are taken in daylight and clearly show the condition of the cutter bar and engine.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Call to Action -->
+<div class="mt-12 space-y-4">
+<button class="w-full min-h-[64px] bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-3xl text-lg font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3">
+                Complete Registration
+                <span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<button class="w-full min-h-[64px] bg-transparent text-on-surface-variant font-bold hover:bg-surface-container-low rounded-3xl transition-all">
+                Save Draft
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (For Contextual Shell) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.04)] pt-3 pb-6 px-4 md:hidden rounded-t-[32px]">
+<div class="flex justify-around items-center">
+<div class="flex flex-col items-center justify-center text-stone-500 px-6 py-2.5">
+<span class="material-symbols-outlined mb-1" data-icon="home_max">home_max</span>
+<span class="text-[11px] font-semibold font-['Inter'] tracking-wide uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#2e7d32] text-white rounded-[20px] px-6 py-2.5">
+<span class="material-symbols-outlined mb-1" data-icon="agriculture" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+<span class="text-[11px] font-semibold font-['Inter'] tracking-wide uppercase">My Fleet</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 px-6 py-2.5">
+<span class="material-symbols-outlined mb-1" data-icon="receipt_long">receipt_long</span>
+<span class="text-[11px] font-semibold font-['Inter'] tracking-wide uppercase">Bookings</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-500 px-6 py-2.5">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="text-[11px] font-semibold font-['Inter'] tracking-wide uppercase">Profile</span>
+</div>
+</div>
+</nav>
+<!-- Background Decoration -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-40">
+<div class="absolute top-1/4 -right-20 w-80 h-80 bg-primary-fixed rounded-full blur-[100px]"></div>
+<div class="absolute bottom-1/4 -left-20 w-80 h-80 bg-secondary-fixed rounded-full blur-[100px]"></div>
+</div>
+</body></html>

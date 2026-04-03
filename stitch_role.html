@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e3e3de",
+                    "on-primary-fixed": "#002204",
+                    "outline": "#707a6c",
+                    "secondary-container": "#fcab28",
+                    "secondary": "#835400",
+                    "surface-variant": "#e3e3de",
+                    "tertiary-container": "#c24300",
+                    "secondary-fixed-dim": "#ffb957",
+                    "on-surface-variant": "#40493d",
+                    "on-secondary-fixed": "#2a1800",
+                    "inverse-surface": "#2f312e",
+                    "on-secondary-container": "#694300",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#ffeee8",
+                    "on-primary-fixed-variant": "#005312",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "primary-fixed": "#a3f69c",
+                    "primary": "#0d631b",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#88d982",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#fafaf5",
+                    "on-primary-container": "#cbffc2",
+                    "surface-container-low": "#f4f4ef",
+                    "surface-dim": "#dadad5",
+                    "surface": "#fafaf5",
+                    "surface-tint": "#1b6d24",
+                    "background": "#fafaf5",
+                    "tertiary": "#993300",
+                    "secondary-fixed": "#ffddb5",
+                    "on-surface": "#1a1c19",
+                    "on-background": "#1a1c19",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#bfcaba",
+                    "inverse-on-surface": "#f1f1ec",
+                    "surface-container-high": "#e8e8e3",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface-container": "#eeeee9",
+                    "on-tertiary-fixed-variant": "#802a00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .role-card-active-farmer {
+            border: 4px solid #0d631b;
+            background-color: #ffffff;
+        }
+        .role-card-active-owner {
+            border: 4px solid #fcab28;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation Bar - Based on Shared Components JSON -->
+<header class="fixed top-0 w-full z-50 bg-[#fafaf5]/60 backdrop-blur-md">
+<div class="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
+<div class="text-2xl font-black text-green-900 tracking-tight font-headline">
+                Krishi Sahayak
+            </div>
+<div class="flex gap-4">
+<button class="p-2 text-green-700/70 hover:bg-green-100/50 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+<button class="p-2 text-green-700/70 hover:bg-green-100/50 transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-12 w-full max-w-4xl mx-auto">
+<!-- Screen Header -->
+<div class="text-center mb-12">
+<h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface mb-4 tracking-tight">
+                Choose Your Role
+            </h1>
+<p class="text-on-surface-variant text-lg md:text-xl max-w-md mx-auto leading-relaxed">
+                Select how you want to use the platform to help us customize your experience.
+            </p>
+</div>
+<!-- Role Selection Cards - Bento Grid Inspired -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+<!-- Farmer Card -->
+<button class="group relative flex flex-col text-left transition-all duration-300 transform hover:scale-[1.02] active:scale-95 bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+<div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl text-primary" data-icon="potted_plant">potted_plant</span>
+</div>
+<div class="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-on-primary-container text-4xl" data-icon="agriculture">agriculture</span>
+</div>
+<h2 class="font-headline text-3xl font-bold text-primary mb-3">Farmer</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8">
+                    Book harvesters and manage your crops with ease. Access modern machinery for your fields.
+                </p>
+<div class="mt-auto flex items-center text-primary font-bold text-lg">
+<span>Select Role</span>
+<span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+<!-- Decorative gradient overlay -->
+<div class="absolute inset-0 border-2 border-transparent group-hover:border-primary/20 rounded-[32px] pointer-events-none"></div>
+</button>
+<!-- Harvester Owner Card -->
+<button class="group relative flex flex-col text-left transition-all duration-300 transform hover:scale-[1.02] active:scale-95 bg-surface-container-lowest rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+<div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl text-secondary" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center mb-6 shadow-lg shadow-secondary/10">
+<span class="material-symbols-outlined text-on-secondary-container text-4xl" data-icon="tractor">agriculture</span>
+</div>
+<h2 class="font-headline text-3xl font-bold text-secondary mb-3">Harvester Owner</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8">
+                    Register your machines and manage bookings. Grow your business by reaching more farmers.
+                </p>
+<div class="mt-auto flex items-center text-secondary font-bold text-lg">
+<span>Select Role</span>
+<span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+<!-- Decorative gradient overlay -->
+<div class="absolute inset-0 border-2 border-transparent group-hover:border-secondary/20 rounded-[32px] pointer-events-none"></div>
+</button>
+</div>
+<!-- Continue Button -->
+<div class="mt-16 w-full max-w-sm">
+<!-- Disabled state by default until choice is made -->
+<button class="w-full min-h-[64px] bg-surface-container-highest text-on-surface-variant font-headline text-xl font-bold rounded-xl flex items-center justify-center gap-3 cursor-not-allowed transition-all">
+                Continue
+                <span class="material-symbols-outlined" data-icon="lock">lock</span>
+</button>
+<p class="text-center mt-4 text-sm text-on-surface-variant font-medium">
+                Please select a role to proceed
+            </p>
+</div>
+</main>
+<!-- Illustrative Background Element -->
+<div class="fixed bottom-0 left-0 w-full h-1/2 pointer-events-none -z-10 opacity-30">
+<div class="absolute bottom-0 w-full h-full bg-gradient-to-t from-surface-container-low to-transparent"></div>
+<img alt="Rural landscape" class="w-full h-full object-cover object-bottom mix-blend-overlay" data-alt="wide shot of a golden wheat field at sunrise with a soft morning mist and warm sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6e1DkWvLBcvs9DLgaDUfdcEm3CmaF7ni7UGsgP7h9tvpdYctKQFfHWIkNHefPUBF2FK_Ls3Li34OOSXl3dDPs1xkWD2G8vK4HzPCNXE7-cklxhwF460mfl3Z1onYCCeBs_8Y6zqeQgigGaENUmrMCNWcTz6djUnbxBzxOI5bpreg3Hdsog0Uh2CirF62LvpI5BCLxF0mUywZvZnyE8MfRXT9fK0zfTv_atoIEuNahrZ6fSFGxdEvhgaOBGa9S-aBV14IpB76EYWaS"/>
+</div>
+<!-- Bottom Shell Exclusion: Onboarding/Role Selection is a Focused Journey -->
+</body></html>

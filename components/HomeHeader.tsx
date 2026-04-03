@@ -1,0 +1,21 @@
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+
+export function HomeHeader({ location }: { location: string }) {
+  return (
+    <View className="w-full z-50 pt-16 pb-4 px-6 bg-[#fafaf5]/90 border-b border-surface-container-high/50">
+      <View className="flex-row items-center justify-between w-full max-w-screen-xl mx-auto">
+        <View className="flex-row items-center gap-2">
+          <MaterialIcons name="location-on" size={24} color="#0d631b" />
+          <Text className="font-headline font-bold text-lg tracking-tight text-primary">
+            {location}
+          </Text>
+        </View>
+        <TouchableOpacity className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low active:scale-95">
+          <MaterialIcons name="notifications-none" size={24} color="#43493e" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}

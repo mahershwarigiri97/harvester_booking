@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Machine Info &amp; Pricing - HarvestConnect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dadad5",
+                        "tertiary-container": "#c24300",
+                        "secondary-container": "#fcab28",
+                        "surface-container-low": "#f4f4ef",
+                        "on-tertiary-fixed-variant": "#802a00",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005312",
+                        "surface-container-highest": "#e3e3de",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "outline": "#707a6c",
+                        "on-primary-fixed": "#002204",
+                        "primary-container": "#2e7d32",
+                        "outline-variant": "#bfcaba",
+                        "on-tertiary-container": "#ffeee8",
+                        "surface-variant": "#e3e3de",
+                        "secondary-fixed-dim": "#ffb957",
+                        "on-primary-container": "#cbffc2",
+                        "surface-container": "#eeeee9",
+                        "primary-fixed": "#a3f69c",
+                        "inverse-surface": "#2f312e",
+                        "tertiary-fixed": "#ffdbcf",
+                        "secondary": "#835400",
+                        "background": "#fafaf5",
+                        "tertiary": "#993300",
+                        "on-secondary-container": "#694300",
+                        "on-background": "#1a1c19",
+                        "surface": "#fafaf5",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e8e8e3",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#ffddb5",
+                        "on-surface-variant": "#40493d",
+                        "on-secondary-fixed": "#2a1800",
+                        "inverse-on-surface": "#f1f1ec",
+                        "on-tertiary-fixed": "#380d00",
+                        "inverse-primary": "#88d982",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#1b6d24",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "primary": "#0d631b",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "surface-bright": "#fafaf5",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#88d982",
+                        "on-surface": "#1a1c19"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .no-line { border: none !important; }
+        .tonal-shift { background-color: rgba(244, 244, 239, 0.8); }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-[#fafaf5]/60 backdrop-blur-md shadow-sm">
+<div class="flex justify-between items-center px-6 h-16 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">agriculture</span>
+<h1 class="text-2xl font-bold tracking-tight text-green-900 font-headline">HarvestConnect</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100/50 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-stone-500">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto">
+<!-- Step Indicator -->
+<div class="mb-10">
+<div class="flex justify-between items-end mb-4">
+<div>
+<span class="text-primary font-headline font-bold text-sm uppercase tracking-widest">Registration</span>
+<h2 class="text-3xl font-headline font-extrabold text-on-surface mt-1">Machine Details</h2>
+</div>
+<span class="text-on-surface-variant font-bold text-lg">Step 2 of 3</span>
+</div>
+<!-- Progress Bar -->
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 rounded-full"></div>
+</div>
+</div>
+<!-- Registration Form -->
+<form class="space-y-8">
+<!-- Machine Type Selection - Bento Style -->
+<section>
+<label class="block text-primary font-headline font-bold text-lg mb-4">Harvester Type</label>
+<div class="grid grid-cols-2 gap-4">
+<label class="relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="machine_type" type="radio"/>
+<div class="p-6 bg-surface-container-lowest rounded-[24px] border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary-fixed/10 transition-all duration-300 shadow-sm flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-primary" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+</div>
+<span class="font-headline font-bold text-on-surface">Combine</span>
+</div>
+</label>
+<label class="relative cursor-pointer group">
+<input class="peer sr-only" name="machine_type" type="radio"/>
+<div class="p-6 bg-surface-container-lowest rounded-[24px] border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary-fixed/10 transition-all duration-300 shadow-sm flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-primary">tram</span>
+</div>
+<span class="font-headline font-bold text-on-surface">Tractor</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Brand & Year - Side by Side -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="block text-primary font-headline font-bold text-lg">Brand (Optional)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">branding_watermark</span>
+<input class="w-full pl-12 pr-4 py-5 bg-surface-container-highest border-none rounded-xl focus:ring-2 focus:ring-secondary transition-all outline-none text-on-surface placeholder:text-stone-400" placeholder="e.g. John Deere" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-primary font-headline font-bold text-lg">Year (Optional)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">calendar_today</span>
+<input class="w-full pl-12 pr-4 py-5 bg-surface-container-highest border-none rounded-xl focus:ring-2 focus:ring-secondary transition-all outline-none text-on-surface placeholder:text-stone-400" placeholder="2024" type="number"/>
+</div>
+</div>
+</div>
+<!-- Hero Image for Context -->
+<div class="relative h-48 rounded-[32px] overflow-hidden shadow-lg my-8">
+<img alt="modern combine harvester" class="w-full h-full object-cover" data-alt="Modern high-efficiency combine harvester working in a vast golden wheat field during a clear bright summer afternoon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_sf3gDX8F9mD-Js6aTY9lzmnFI-NqahUIAY4GSrkFY5dTxegHMJpHSG5ALaH0lsA0AhphQolgFAn6ikyL5I8RJbm_cFkkyK08rtMugQsZsdhstoBBVKlNc0vAjS2XeBOm_gcxgLSLu46wfVf64L8a3oVrKeGiezTUM8efhg8-bI95voT2IrGTqa3xT-YNyI7zP0cUrQKbGPoMbLEMMeA8uWdUnT34aOK2916721AvyXIvCEJiV3NBPhaOktez1V_FleQfz4lnWKyW"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-primary-fixed/80 to-transparent flex items-end p-6">
+<p class="text-on-primary font-headline font-semibold text-lg italic">"Premium equipment attracts premium rates."</p>
+</div>
+</div>
+<!-- Pricing Section -->
+<section class="bg-surface-container-low p-8 rounded-[32px]">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<label class="block text-primary font-headline font-bold text-xl">Pricing Model</label>
+<!-- Toggle Switch -->
+<div class="flex bg-surface-container-highest p-1.5 rounded-full w-fit">
+<button class="px-6 py-2 rounded-full bg-primary text-on-primary font-bold transition-all shadow-md" type="button">Per Acre</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant font-bold hover:bg-surface-container-high transition-all" type="button">Per Hour</button>
+</div>
+</div>
+<div class="relative">
+<div class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+<span class="text-3xl font-headline font-black text-on-surface">₹</span>
+</div>
+<input class="w-full pl-14 pr-24 py-8 bg-surface-container-lowest border-none rounded-[24px] text-4xl font-headline font-extrabold focus:ring-4 focus:ring-secondary-container transition-all text-on-surface" placeholder="0.00" type="number"/>
+<div class="absolute right-6 top-1/2 -translate-y-1/2">
+<span class="text-on-surface-variant font-headline font-bold text-xl uppercase tracking-tighter">/ Acre</span>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary">info</span>
+<p class="text-sm font-medium">Average market rate in your area: <span class="font-bold">₹850 - ₹1,200</span></p>
+</div>
+</section>
+<!-- Action Buttons -->
+<div class="pt-6 flex flex-col md:flex-row gap-4">
+<button class="flex-1 min-h-[64px] border-none bg-surface-container-highest text-on-surface font-headline font-bold rounded-xl hover:bg-surface-container-high transition-all active:scale-95" type="button">
+                    Save as Draft
+                </button>
+<button class="flex-[2] min-h-[64px] bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold text-xl rounded-xl shadow-xl hover:shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-3" type="submit">
+                    Continue to Photos
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</form>
+</main>
+<!-- Bottom Nav Bar (Suppressed as per rules for transactional screen, but included here for reference of visual style if needed elsewhere) -->
+<!-- Suppressed: This is a Task-Focused/Linear sub-page with a clear progression flow. -->
+<div class="h-10"></div>
+</body></html>

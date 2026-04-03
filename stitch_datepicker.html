@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Select Harvest Date | Harvest Booker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fafaf5",
+                    "surface-container-highest": "#e3e3de",
+                    "surface-dim": "#dadad5",
+                    "on-surface": "#1a1c19",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#002204",
+                    "inverse-primary": "#88d982",
+                    "surface-container-low": "#f4f4ef",
+                    "secondary-container": "#fcab28",
+                    "on-tertiary-fixed": "#380d00",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#a3f69c",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "tertiary": "#993300",
+                    "surface-variant": "#e3e3de",
+                    "primary-fixed-dim": "#88d982",
+                    "secondary-fixed": "#ffddb5",
+                    "on-surface-variant": "#40493d",
+                    "on-secondary-fixed": "#2a1800",
+                    "inverse-surface": "#2f312e",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f1f1ec",
+                    "on-primary-container": "#cbffc2",
+                    "secondary": "#835400",
+                    "tertiary-container": "#c24300",
+                    "surface-container": "#eeeee9",
+                    "on-tertiary-container": "#ffeee8",
+                    "on-secondary-container": "#694300",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#005312",
+                    "on-error": "#ffffff",
+                    "primary-container": "#2e7d32",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "surface-container-high": "#e8e8e3",
+                    "surface": "#fafaf5",
+                    "outline-variant": "#bfcaba",
+                    "primary": "#0d631b",
+                    "surface-tint": "#1b6d24",
+                    "secondary-fixed-dim": "#ffb957",
+                    "background": "#fafaf5",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "outline": "#707a6c",
+                    "on-background": "#1a1c19"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf5;
+            color: #1a1c19;
+        }
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- TopNavBar Execution -->
+<!-- Main Content Canvas -->
+<main class="px-4 max-w-xl mx-auto py-12">
+<!-- Hero Machine Info -->
+<!-- Calendar Section -->
+<section class="bg-surface-container-lowest rounded-[32px] p-6 mb-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-xl font-extrabold text-on-surface">October 2024</h3>
+<div class="flex gap-2">
+<button class="p-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Calendar Grid -->
+<div class="calendar-grid text-center mb-4">
+<div class="text-xs font-bold text-zinc-400 pb-4">SU</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">MO</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">TU</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">WE</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">TH</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">FR</div>
+<div class="text-xs font-bold text-zinc-400 pb-4">SA</div>
+<!-- Row 1 (Empty starts) -->
+<div class="py-4"></div>
+<div class="py-4"></div>
+<div class="py-4">
+<div class="text-sm font-semibold text-zinc-400">1</div>
+<div class="text-[10px] text-zinc-300">Booked</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-zinc-400">2</div>
+<div class="text-[10px] text-zinc-300">Booked</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-zinc-400">3</div>
+<div class="text-[10px] text-zinc-300">Booked</div>
+</div>
+<!-- Highlighted Date -->
+<div class="py-2 bg-primary-container/10 rounded-2xl border-2 border-primary ring-offset-2">
+<div class="text-sm font-bold text-primary">4</div>
+<div class="text-[10px] font-bold text-primary-container">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">5</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<!-- Row 2 -->
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">6</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">7</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">8</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">9</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">10</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">11</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+<div class="py-4">
+<div class="text-sm font-semibold text-on-surface">12</div>
+<div class="text-[10px] text-primary">₹2400</div>
+</div>
+</div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<!-- Harvest Details Card -->
+</main>
+<!-- Sticky Bottom Confirmation -->
+<!-- BottomNavBar Execution (Suppressed as per task focused journey rule, but kept placeholder structure if needed) -->
+<!-- Nav shell is hidden to prioritize the 'Confirm Date' task flow -->
+</body></html>
