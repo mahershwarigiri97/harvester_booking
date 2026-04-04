@@ -9,9 +9,12 @@ import { ListingCard } from '../../components/ListingCard';
 import { SmallListingCard } from '../../components/SmallListingCard';
 import { HARVESTERS } from '../../constants/harvesterData';
 import { authApi } from '../../utils/api';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 
 export default function HomeScreen() {
+  const { locationName, locationData } = useCurrentLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
   const [harvesters, setHarvesters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,7 +73,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 bg-background">
       <StatusBar style="dark" translucent backgroundColor="transparent" />
-      <HomeHeader location="Punjab, IN" />
+      <HomeHeader location={locationName} />
       
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
         <SearchBar />

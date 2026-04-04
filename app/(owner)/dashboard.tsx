@@ -8,8 +8,10 @@ import { useLocalSearchParams } from 'expo-router';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 
 export default function OwnerDashboard() {
+  const { locationName } = useCurrentLocation();
   const [isOnline, setIsOnline] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -60,7 +62,7 @@ export default function OwnerDashboard() {
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
-      {/* TopAppBar (Now Solid instead of Blurred) */}
+      {/* TopAppBar */}
       <View
         className="absolute top-0 w-full z-50 bg-surface border-b"
         style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
@@ -75,7 +77,13 @@ export default function OwnerDashboard() {
               />
             </View>
             <View className="flex-col">
-              <Text className="font-headline font-bold text-lg text-primary leading-tight">{user?.name || 'Harvester Owner'}</Text>
+              <Text className="font-headline font-bold text-lg text-primary">{user?.name || 'Harvester Owner'}</Text>
+              <View className="flex-row items-center gap-1">
+                <MaterialIcons name="location-on" size={14} color="#0d631b" />
+                <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
+                  {locationName}
+                </Text>
+              </View>
             </View>
           </View>
           <View className="flex-row items-center gap-4">
@@ -331,12 +339,11 @@ export default function OwnerDashboard() {
           >
             <View className="flex-row items-center gap-3">
               <View className="bg-primary-fixed p-2 rounded-xl">
-                {/* Changed exactly to HTML distance icon, material icons doesn't have it natively sometimes but social-distance works. I will use 'directions-car' or something if it errors, but sticking with social-distance as closest map */}
                 <MaterialIcons name="social-distance" size={24} color="#0d631b" />
               </View>
               <View>
                 <Text className="text-xs font-bold text-on-surface-variant uppercase">Your Location</Text>
-                <Text className="font-bold text-on-surface">{user?.address?.village || user?.address?.district || 'Location'}, {user?.address?.state || ''}</Text>
+                <Text className="font-bold text-on-surface">{locationName}</Text>
               </View>
             </View>
             <MaterialIcons name="map" size={24} color="#0d631b" />
