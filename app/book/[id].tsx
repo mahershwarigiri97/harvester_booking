@@ -2,18 +2,66 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { TouchableOpacity, View, Text, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import Skeleton from 'react-native-reanimated-skeleton';
 import { BookingForm } from '../../components/BookingForm';
-import { getHarvesterById } from '../../constants/harvesterData';
+import { authApi } from '../../utils/api';
+import { Harvester, getHarvesterById } from '../../constants/harvesterData';
+
+const DUMMY_HARVESTER: Harvester = {
+  id: '', name: 'Loading Harvester...', distance: '2.4 km', price: '₹3000', perUnit: '/ acre', rating: '0.0', jobs: '0', year: '2024', image: '', status: 'available', workSpeed: '', estimatedTime: '',
+  owner: { name: 'Owner', experience: '0', avatar: '' }
+};
 
 export default function BookHarvester() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const harvester = getHarvesterById(id ?? '1');
 
-  if (!harvester) {
+  const { data: harvesterData, isLoading } = useQuery({
+    queryKey: ['harvester', id],
+    queryFn: async () => {
+      if (!id) return null;
+      try {
+        const res = await authApi.getHarvesterById(id);
+        const item = res.data.data;
+        if (item) {
+          return {
+            id: String(item.id),
+            name: `${item.brand} ${item.model}`,
+            distance: '2.4 km',
+            price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
+            perUnit: item.price_per_acre ? '/ acre' : '/ hour',
+            rating: item.owner?.rating?.toFixed(1) || '0.0',
+            jobs: (item.bookings?.length || 0).toString() + '+',
+            year: item.model,
+            image: item.images[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLGvKSPRqo9QcOGgXchxQD_30CplkCQx8qPUdl1bxd9vA0beMT33oRij4EJJumWtMxMDR54FcYQ44CzO7NErxWKdTKXjl6uEHtsyTZNhBuy--gzwBMCou-sQZ8yyT7dbiS60NA412n383OSOboZDfVsxgFrve48F5MypV0KP5k2fxdEbu4rmPbyAIx_xF01MV0bxglqZwoxKXbiDml3ub_m4F5wdaJ_du2T-PXzJhSXLgx8sZxEnoXeudlgTBCu4efMnw0yK9AdEuZ',
+            status: item.is_available ? 'available' : 'busy',
+            workSpeed: '2 acres / hour',
+            estimatedTime: '~3 hours',
+            owner: {
+              name: item.owner?.name || 'Owner',
+              experience: '10',
+              avatar: item.owner?.avatar
+            },
+          } as Harvester;
+        }
+        return getHarvesterById(id) || null;
+      } catch (err) {
+        console.error('Failed to fetch harvester for booking', err);
+        return getHarvesterById(id || '1') || null;
+      }
+    },
+    enabled: !!id,
+  });
+
+  const harvester = harvesterData || DUMMY_HARVESTER;
+  const showSkeleton = isLoading && !harvesterData;
+
+  // Graceful fallback
+  if (!isLoading && !harvesterData) {
     return (
       <View className="flex-1 bg-[#fafaf5] items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
@@ -32,6 +80,7 @@ export default function BookHarvester() {
 
   return (
     <View className="flex-1 bg-[#fafaf5]">
+      <Skeleton isLoading={showSkeleton}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" translucent backgroundColor="transparent" />
 
@@ -93,6 +142,7 @@ export default function BookHarvester() {
           Secure Payment Powered by HarvestLink
         </Text>
       </View>
+      </Skeleton>
     </View>
   );
 }

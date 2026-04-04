@@ -5,6 +5,8 @@ import { ActivityIndicator, Image, Platform, ScrollView, Switch, Text, Touchable
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import Skeleton from 'react-native-reanimated-skeleton';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
@@ -14,59 +16,38 @@ export default function OwnerDashboard() {
   const { locationName } = useCurrentLocation();
   const [isOnline, setIsOnline] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
-  const { userId } = useLocalSearchParams<{ userId: string }>();
+  const { userId: paramsUserId } = useLocalSearchParams<{ userId: string }>();
 
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      // 1. Try to get user from global store first for immediate UI
-      const storedUser = useAuthStore.getState().user;
-      console.log(storedUser, "storedUser")
-      if (storedUser) {
-        setUser(storedUser);
-        // If we have stored user, we can stop loading early unless we specifically need a fresh fetch
-        setLoading(false);
-      }
+  // Use stored user for immediate UI, but let useQuery handle the fetch
+  const storedUser = useAuthStore(state => state.user);
+  const finalUserId = paramsUserId || (storedUser?.id ? String(storedUser.id) : null);
 
-      // 2. Fetch fresh profile if userId is available to ensure data accuracy
-      const idToFetch = userId || (storedUser?.id ? String(storedUser.id) : null);
-
-      if (!idToFetch) {
-        setLoading(false); // Stop loading if no ID is available to prevent infinite loader
-        return;
-      }
-
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['user', finalUserId],
+    queryFn: async () => {
+      if (!finalUserId) return storedUser;
       try {
-        const res = await authApi.getProfile(idToFetch);
-        console.log(res.data.data, "res")
-        setUser(res.data.data);
+        const res = await authApi.getProfile(finalUserId);
+        return res.data.data;
       } catch (err) {
         console.error('Fetch profile failed', err);
-      } finally {
-        setLoading(false);
+        return storedUser;
       }
-    };
-    fetchUser();
-  }, [userId]);
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-surface">
-        <ActivityIndicator color="#0d631b" size="large" />
-      </View>
-    );
-  }
+    },
+    enabled: !!finalUserId,
+    initialData: storedUser || undefined
+  });
 
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
-      {/* TopAppBar */}
-      <View
-        className="absolute top-0 w-full z-50 bg-surface border-b"
-        style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
-      >
+      <Skeleton isLoading={isLoading && !user}>
+        {/* TopAppBar */}
+        <View
+          className="absolute top-0 w-full z-50 bg-surface border-b"
+          style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
+        >
         <View className="flex-row justify-between items-center px-6 py-4 w-full">
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
@@ -352,6 +333,7 @@ export default function OwnerDashboard() {
         </View>
       </ScrollView>
 
+      </Skeleton>
       {/* Booking Request Popup overlay matched exactly to Stitch design */}
       <BookingRequestPopup
         visible={showPopup}

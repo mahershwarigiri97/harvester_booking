@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -11,6 +11,8 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
+import Skeleton from 'react-native-reanimated-skeleton';
 import { getHarvesterById } from '../../constants/harvesterData';
 
 import { HarvesterMap } from '../../components/HarvesterMap';
@@ -21,21 +23,25 @@ import { Harvester } from '../../constants/harvesterData';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
+const DUMMY_HARVESTER: Harvester = {
+  id: '', name: 'Loading Harvester...', distance: '0 km', price: '₹0', perUnit: '/ hour', rating: '0.0', jobs: '0', year: '2024', image: 'https://via.placeholder.com/600', status: 'available', workSpeed: '0 acres/h', estimatedTime: '0h',
+  owner: { name: 'Loading...', experience: '0', avatar: '' }
+};
+
 export default function HarvesterDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
-  const [harvester, setHarvester] = useState<Harvester | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchHarvester = async () => {
-      if (!id) return;
+  const { data: harvesterData, isLoading } = useQuery({
+    queryKey: ['harvester', id],
+    queryFn: async () => {
+      if (!id) return null;
       try {
         const res = await authApi.getHarvesterById(id);
         const item = res.data.data;
         if (item) {
-          const mapped: Harvester = {
+          return {
             id: String(item.id),
             name: `${item.brand} ${item.model}`,
             distance: '2.4 km',
@@ -53,31 +59,22 @@ export default function HarvesterDetails() {
               experience: '10',
               avatar: item.owner?.avatar
             },
-          };
-          setHarvester(mapped);
+          } as Harvester;
         }
+        return getHarvesterById(id) || null;
       } catch (err) {
         console.error('Failed to fetch harvester details', err);
-        // Fallback or show error
-        const mock = getHarvesterById(id ?? '1');
-        if (mock) setHarvester(mock);
-      } finally {
-        setLoading(false);
+        return getHarvesterById(id || '1') || null;
       }
-    };
-    fetchHarvester();
-  }, [id]);
+    },
+    enabled: !!id,
+  });
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#0d631b" />
-      </View>
-    );
-  }
+  const harvester = harvesterData || DUMMY_HARVESTER;
+  const showSkeleton = isLoading && !harvesterData;
 
-  // Graceful fallback
-  if (!harvester) {
+  // Graceful fallback for non-existent harvester after loading
+  if (!isLoading && !harvesterData) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
@@ -100,6 +97,7 @@ export default function HarvesterDetails() {
 
   return (
     <View className="flex-1 bg-background">
+      <Skeleton isLoading={showSkeleton}>
       <StatusBar style="light" translucent backgroundColor="transparent" />
 
       {/* ── Floating Nav ── */}
@@ -129,9 +127,6 @@ export default function HarvesterDetails() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
-        {/* ══════════════════════════════════
-            HERO IMAGE
-        ══════════════════════════════════ */}
         <View
           className="mx-4 mt-16 rounded-3xl overflow-hidden"
           style={{
@@ -149,7 +144,6 @@ export default function HarvesterDetails() {
             resizeMode="cover"
           />
 
-          {/* L / R arrows */}
           <View className="absolute inset-0 flex-row items-center justify-between px-3">
             <TouchableOpacity
               onPress={() => setActiveSlide(s => (s === 0 ? heroImages.length - 1 : s - 1))}
@@ -167,7 +161,6 @@ export default function HarvesterDetails() {
             </TouchableOpacity>
           </View>
 
-          {/* Carousel dots */}
           <View className="absolute bottom-4 w-full flex-row justify-center" style={{ gap: 8 }}>
             {heroImages.map((_, i) => (
               <TouchableOpacity
@@ -182,11 +175,7 @@ export default function HarvesterDetails() {
           </View>
         </View>
 
-        {/* ══════════════════════════════════
-            TITLE / STATUS / PRICE
-        ══════════════════════════════════ */}
         <View className="px-5 mt-6 mb-8">
-          {/* Status Badge */}
           <View
             className="self-start flex-row items-center px-4 py-1.5 rounded-full mb-3"
             style={{
@@ -206,7 +195,6 @@ export default function HarvesterDetails() {
             </Text>
           </View>
 
-          {/* Name */}
           <Text
             className="font-headline font-extrabold text-on-surface tracking-tight mb-2"
             style={{ fontSize: 26, lineHeight: 32 }}
@@ -214,7 +202,6 @@ export default function HarvesterDetails() {
             {harvester.name}
           </Text>
 
-          {/* Year + Price row */}
           <View className="flex-row items-center justify-between" style={{ gap: 12 }}>
             <View className="flex-row items-center" style={{ gap: 6 }}>
               <Text className="text-on-surface-variant text-sm font-medium">
@@ -224,9 +211,6 @@ export default function HarvesterDetails() {
           </View>
         </View>
 
-        {/* ══════════════════════════════════
-            SPECIFICATION (dynamic)
-        ══════════════════════════════════ */}
         <View className="px-5">
           <Specification
             workSpeed={harvester.workSpeed}
@@ -236,9 +220,6 @@ export default function HarvesterDetails() {
           />
         </View>
 
-        {/* ══════════════════════════════════
-            TRUST SIGNALS + OWNER CARD
-        ══════════════════════════════════ */}
         <View className="px-5">
           <OwnerCard
             name={harvester.owner.name}
@@ -249,18 +230,12 @@ export default function HarvesterDetails() {
           />
         </View>
 
-        {/* ══════════════════════════════════
-            LOCATION / MAP
-        ══════════════════════════════════ */}
         <View className="px-5">
           <HarvesterMap distance={harvester.distance} />
         </View>
 
       </ScrollView>
 
-      {/* ══════════════════════════════════
-          FIXED BOTTOM BOOK BAR
-      ══════════════════════════════════ */}
       <View
         className="absolute bottom-0 w-full bg-white px-5 pt-4 pb-8 flex-row items-center justify-between"
         style={{
@@ -299,6 +274,7 @@ export default function HarvesterDetails() {
         </TouchableOpacity>
       </View>
 
+      </Skeleton>
     </View>
   );
 }

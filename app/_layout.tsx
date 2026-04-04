@@ -5,11 +5,12 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 import { useAuthStore } from '../utils/authStore';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -44,6 +45,8 @@ function StackLayout() {
 }
 
 export default function RootLayout() {
+  const queryClient = useMemo(() => new QueryClient(), []);
+  
   const [loaded, error] = useFonts({
     'Plus Jakarta Sans': PlusJakartaSans_700Bold,
     'Inter': Inter_400Regular,
@@ -68,8 +71,10 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <StackLayout />
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <StackLayout />
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }
