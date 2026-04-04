@@ -197,7 +197,7 @@ export default function LoginScreen() {
               <Text className="text-on-surface-variant font-bold text-sm ml-2">Need help?</Text>
             </TouchableOpacity>
             <Text className="text-xs text-on-surface-variant font-medium text-center leading-relaxed px-6">
-              By signing in, you agree to Harvester Hub's{"\n"}
+              By signing in, you agree to Harvester Hub&apos;s{"\n"}
               <Text className="text-primary font-bold">Terms of Service</Text> & <Text className="text-primary font-bold">Privacy Policy</Text>
             </Text>
           </View>

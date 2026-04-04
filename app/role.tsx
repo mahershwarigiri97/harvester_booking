@@ -10,9 +10,9 @@ export default function RoleSelectionScreen() {
 
   const handleContinue = () => {
     if (selectedRole === 'owner') {
-      router.push('/owner-registration' as any);
+      router.replace('/(owner)' as any);
     } else if (selectedRole === 'farmer') {
-      router.replace('/(tabs)' as any);
+      router.replace('/(farmer)' as any);
     }
   };
 
