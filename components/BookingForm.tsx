@@ -5,27 +5,67 @@ import { DatePicker } from './DatePicker';
 
 const PLATFORM_FEE = 150;
 
-export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }: { harvester: any, pricePerAcre?: number, initialName?: string }) {
+export interface BookingFormData {
+  customer_name: string;
+  customer_phone: string;
+  crop_type: string;
+  land_area: number;
+  price: number;
+  start_time?: string;
+}
+
+interface BookingFormProps {
+  harvester: any;
+  pricePerAcre?: number;
+  initialName?: string;
+  initialPhone?: string;
+  onFormChange?: (data: BookingFormData) => void;
+}
+
+export function BookingForm({
+  harvester,
+  pricePerAcre = 2400,
+  initialName = '',
+  initialPhone = '',
+  onFormChange,
+}: BookingFormProps) {
   const [name, setName] = useState(initialName);
+  const [phone, setPhone] = useState(initialPhone);
+  const [cropType, setCropType] = useState('Wheat');
   const [landSize, setLandSize] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const acres = parseFloat(landSize) || 0;
-  const total = pricePerAcre * acres + PLATFORM_FEE;
-  
+  const baseAmount = pricePerAcre * acres;
+  const total = baseAmount + PLATFORM_FEE;
+
+  const notifyParent = (updates: Partial<{ name: string; phone: string; cropType: string; landSize: string; date: Date | null }>) => {
+    const n = updates.name ?? name;
+    const p = updates.phone ?? phone;
+    const c = updates.cropType ?? cropType;
+    const l = updates.landSize ?? landSize;
+    const d = updates.date !== undefined ? updates.date : selectedDate;
+    const a = parseFloat(l) || 0;
+    const t = pricePerAcre * a + PLATFORM_FEE;
+    onFormChange?.({
+      customer_name: n,
+      customer_phone: p,
+      crop_type: c,
+      land_area: a,
+      price: t,
+      start_time: d?.toISOString(),
+    });
+  };
+
+  const CROPS = ['Wheat', 'Rice', 'Mustard', 'Soybean', 'Maize', 'Other'];
+
   return (
     <View style={{ gap: 24 }}>
       {/* ── Machine Summary Card ── */}
       <View
         className="bg-white rounded-[2rem] p-4 flex-col gap-4 border border-[#e3e3de]"
-        style={{
-          elevation: 2,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.03,
-          shadowRadius: 20,
-        }}
+        style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 20 }}
       >
         <View className="h-40 rounded-2xl overflow-hidden relative">
           <Image source={{ uri: harvester.image }} className="w-full h-full" resizeMode="cover" />
@@ -47,7 +87,80 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
         </View>
       </View>
 
-      {/* ── Select Date (Integrated gracefully) ── */}
+      {/* ── Customer Name ── */}
+      <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
+        <View className="flex-row items-center gap-3 mb-6">
+          <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
+            <MaterialIcons name="person" size={24} color="#0d631b" />
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Your Name</Text>
+            <Text className="text-sm text-[#40493d]">Full name for booking confirmation</Text>
+          </View>
+        </View>
+        <TextInput
+          placeholder="e.g. Harpreet Singh"
+          placeholderTextColor="#707a6c"
+          value={name}
+          onChangeText={(t) => { setName(t); notifyParent({ name: t }); }}
+          className="w-full h-16 bg-[#e3e3de] rounded-2xl px-6 text-lg font-bold text-[#1a1c19]"
+          style={{ outlineStyle: 'none' } as any}
+        />
+      </View>
+
+      {/* ── Customer Phone ── */}
+      <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
+        <View className="flex-row items-center gap-3 mb-6">
+          <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
+            <MaterialIcons name="phone" size={24} color="#0d631b" />
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Phone Number</Text>
+            <Text className="text-sm text-[#40493d]">For booking updates & contact</Text>
+          </View>
+        </View>
+        <View className="flex-row items-center bg-[#e3e3de] rounded-2xl px-4 h-16">
+          <Text className="font-bold text-[#40493d] text-lg mr-3">+91</Text>
+          <View className="w-[1px] h-6 bg-[#bfcaba] mr-3" />
+          <TextInput
+            placeholder="00000 00000"
+            placeholderTextColor="#707a6c"
+            keyboardType="phone-pad"
+            maxLength={10}
+            value={phone}
+            onChangeText={(t) => { setPhone(t.replace(/[^0-9]/g, '')); notifyParent({ phone: t }); }}
+            className="flex-1 text-lg font-bold text-[#1a1c19]"
+            style={{ outlineStyle: 'none' } as any}
+          />
+        </View>
+      </View>
+
+      {/* ── Crop Type ── */}
+      <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
+        <View className="flex-row items-center gap-3 mb-6">
+          <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
+            <MaterialIcons name="grass" size={24} color="#0d631b" />
+          </View>
+          <View>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Crop Type</Text>
+            <Text className="text-sm text-[#40493d]">What crop are you harvesting?</Text>
+          </View>
+        </View>
+        <View className="flex-row flex-wrap gap-3">
+          {CROPS.map(crop => (
+            <TouchableOpacity
+              key={crop}
+              activeOpacity={0.7}
+              onPress={() => { setCropType(crop); notifyParent({ cropType: crop }); }}
+              className={`px-5 py-3 rounded-2xl border ${cropType === crop ? 'bg-[#0d631b] border-[#0d631b]' : 'bg-[#e3e3de] border-transparent'}`}
+            >
+              <Text className={`font-bold text-sm ${cropType === crop ? 'text-white' : 'text-[#1a1c19]'}`}>{crop}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* ── Harvest Date ── */}
       <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
         <View className="flex-row items-center gap-3 mb-6">
           <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
@@ -64,30 +177,23 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
           className="w-full h-20 bg-[#e3e3de] rounded-2xl px-6 flex-row items-center justify-between"
         >
           <Text className={`text-2xl font-bold ${selectedDate ? 'text-[#1a1c19]' : 'text-[#707a6c]'}`}>
-            {selectedDate ? selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Select Date'}
+            {selectedDate ? selectedDate.toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Select Date'}
           </Text>
+          <MaterialIcons name="chevron-right" size={24} color="#707a6c" />
         </TouchableOpacity>
       </View>
 
       {/* ── Date Picker Modal ── */}
-      <Modal
-        visible={showDatePicker}
-        transparent={true}
-        animationType="fade"
-        statusBarTranslucent={true}
-        onRequestClose={() => setShowDatePicker(false)}
-      >
-        <Pressable 
-          className="flex-1 justify-center items-center bg-black/40 px-3 absolute inset-0"
-          onPress={() => setShowDatePicker(false)}
-        >
+      <Modal visible={showDatePicker} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setShowDatePicker(false)}>
+        <Pressable className="flex-1 justify-center items-center bg-black/40 px-3 absolute inset-0" onPress={() => setShowDatePicker(false)}>
           <Pressable className="w-full max-w-lg" onPress={(e) => e.stopPropagation()}>
-            <DatePicker 
+            <DatePicker
               pricePerAcre={pricePerAcre}
               selectedDate={selectedDate}
               disablePreviousDates={true}
               onSelectDate={(date) => {
                 setSelectedDate(date);
+                notifyParent({ date });
                 setShowDatePicker(false);
               }}
             />
@@ -95,30 +201,7 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
         </Pressable>
       </Modal>
 
-      {/* ── Farmer Name Input (If missing) ── */}
-      {!initialName && (
-        <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
-          <View className="flex-row items-center gap-3 mb-6">
-            <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
-              <MaterialIcons name="person" size={24} color="#0d631b" />
-            </View>
-            <View>
-              <Text className="text-lg font-bold text-[#1a1c19] font-headline">Your Name</Text>
-              <Text className="text-sm text-[#40493d]">Please enter your name to book</Text>
-            </View>
-          </View>
-          <TextInput
-            placeholder="John Doe"
-            placeholderTextColor="#707a6c"
-            value={name}
-            onChangeText={setName}
-            className="w-full h-20 bg-[#e3e3de] rounded-2xl px-6 text-xl font-bold text-[#1a1c19]"
-            style={{ outlineStyle: 'none' } as any}
-          />
-        </View>
-      )}
-
-      {/* ── Land Size Input ── */}
+      {/* ── Land Size ── */}
       <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
         <View className="flex-row items-center gap-3 mb-6">
           <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
@@ -135,7 +218,7 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
             placeholderTextColor="#707a6c"
             keyboardType="decimal-pad"
             value={landSize}
-            onChangeText={setLandSize}
+            onChangeText={(t) => { setLandSize(t); notifyParent({ landSize: t }); }}
             className="w-full h-20 bg-[#e3e3de] rounded-2xl px-8 text-3xl font-bold text-[#1a1c19]"
             style={{ outlineStyle: 'none' } as any}
           />
@@ -145,31 +228,28 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
         </View>
         <View className="mt-6 flex-row flex-wrap gap-3">
           {['5', '10', '25'].map(val => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={val}
               activeOpacity={0.7}
               className="px-5 py-2.5 rounded-xl bg-[#e3e3de]"
-              onPress={() => setLandSize(val)}
+              onPress={() => { setLandSize(val); notifyParent({ landSize: val }); }}
             >
               <Text className="text-sm font-semibold text-[#1a1c19]">{val} acres</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity activeOpacity={0.7} className="px-5 py-2.5 rounded-xl bg-[#e3e3de]">
-            <Text className="text-sm font-semibold text-[#1a1c19]">Custom</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
-      {/* ── Price Breakdown Section ── */}
+      {/* ── Price Breakdown ── */}
       <View className="bg-[#f4f4ef] rounded-[2rem] p-8 overflow-hidden relative">
         <Text className="text-lg font-bold text-[#1a1c19] font-headline mb-6">Payment Summary</Text>
         <View style={{ gap: 16 }}>
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
               <Text className="text-[#40493d]">Base Rate</Text>
-              <Text className="text-xs text-[#707a6c]">(₹{pricePerAcre.toLocaleString()} × acre)</Text>
+              <Text className="text-xs text-[#707a6c]">(₹{pricePerAcre.toLocaleString()} × {acres} acre)</Text>
             </View>
-            <Text className="font-bold text-[#1a1c19]">₹ {(pricePerAcre * acres).toLocaleString()}</Text>
+            <Text className="font-bold text-[#1a1c19]">₹ {baseAmount.toLocaleString()}</Text>
           </View>
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
@@ -182,9 +262,7 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
             <Text className="text-[#40493d]">Insurance Cover</Text>
             <Text className="font-bold text-[#0d631b]">FREE</Text>
           </View>
-          
           <View className="h-[1px] bg-[#bfcaba]/30 my-2" />
-          
           <View className="flex-row justify-between items-end pt-2">
             <View>
               <Text className="text-sm font-bold text-[#40493d] uppercase tracking-widest leading-loose">Total Estimated</Text>
@@ -203,7 +281,7 @@ export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }
         </View>
       </View>
 
-      {/* ── Important Info Notice ── */}
+      {/* ── Notice ── */}
       <View className="flex-row gap-4 p-4 rounded-2xl border border-[#bfcaba]/30 bg-white/50 mb-8">
         <MaterialIcons name="verified-user" size={24} color="#fcab28" />
         <Text className="flex-1 text-xs leading-relaxed text-[#40493d]">

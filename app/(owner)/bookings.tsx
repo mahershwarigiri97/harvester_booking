@@ -1,51 +1,54 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { authApi } from '../../utils/api';
+import { useAuthStore } from '../../utils/authStore';
+import { GeocodedAddress } from '../../components/GeocodedAddress';
 
 export default function BookingHistory() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const user = useAuthStore(state => state.user);
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filters = ['All', 'Completed', 'Cancelled'];
 
-  const bookings = [
-    {
-      id: 1,
-      name: 'Amandeep Singh',
-      location: 'Nakodar, Punjab',
-      status: 'Completed',
-      date: '24 Oct 2024, 10:00 AM',
-      amount: '₹4,500',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjskoHm3EtNMT1LfRGfOIlYHz12K70pi9emt7Q-w8PWn_HRUn2yO7FD8gbY_GRGzd-ExBJB0GMalAJbgHB5Cvs7gZLJQ8gqDzTl-X-FQt7ATGwNMVin0guYV3MKfHLX7pCbONIGLUTUEi1GaStCocfoJ-tknY1cuILGxjd4cFNY6nCRCBwdtg-tS3CFZlviqU8SBrC8ohuhWIao4VBXSBS28iQWPN3zBDNdxLwH68JU4NFzM1HPwelTP1Jk_f-QmEG6Ji4clFHejIA',
+  const { data: serverBookings, isLoading } = useQuery({
+    queryKey: ['bookings', 'owner'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await authApi.getMyBookings(user.id, 'owner');
+      return res.data.data || [];
     },
-    {
-      id: 2,
-      name: 'Gurpreet Bajwa',
-      location: 'Jalandhar, Punjab',
-      status: 'Cancelled',
-      date: '23 Oct 2024, 02:30 PM',
-      amount: '₹3,200',
-      amountLabel: 'Estimated',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdRgiKPIYo_0LUNUKA6AO2wyLprd267NTizkC8aozhHyVOTceEehVDdIsjlgkGzxtMLX_BzzTa0xSBz2rA52V-JyPBhrV7p4fIyDYWoDa93jMqrKErxcolrXEZ5pPs4K46NGwq-ogSXLnM6VTw-Klw2vpv825TXGT-b62WjYGd3gI-rXTp-lZk3KapMjQOm0adAtHJ4nf_zxQyTO3Zj31-VGa9U7facqsj8ECw_-cGIXGWd8_XqUkJiAh5W71RxSZokhuHIbEd55GK',
-    },
-    {
-      id: 3,
-      name: 'Rajbir Mann',
-      location: 'Phagwara, Punjab',
-      status: 'Completed',
-      date: '22 Oct 2024, 09:15 AM',
-      amount: '₹5,150',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD11w7bWIm396zDOMzjuXr_PLv1TxlfdIfAjrfwrEhzl8Kp6X0dbextXgg0FRdsNJSwvlLWBhPkcD2fV4Y-VH3rPILat4TVqtkyMmFdESKVXZExOdjaBSNOjn1wg19kj10kviGUyVz9H6_SJFZUPl-9ZqjPCvDV5INmIt1ETnaJIsk3fpER24X89jA1BylFZzlXYxS7n0knAzeZUXz_cHc4t7-6aAcdfRX1BoA8F-4HqsGW2IHOgLZAFB5NaQ2lbGghw5r1rEpqtqo-',
-    }
-  ];
+    enabled: !!user?.id,
+  });
+
+  const bookings = (serverBookings || []).map((b: any) => {
+    let statusText = 'Pending';
+    if (b.status === 'completed') statusText = 'Completed';
+    else if (b.status === 'cancelled') statusText = 'Cancelled';
+    else if (['accepted', 'on_the_way', 'arrived', 'in_progress'].includes(b.status)) statusText = 'Active';
+
+    return {
+      id: b.id.toString(),
+      name: b.customer_name || b.farmer?.name || 'Farmer',
+      latitude: b.farm_latitude,
+      longitude: b.farm_longitude,
+      status: statusText,
+      date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      amount: `₹${b.price.toLocaleString()}`,
+      amountLabel: b.status === 'completed' ? 'Earned' : 'Estimated',
+      image: b.farmer?.avatar || 'https://via.placeholder.com/150',
+    };
+  });
 
   const filteredBookings = activeFilter === 'All' 
     ? bookings 
-    : bookings.filter(b => b.status === activeFilter);
+    : bookings.filter((b: any) => b.status === activeFilter);
 
   return (
     <View className="flex-1 bg-surface">
@@ -121,12 +124,21 @@ export default function BookingHistory() {
 
           {/* Bookings List */}
           <View className="space-y-6">
-            {filteredBookings.map((booking) => {
-              const isCompleted = booking.status === 'Completed';
+            {isLoading ? (
+              <View className="flex-1 items-center justify-center py-10">
+                <ActivityIndicator size="large" color="#0d631b" />
+              </View>
+            ) : filteredBookings.length === 0 ? (
+              <View className="items-center justify-center py-20 opacity-50">
+                <Text className="text-on-surface-variant text-base">No bookings found</Text>
+              </View>
+            ) : (
+              filteredBookings.map((booking: any) => {
+                const isCompleted = booking.status === 'Completed';
               return (
                 <TouchableOpacity 
                   key={booking.id}
-                  onPress={() => router.push('/navigation')}
+                  onPress={() => router.push({ pathname: '/navigation', params: { bookingId: booking.id } })}
                   activeOpacity={0.85}
                   className="bg-surface-container-lowest rounded-[32px] p-6 mb-4"
                   style={{
@@ -146,7 +158,11 @@ export default function BookingHistory() {
                         <Text className="text-xl font-headline font-bold text-on-surface">{booking.name}</Text>
                         <View className="flex-row items-center gap-1 mt-1">
                           <MaterialIcons name="location-on" size={16} color="#40493d" />
-                          <Text className="text-sm font-medium text-on-surface-variant">{booking.location}</Text>
+                          <GeocodedAddress 
+                            latitude={booking.latitude} 
+                            longitude={booking.longitude} 
+                            className="text-sm font-medium text-on-surface-variant flex-1" 
+                          />
                         </View>
                       </View>
                     </View>
@@ -172,7 +188,8 @@ export default function BookingHistory() {
                   </View>
                 </TouchableOpacity>
               );
-            })}
+              })
+            )}
           </View>
         </View>
       </ScrollView>

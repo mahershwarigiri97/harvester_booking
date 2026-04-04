@@ -48,6 +48,22 @@ export const authApi = {
   getProfile: (userId: string) => api.get(`/auth/profile/${userId}`),
   getHarvesters: () => api.get('/harvesters'),
   getHarvesterById: (id: string) => api.get(`/harvesters/${id}`),
+  createBooking: (data: {
+    farmer_id: number;
+    harvester_id: number;
+    owner_id: number;
+    customer_name: string;
+    customer_phone: string;
+    farm_latitude: number;
+    farm_longitude: number;
+    crop_type?: string;
+    land_area: number;
+    price: number;
+    start_time?: string;
+  }) => api.post('/bookings', data),
+  getBookingById: (id: string) => api.get(`/bookings/${id}`),
+  getMyBookings: (userId: number, role: 'farmer' | 'owner') =>
+    api.get(`/bookings?userId=${userId}&role=${role}`),
 };
 
 export default api;

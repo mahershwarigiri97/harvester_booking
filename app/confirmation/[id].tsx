@@ -17,11 +17,9 @@ export default function BookingConfirmation() {
   const opacityValue = useRef(new Animated.Value(0)).current;
   const translateYValue = useRef(new Animated.Value(50)).current;
 
-  // Randomly select success or failure upon mount
-  const isSuccess = useRef(Math.random() > 0.5).current;
-
-  // Use a dummy random booking ID for visual appeal
-  const bookingId = Math.floor(Math.random() * 90000) + 10000;
+  // Always success — we only reach this screen after a successful booking
+  const isSuccess = true;
+  const bookingId = id || '—';
 
   useEffect(() => {
     async function playEffects() {

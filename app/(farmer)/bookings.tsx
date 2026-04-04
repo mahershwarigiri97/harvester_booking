@@ -1,76 +1,63 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { authApi } from '../../utils/api';
+import { useAuthStore } from '../../utils/authStore';
+import { GeocodedAddress } from '../../components/GeocodedAddress';
 
 export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState('Active');
 
   const tabs = ['Active', 'Completed', 'Cancelled'];
 
-  const bookings = [
-    {
-      id: '1',
-      title: 'John Deere S700',
-      date: 'Oct 12, 2024',
-      status: 'In Progress',
-      size: '2.5 acres',
-      cost: '₹3,000',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCl20u6AynY9wbJ9NWTuztUa3hdhALb8Zm8cgWu4aox4BBfMpVQ0utuW036OLPe_QZNx2xOQoyl4VsLMtgkOaNqUf8J9jNVUBKhPRt4oj3L00TKxyOPc1XXwgEqABjHN-sMgtEQuRQBMWIiW8cgVs6IscdY-Hhoj7ZPgcBj7lQ-sVO3JIlOdwWNj4VKZZoMPAQ8dNYRRA7Riomad1X4L9E4Vqct1GlejM6F1Iv_D1q0s0U3XRuGyxAuM7_QclQyGhcQxnJAcLYWfTpl',
-      statusColor: 'bg-blue-100 text-blue-700',
-      icon: 'pending',
+  const { data: serverBookings, isLoading } = useQuery({
+    queryKey: ['bookings', 'farmer'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await authApi.getMyBookings(user.id, 'farmer');
+      return res.data.data || [];
     },
-    {
-      id: '2',
-      title: 'Claas Lexion 8900',
-      date: 'Oct 15, 2024',
-      status: 'Accepted',
-      size: '5.0 acres',
-      cost: '₹5,500',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnrzCpfs62Hp_88uGRleqU3ZaEW9DTREzzkZJPjpn3ilCxlzMF6-uxmokHhyvNpkcWytmeCMsWPiEsEIB9c3oaoSi0yBsdmTu8Hzkg00KnzQ778OdXyYw8Gn75iqe0yvWPSOMOPzu6glJJlnVCqLCJL-aULPf-jfSr7EzWguxkT4eaNt9K1QxGeJbcB8eFB8VM7C95Xe4iQkxrR0iPNSGbLHvPLa2OXgZWZAQlPsREV4_0QQe1T8lFpWN2kVgYGASC74pzHTerUTJc',
-      statusColor: 'bg-green-100 text-green-700',
-      icon: 'check-circle',
-    },
-    {
-      id: '3',
-      title: 'Mahindra Arjun 605',
-      date: 'Oct 20, 2024',
-      status: 'Pending',
-      size: '1.2 acres',
-      cost: '₹1,800',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSBhgWUu4RdniohHHsH2Po70ondMEjD30LCPJqxIylNsaXrPVaO8qdQv4VnJxMXhaM7YuNwTqJQjW4zKTGBD5TbtLMUA5RVrtE0CVUQH06djQRekP8edSsCuSqw-pfjdWztDCbQlXPkEBmb_cNshAPlMk8X-eNY0zgqaMiN8g82CQP8wpAQDQdo_klAK4obDrYhIVVkTetiJptUekTq7PYgRh8HtSrJkAsZnk-R6ad2_H9KwfK4oPMKRGy1mNQ4MjnRY4hVLdLtv_Q',
-      statusColor: 'bg-orange-100 text-orange-700',
-      icon: 'schedule',
-    },
-    {
-      id: '4',
-      title: 'New Holland TC5.30',
-      date: 'Oct 05, 2024',
-      status: 'Completed',
-      size: '10.0 acres',
-      cost: '₹12,000',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC95G41PM2mZLYtOxcDF4O-U9Me0I2wiVacdUTPlWdVrx1k_v0b64KsvEwyOahkasfsWHCGiUohW4CrD6CLfhLJWw87ZKbrT1Xt9XVCoBJ9ZLmG0TqzznKITiAdI998gddKFqS0GmbGqBI2Bu5N7jpXK5iT2BdHNma8UfoC3YkXr13p8HQBh-Lx2AG1iSeZT2SwNEg2t7qAYfiIDEVJSPx5Y54braUgGsoRYC9Sv6KaAuFVXbYujf5dkn2nOYAXii878MKPA215oW7O',
-      statusColor: 'bg-green-100 text-green-700',
-      icon: 'done-all',
-    },
-    {
-      id: '5',
-      title: 'John Deere W50',
-      date: 'Sep 28, 2024',
-      status: 'Cancelled',
-      size: '2.0 acres',
-      cost: '₹2,500',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCl20u6AynY9wbJ9NWTuztUa3hdhALb8Zm8cgWu4aox4BBfMpVQ0utuW036OLPe_QZNx2xOQoyl4VsLMtgkOaNqUf8J9jNVUBKhPRt4oj3L00TKxyOPc1XXwgEqABjHN-sMgtEQuRQBMWIiW8cgVs6IscdY-Hhoj7ZPgcBj7lQ-sVO3JIlOdwWNj4VKZZoMPAQ8dNYRRA7Riomad1X4L9E4Vqct1GlejM6F1Iv_D1q0s0U3XRuGyxAuM7_QclQyGhcQxnJAcLYWfTpl',
-      statusColor: 'bg-red-100 text-red-700',
-      icon: 'cancel',
-    }
-  ];
+    enabled: !!user?.id,
+  });
 
-  const filteredBookings = bookings.filter((b) => {
+  const getStatusInfo = (dbStatus: string) => {
+    switch (dbStatus) {
+      case 'requested': return { text: 'Pending', icon: 'schedule', color: 'bg-orange-100 text-orange-700' };
+      case 'accepted': 
+      case 'on_the_way': 
+      case 'arrived': return { text: 'Accepted', icon: 'check-circle', color: 'bg-green-100 text-green-700' };
+      case 'in_progress': return { text: 'In Progress', icon: 'pending', color: 'bg-blue-100 text-blue-700' };
+      case 'completed': return { text: 'Completed', icon: 'done-all', color: 'bg-green-100 text-green-700' };
+      case 'cancelled': return { text: 'Cancelled', icon: 'cancel', color: 'bg-red-100 text-red-700' };
+      default: return { text: 'Pending', icon: 'schedule', color: 'bg-orange-100 text-orange-700' };
+    }
+  };
+
+  const bookings = (serverBookings || []).map((b: any) => {
+    const statusInfo = getStatusInfo(b.status);
+    return {
+      id: b.id.toString(),
+      title: b.harvester ? `${b.harvester.brand} ${b.harvester.model}` : 'Harvester',
+      date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      latitude: b.farm_latitude,
+      longitude: b.farm_longitude,
+      status: statusInfo.text,
+      size: `${b.land_area} acres`,
+      cost: `₹${b.price.toLocaleString()}`,
+      image: b.harvester?.images?.[0] || 'https://via.placeholder.com/600',
+      statusColor: statusInfo.color,
+      icon: statusInfo.icon,
+    };
+  });
+
+  const filteredBookings = bookings.filter((b: any) => {
     if (activeTab === 'Active') {
       return ['In Progress', 'Accepted', 'Pending'].includes(b.status);
     }
@@ -119,9 +106,13 @@ export default function BookingsScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {filteredBookings.length > 0 ? (
+        {isLoading ? (
+          <View className="flex-1 items-center justify-center mt-20">
+            <ActivityIndicator size="large" color="#0d631b" />
+          </View>
+        ) : filteredBookings.length > 0 ? (
           <View className="gap-6">
-            {filteredBookings.map((booking) => (
+            {filteredBookings.map((booking: any) => (
               <View key={booking.id} className="bg-white rounded-[2rem] p-5 shadow-sm" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 3 }}>
                 <View className="flex-col gap-5">
                   
@@ -137,6 +128,15 @@ export default function BookingsScreen() {
                         <View className="flex-row items-center gap-1.5 mt-1">
                           <MaterialIcons name="calendar-today" size={14} color="#40493d" />
                           <Text className="text-[#40493d] font-medium">{booking.date}</Text>
+                        </View>
+                        <View className="flex-row items-center gap-1.5 mt-1">
+                          <MaterialIcons name="location-on" size={14} color="#40493d" />
+                          <GeocodedAddress 
+                            latitude={booking.latitude} 
+                            longitude={booking.longitude} 
+                            className="text-[#40493d] font-medium flex-1 text-sm" 
+                            fallback="Farm Location"
+                          />
                         </View>
                       </View>
                       

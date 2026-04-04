@@ -1,19 +1,26 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { TouchableOpacity, View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { TouchableOpacity, View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
-import { BookingForm } from '../../components/BookingForm';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BookingForm, BookingFormData } from '../../components/BookingForm';
 import { authApi } from '../../utils/api';
 import { Harvester, getHarvesterById } from '../../constants/harvesterData';
 import { DetailsSkeleton } from '../../components/DetailsSkeleton';
+import { useAuthStore } from '../../utils/authStore';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 
 export default function BookHarvester() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
+  const { currentLocation } = useCurrentLocation();
+
+  const [formData, setFormData] = useState<BookingFormData | null>(null);
 
   const { data: harvester, isLoading } = useQuery({
     queryKey: ['harvester', id],
@@ -37,11 +44,12 @@ export default function BookHarvester() {
             workSpeed: '2 acres / hour',
             estimatedTime: '~3 hours',
             owner: {
+              id: item.owner?.id,
               name: item.owner?.name || 'Owner',
               experience: '10',
-              avatar: item.owner?.avatar
+              avatar: item.owner?.avatar,
             },
-          } as Harvester;
+          } as Harvester & { owner: { id?: number } };
         }
         return getHarvesterById(id) || null;
       } catch (err) {
@@ -52,26 +60,61 @@ export default function BookHarvester() {
     enabled: !!id,
   });
 
-  if (isLoading) {
-    return <DetailsSkeleton />;
-  }
+  const bookingMutation = useMutation({
+    mutationFn: () => {
+      if (!formData || !harvester || !user?.id) throw new Error('Missing data');
+
+      const ownerId = (harvester as any).owner?.id;
+      if (!ownerId) throw new Error('Harvester owner not found');
+      if (!formData.customer_name.trim()) throw new Error('Please enter your name');
+      if (formData.customer_phone.length !== 10) throw new Error('Please enter a valid 10-digit phone number');
+      if (formData.land_area <= 0) throw new Error('Please enter the land size');
+
+      return authApi.createBooking({
+        farmer_id: user.id,
+        harvester_id: parseInt(id!),
+        owner_id: ownerId,
+        customer_name: formData.customer_name,
+        customer_phone: formData.customer_phone,
+        farm_latitude: currentLocation?.coords.latitude ?? 30.9010,
+        farm_longitude: currentLocation?.coords.longitude ?? 75.8573,
+        crop_type: formData.crop_type,
+        land_area: formData.land_area,
+        price: formData.price,
+        start_time: formData.start_time,
+      });
+    },
+    onSuccess: (res) => {
+      // Invalidate bookings cache so any list screen refreshes
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      const bookingId = res.data.data.id;
+      router.replace({ pathname: '/confirmation/[id]', params: { id: String(bookingId) } } as any);
+    },
+    onError: (error: any) => {
+      Alert.alert('Booking Failed', error.message || 'Something went wrong. Please try again.');
+    },
+  });
+
+  const isFormValid = formData &&
+    formData.customer_name.trim().length > 0 &&
+    formData.customer_phone.length === 10 &&
+    formData.land_area > 0;
+
+  if (isLoading) return <DetailsSkeleton />;
 
   if (!harvester) {
     return (
       <View className="flex-1 bg-[#fafaf5] items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
-        <Text className="text-[#40493d] text-lg font-bold mt-4 text-center">
-          Harvester not found
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mt-6 bg-[#0d631b] px-8 py-4 rounded-2xl"
-        >
+        <Text className="text-[#40493d] text-lg font-bold mt-4 text-center">Harvester not found</Text>
+        <TouchableOpacity onPress={() => router.back()} className="mt-6 bg-[#0d631b] px-8 py-4 rounded-2xl">
           <Text className="text-white font-bold">Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
+
+  const pricePerAcre = parseInt(harvester.price.replace(/[^0-9]/g, ''), 10) || 2400;
 
   return (
     <View className="flex-1 bg-[#fafaf5]">
@@ -100,7 +143,10 @@ export default function BookHarvester() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 140 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Step Indicator */}
         <View className="flex-row items-center gap-3 px-2 mb-8">
           <View className="flex-1 h-2 rounded-full bg-[#2e7d32]" />
@@ -108,29 +154,45 @@ export default function BookHarvester() {
           <View className="flex-1 h-2 rounded-full bg-[#e8e8e3]" />
         </View>
 
-        {/* Form Container */}
-        <BookingForm harvester={harvester} pricePerAcre={parseInt(harvester.price.replace(/[^0-9]/g, ''), 10)} />
+        <BookingForm
+          harvester={harvester}
+          pricePerAcre={pricePerAcre}
+          initialName={user?.name || ''}
+          initialPhone={user?.phone?.replace('+91', '') || ''}
+          onFormChange={setFormData}
+        />
       </ScrollView>
 
-      {/* Bottom Action Bar */}
+      {/* ── Bottom Action Bar ── */}
       <View
         className="absolute bottom-0 left-0 w-full bg-white/95 px-6 pt-4 items-center z-50 border-t border-[#e8e8e3]/60"
-        style={{ 
+        style={{
           paddingBottom: Math.max(insets.bottom, 24),
-          shadowColor: '#000', shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.04, elevation: 20
+          shadowColor: '#000', shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.04, elevation: 20,
         }}
       >
         <TouchableOpacity
           activeOpacity={0.88}
-          onPress={() => router.push(`/confirmation/${id}` as any)}
+          onPress={() => bookingMutation.mutate()}
+          disabled={!isFormValid || bookingMutation.isPending}
           className="w-full max-w-2xl h-16 rounded-2xl flex-row items-center justify-center gap-3"
-          style={{ 
-            backgroundColor: '#0d631b',
-            shadowColor: '#0d631b', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 8
+          style={{
+            backgroundColor: isFormValid && !bookingMutation.isPending ? '#0d631b' : '#bfcaba',
+            shadowColor: '#0d631b',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: isFormValid ? 0.25 : 0,
+            shadowRadius: 10,
+            elevation: isFormValid ? 8 : 0,
           }}
         >
-          <Text className="text-white font-bold text-lg">Confirm & Book Now</Text>
-          <MaterialIcons name="chevron-right" size={24} color="#fff" />
+          {bookingMutation.isPending ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <Text className="text-white font-bold text-lg">Confirm & Book Now</Text>
+              <MaterialIcons name="chevron-right" size={24} color="#fff" />
+            </>
+          )}
         </TouchableOpacity>
         <Text className="text-[10px] text-[#40493d] font-medium uppercase tracking-widest mt-3">
           Secure Payment Powered by HarvestLink

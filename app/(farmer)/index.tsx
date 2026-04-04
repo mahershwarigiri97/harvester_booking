@@ -23,7 +23,7 @@ export default function HomeScreen() {
       try {
         const res = await authApi.getHarvesters();
         const dbData = res.data.data;
-        
+
         if (dbData && dbData.length > 0) {
           return dbData.map((item: any) => ({
             id: String(item.id),
@@ -35,7 +35,7 @@ export default function HomeScreen() {
             image: item.images[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLGvKSPRqo9QcOGgXchxQD_30CplkCQx8qPUdl1bxd9vA0beMT33oRij4EJJumWtMxMDR54FcYQ44CzO7NErxWKdTKXjl6uEHtsyTZNhBuy--gzwBMCou-sQZ8yyT7dbiS60NA412n383OSOboZDfVsxgFrve48F5MypV0KP5k2fxdEbu4rmPbyAIx_xF01MV0bxglqZwoxKXbiDml3ub_m4F5wdaJ_du2T-PXzJhSXLgx8sZxEnoXeudlgTBCu4efMnw0yK9AdEuZ'
           }));
         }
-        
+
         return HARVESTERS.filter(h => !h.isNew).map(h => ({
           id: h.id,
           name: h.name,
@@ -64,11 +64,11 @@ export default function HomeScreen() {
     <View className="flex-1 bg-background">
       <StatusBar style="dark" translucent backgroundColor="transparent" />
       <HomeHeader location={locationName} />
-      
+
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
         <SearchBar />
         <ListMapToggle viewMode={viewMode} onToggle={setViewMode} />
-        
+
         {isLoading ? (
           <ListingSkeletonList />
         ) : viewMode === 'list' ? (
@@ -77,11 +77,11 @@ export default function HomeScreen() {
               <Text className="text-2xl font-headline font-extrabold text-primary tracking-tight">Available Near You</Text>
               <Text className="text-sm font-bold text-secondary">{harvesters.length} Units</Text>
             </View>
-            
+
             {harvesters.map((item: any) => (
               <ListingCard key={item.id} {...item} />
             ))}
-            
+
             <SmallListingCard {...newArrival} />
           </View>
         ) : (
@@ -93,7 +93,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         className="absolute bottom-28 right-6 w-16 h-16 bg-primary rounded-full items-center justify-center active:scale-95 z-40"
         style={{ shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }}
       >

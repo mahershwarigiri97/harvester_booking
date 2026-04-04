@@ -1,11 +1,13 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Animated, Dimensions, Image, PanResponder, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Image, PanResponder, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+import { useQuery } from '@tanstack/react-query';
+import { authApi } from '../utils/api';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = 30; 
@@ -14,7 +16,20 @@ const MINIMIZED_OFFSET = 300;
 export default function DriverNavigation() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const [navigationStarted, setNavigationStarted] = useState(false);
+
+  const { data: bookingResponse, isLoading } = useQuery({
+    queryKey: ['booking', bookingId],
+    queryFn: async () => {
+      if (!bookingId) return null;
+      const res = await authApi.getBookingById(bookingId);
+      return res.data;
+    },
+    enabled: !!bookingId,
+  });
+
+  const booking = bookingResponse?.data;
 
   const translateY = React.useRef(new Animated.Value(600)).current;
   const lastOffset = React.useRef(0);
@@ -187,7 +202,9 @@ export default function DriverNavigation() {
                 </View>
                 <View>
                   <Text className="text-on-surface-variant font-medium text-xs tracking-wide uppercase mb-0.5">{navigationStarted ? 'Arriving At' : 'Navigating To'}</Text>
-                  <Text className="font-headline text-2xl font-extrabold text-on-surface">Amandeep Singh</Text>
+                  <Text className="font-headline text-2xl font-extrabold text-on-surface">
+                    {isLoading ? 'Loading...' : booking?.customer_name || booking?.farmer?.name || 'Farmer'}
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
@@ -201,14 +218,18 @@ export default function DriverNavigation() {
                   <MaterialIcons name="grass" size={16} color="#0d631b" />
                   <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Crop Type</Text>
                 </View>
-                <Text className="font-headline font-bold text-lg">Basmati Rice</Text>
+                <Text className="font-headline font-bold text-lg">
+                  {isLoading ? '...' : booking?.crop_type || 'Not specified'}
+                </Text>
               </View>
               <View className="flex-1 bg-surface-container-low p-4 rounded-[24px]">
                 <View className="flex-row items-center gap-2 mb-1">
                   <MaterialIcons name="straighten" size={16} color="#0d631b" />
                   <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Area</Text>
                 </View>
-                <Text className="font-headline font-bold text-lg">4.5 Acres</Text>
+                <Text className="font-headline font-bold text-lg">
+                  {isLoading ? '...' : (booking?.land_area ? `${booking.land_area} Acres` : 'Unknown')}
+                </Text>
               </View>
             </View>
           </Animated.View>

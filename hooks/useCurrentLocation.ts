@@ -16,6 +16,7 @@ export interface LocationDetail {
 export function useCurrentLocation() {
   const [locationName, setLocationName] = useState<string>('Fetching location...');
   const [locationData, setLocationData] = useState<LocationDetail | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -30,8 +31,9 @@ export function useCurrentLocation() {
           return;
         }
 
-        let location = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = location.coords;
+        let locationResp = await Location.getCurrentPositionAsync({});
+        setLocation(locationResp);
+        const { latitude, longitude } = locationResp.coords;
 
         let response = await Location.reverseGeocodeAsync({
           latitude,
@@ -72,5 +74,5 @@ export function useCurrentLocation() {
     })();
   }, []);
 
-  return { locationName, locationData, errorMsg, loading };
+  return { locationName, locationData, errorMsg, loading, currentLocation: location };
 }
