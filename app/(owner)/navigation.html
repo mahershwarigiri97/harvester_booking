@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Harvester Navigator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e8e8e3",
+                    "background": "#fafaf5",
+                    "outline": "#707a6c",
+                    "on-primary-container": "#cbffc2",
+                    "surface-dim": "#dadad5",
+                    "inverse-surface": "#2f312e",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#bfcaba",
+                    "surface-bright": "#fafaf5",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeee9",
+                    "primary": "#0d631b",
+                    "on-background": "#1a1c19",
+                    "inverse-on-surface": "#f1f1ec",
+                    "secondary-container": "#fcab28",
+                    "surface-tint": "#1b6d24",
+                    "on-surface": "#1a1c19",
+                    "on-secondary-fixed": "#2a1800",
+                    "on-primary-fixed-variant": "#005312",
+                    "on-primary-fixed": "#002204",
+                    "secondary": "#835400",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#c24300",
+                    "on-tertiary-fixed": "#380d00",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "secondary-fixed-dim": "#ffb957",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "on-tertiary-container": "#ffeee8",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e3e3de",
+                    "secondary-fixed": "#ffddb5",
+                    "primary-fixed-dim": "#88d982",
+                    "inverse-primary": "#88d982",
+                    "tertiary-fixed": "#ffdbcf",
+                    "surface": "#fafaf5",
+                    "on-surface-variant": "#40493d",
+                    "primary-fixed": "#a3f69c",
+                    "primary-container": "#2e7d32",
+                    "on-secondary-container": "#694300",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e3e3de",
+                    "tertiary": "#993300",
+                    "surface-container-low": "#f4f4ef"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .map-gradient-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 20%, transparent 80%, rgba(26,28,25,0.4) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface antialiased overflow-hidden select-none">
+<!-- Top Navigation Bar (Shared Component: TopAppBar) -->
+<header class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 h-16 bg-white/60 backdrop-blur-md rounded-full mx-4 mt-4 shadow-xl shadow-stone-900/10">
+<div class="flex items-center gap-3 active:scale-95 transition-transform duration-200 hover:bg-stone-100 p-2 rounded-full">
+<span class="material-symbols-outlined text-green-800" data-icon="directions_harvester">directions_bike</span>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold text-lg tracking-tight text-green-800">
+            12.4 km • 18 min
+        </h1>
+<div class="flex items-center gap-3 active:scale-95 transition-transform duration-200 hover:bg-stone-100 p-2 rounded-full">
+<span class="material-symbols-outlined text-green-800" data-icon="settings">settings</span>
+</div>
+</header>
+<!-- Main Navigation Interface -->
+<main class="relative h-screen w-full">
+<!-- Map Canvas -->
+<div class="absolute inset-0 z-0">
+<img alt="High-resolution satellite view of lush green agricultural farmland with golden dirt tracks and irrigation patterns" class="w-full h-full object-cover filter brightness-90 contrast-110" data-location="Punjab, India" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe6xa8JQBN0zHDKLZzzdnp_VO7cVPQddnEYitI5ruz_pSD2amCpl1rAKwqPM9WLto6-a3UDLOWiZE3rK2HgLdxlwCEyos8OLTcAPkOjxpESPFvoFcfpYaixeaJ6iUXFu7QozLEHX2Cl9Ayvp9TtttrNR3rykSuEZpr_vzEDAtNoUrKusteH2ASYedWs05qkFOKaGBsRvs5d1oGaBYuQRCdWIeGzeQCZHlTbaUo6FpubJQh3YQZkf9oIQn3_0hvgniS3rb3FnmQv3RJ"/>
+<div class="absolute inset-0 map-gradient-overlay pointer-events-none"></div>
+<!-- Route Polyline (Simulated) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 400 800">
+<path class="drop-shadow-lg" d="M 100 700 Q 150 500, 250 450 T 320 200" fill="none" stroke="#fcab28" stroke-dasharray="1 15" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+<path d="M 100 700 Q 150 500, 250 450 T 320 200" fill="none" stroke="#fcab28" stroke-linecap="round" stroke-opacity="0.4" stroke-width="16"></path>
+</svg>
+<!-- Map Markers -->
+<!-- Harvester Icon -->
+<div class="absolute bottom-[100px] left-[80px] z-10">
+<div class="relative flex items-center justify-center">
+<div class="absolute w-12 h-12 bg-primary/20 rounded-full animate-ping"></div>
+<div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+<span class="material-symbols-outlined text-xl" data-icon="agriculture" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+</div>
+</div>
+</div>
+<!-- Destination Pin -->
+<div class="absolute top-[180px] right-[60px] z-10">
+<div class="flex flex-col items-center">
+<div class="bg-surface-container-lowest px-3 py-1 rounded-lg shadow-md mb-1 border border-outline-variant/20">
+<span class="text-xs font-bold text-on-surface">Farmer's Field</span>
+</div>
+<span class="material-symbols-outlined text-error text-4xl drop-shadow-md" data-icon="location_on" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+</div>
+<!-- Dynamic Content Area -->
+<div class="absolute bottom-0 left-0 right-0 z-40">
+<!-- Information Panel (Rural Modernist Card) -->
+<div class="bg-surface-container-lowest rounded-t-[2.5rem] shadow-[0_-12px_40px_rgba(0,0,0,0.15)] px-8 pt-8 pb-32">
+<div class="w-12 h-1.5 bg-surface-container-highest rounded-full mx-auto mb-6"></div>
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container overflow-hidden">
+<img alt="Portrait of a smiling middle-aged Indian man with a short beard and a bright turban" class="w-full h-full object-cover" data-alt="Portrait of a smiling middle-aged Indian farmer with a warm expression and a traditional turban" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnH-Q92pOvcRu8x5vBsmB_DEDct6lH7arcfKKS-3Mez1_lJAJHsBMWMMfejNy2rkeYd_prWmmVYBz5fpoEbExPFEHBp2XVzoWdA1IoCZNQxt2nkawb7dZANsHZugSWkemiwulUor5PE3loEycsh57HZHKE81PzsyNCNrRDmidXJpbr1c4BckkgmROY3YyZiGmx-lhQitU1Jje99dduEDd4-SpblFJ8d5wFwtBkBmqa7tiuuow2vqpdULsmUMXnD8HNPPANmbOAyFYk"/>
+</div>
+<div>
+<p class="text-on-surface-variant font-medium text-sm tracking-wide uppercase">Navigating to</p>
+<h2 class="font-headline text-2xl font-extrabold text-on-surface">Amandeep Singh</h2>
+</div>
+</div>
+<button class="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="call" style="font-variation-settings: 'FILL' 1;">call</span>
+</button>
+</div>
+<!-- Bento Info Grid -->
+<div class="grid grid-cols-2 gap-4 mb-8">
+<div class="bg-surface-container-low p-4 rounded-3xl">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="grass">grass</span>
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Crop Type</span>
+</div>
+<p class="font-headline font-bold text-lg">Basmati Rice</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-3xl">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="straighten">straighten</span>
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Area</span>
+</div>
+<p class="font-headline font-bold text-lg">4.5 Acres</p>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<button class="flex items-center gap-2 text-on-surface-variant font-bold text-sm px-4 py-2 rounded-xl hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-error" data-icon="cancel">cancel</span>
+                        Cancel Trip
+                    </button>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="w-2 h-2 rounded-full bg-surface-container-highest"></span>
+<span class="w-2 h-2 rounded-full bg-surface-container-highest"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Primary Action -->
+<div class="fixed bottom-0 left-0 right-0 z-50 px-6 pb-10 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest to-transparent pt-10">
+<button class="w-full h-20 bg-gradient-to-r from-primary to-primary-container rounded-[2rem] shadow-2xl shadow-primary/40 flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-300">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="navigation" style="font-variation-settings: 'FILL' 1;">navigation</span>
+<span class="text-white font-headline text-xl font-extrabold uppercase tracking-widest">Start Navigation</span>
+</button>
+</div>
+<!-- Global Bottom Nav Shell (Shared Component: BottomNavBar) -->
+<!-- Only shown when navigation ecosystem is relevant, suppressed here to prioritize the focused 'Start' action per UX Goal -->
+</main>
+<!-- Side Map Controls -->
+<div class="fixed right-6 top-1/3 z-40 flex flex-col gap-4">
+<button class="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center text-on-surface active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center text-on-surface active:scale-95">
+<span class="material-symbols-outlined" data-icon="remove">remove</span>
+</button>
+<button class="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center text-primary active:scale-95">
+<span class="material-symbols-outlined" data-icon="my_location" style="font-variation-settings: 'FILL' 1;">my_location</span>
+</button>
+</div>
+</body></html>

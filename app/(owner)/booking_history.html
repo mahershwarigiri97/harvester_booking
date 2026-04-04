@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface-dim": "#dadad5",
+                    "surface-container": "#eeeee9",
+                    "inverse-surface": "#2f312e",
+                    "surface": "#fafaf5",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#e3e3de",
+                    "on-background": "#1a1c19",
+                    "inverse-primary": "#88d982",
+                    "error": "#ba1a1a",
+                    "background": "#fafaf5",
+                    "surface-container-high": "#e8e8e3",
+                    "inverse-on-surface": "#f1f1ec",
+                    "tertiary": "#993300",
+                    "primary": "#0d631b",
+                    "outline": "#707a6c",
+                    "on-secondary-fixed": "#2a1800",
+                    "on-primary-fixed-variant": "#005312",
+                    "primary-container": "#2e7d32",
+                    "on-surface-variant": "#40493d",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "outline-variant": "#bfcaba",
+                    "surface-bright": "#fafaf5",
+                    "secondary": "#835400",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "on-primary-container": "#cbffc2",
+                    "primary-fixed": "#a3f69c",
+                    "on-secondary-container": "#694300",
+                    "surface-container-low": "#f4f4ef",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "secondary-fixed-dim": "#ffb957",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffeee8",
+                    "on-primary-fixed": "#002204",
+                    "surface-variant": "#e3e3de",
+                    "secondary-container": "#fcab28",
+                    "on-surface": "#1a1c19",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#ffddb5",
+                    "tertiary-container": "#c24300",
+                    "surface-tint": "#1b6d24",
+                    "primary-fixed-dim": "#88d982",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffdbcf"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Inter"
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#fafaf5]/60 dark:bg-[#1a1c19]/60 backdrop-blur-md">
+<div class="flex items-center justify-between px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[#0d631b] dark:text-[#2e7d32]" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold text-lg text-[#0d631b] dark:text-[#2e7d32]">Booking History</h1>
+</div>
+<button class="active:scale-95 transition-transform p-2 rounded-full hover:bg-[#f4f4ef] dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-[#0d631b] dark:text-[#2e7d32]" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</header>
+<main class="pt-20 px-6 max-w-2xl mx-auto">
+<!-- Filter Bar -->
+<!-- Status and Date Range Filters -->
+<section class="mb-6"><div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide"><button class="px-5 py-2.5 rounded-full bg-primary text-on-primary text-sm font-bold whitespace-nowrap active:scale-95 transition-all">All</button><button class="px-5 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold whitespace-nowrap hover:bg-surface-container-highest active:scale-95 transition-all">Completed</button><button class="px-5 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant text-sm font-semibold whitespace-nowrap hover:bg-surface-container-highest active:scale-95 transition-all">Cancelled</button></div></section>
+<!-- Summary Widget (Tonal Architecture) -->
+<section class="mb-10 bg-surface-container-low rounded-[2rem] p-6">
+<div class="flex justify-between items-end">
+<div>
+<p class="text-on-surface-variant font-medium mb-1">Total Earnings</p>
+<h2 class="text-4xl font-bold text-primary tracking-tight">₹12,850</h2>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant font-medium mb-1">Bookings</p>
+<h2 class="text-4xl font-bold text-on-surface tracking-tight">08</h2>
+</div>
+</div>
+</section>
+<!-- Bookings List -->
+<div class="space-y-6">
+<!-- Booking Card 1 (Completed) -->
+<article class="bg-surface-container-lowest rounded-[2rem] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-transform active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4 items-center">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
+<img alt="Farmer Profile" class="w-full h-full object-cover" data-alt="close up portrait of an elderly indian farmer wearing a traditional white turban with a warm smiling expression and weathered skin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjskoHm3EtNMT1LfRGfOIlYHz12K70pi9emt7Q-w8PWn_HRUn2yO7FD8gbY_GRGzd-ExBJB0GMalAJbgHB5Cvs7gZLJQ8gqDzTl-X-FQt7ATGwNMVin0guYV3MKfHLX7pCbONIGLUTUEi1GaStCocfoJ-tknY1cuILGxjd4cFNY6nCRCBwdtg-tS3CFZlviqU8SBrC8ohuhWIao4VBXSBS28iQWPN3zBDNdxLwH68JU4NFzM1HPwelTP1Jk_f-QmEG6Ji4clFHejIA"/>
+</div>
+<div>
+<h3 class="text-xl font-bold text-on-surface">Amandeep Singh</h3>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-sm font-medium">Nakodar, Punjab</span>
+</div>
+</div>
+</div>
+<span class="px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs tracking-wider uppercase">Completed</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-container-highest pt-6">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Date &amp; Time</span>
+<div class="flex items-center gap-1.5 text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="calendar_today">calendar_today</span>
+<span>24 Oct 2024, 10:00 AM</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Earning</span>
+<p class="text-2xl font-black text-primary">₹4,500</p>
+</div>
+</div>
+</article>
+<!-- Booking Card 2 (Cancelled) -->
+<article class="bg-surface-container-lowest rounded-[2rem] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-transform active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4 items-center">
+<div class="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center overflow-hidden">
+<img alt="Farmer Profile" class="w-full h-full object-cover" data-alt="portrait of a young punjabi farmer wearing a saffron turban standing in a golden wheat field during sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdRgiKPIYo_0LUNUKA6AO2wyLprd267NTizkC8aozhHyVOTceEehVDdIsjlgkGzxtMLX_BzzTa0xSBz2rA52V-JyPBhrV7p4fIyDYWoDa93jMqrKErxcolrXEZ5pPs4K46NGwq-ogSXLnM6VTw-Klw2vpv825TXGT-b62WjYGd3gI-rXTp-lZk3KapMjQOm0adAtHJ4nf_zxQyTO3Zj31-VGa9U7facqsj8ECw_-cGIXGWd8_XqUkJiAh5W71RxSZokhuHIbEd55GK"/>
+</div>
+<div>
+<h3 class="text-xl font-bold text-on-surface">Gurpreet Bajwa</h3>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-sm font-medium">Jalandhar, Punjab</span>
+</div>
+</div>
+</div>
+<span class="px-4 py-1.5 rounded-full bg-error/10 text-error font-bold text-xs tracking-wider uppercase">Cancelled</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-container-highest pt-6 opacity-60">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Date &amp; Time</span>
+<div class="flex items-center gap-1.5 text-on-surface font-medium">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_today">calendar_today</span>
+<span>23 Oct 2024, 02:30 PM</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Estimated</span>
+<p class="text-2xl font-black text-on-surface">₹3,200</p>
+</div>
+</div>
+</article>
+<!-- Booking Card 3 (Completed) -->
+<article class="bg-surface-container-lowest rounded-[2rem] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-transform active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4 items-center">
+<div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
+<img alt="Farmer Profile" class="w-full h-full object-cover" data-alt="smiling middle aged indian farmer with a green field in the background warm natural daylight high resolution" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD11w7bWIm396zDOMzjuXr_PLv1TxlfdIfAjrfwrEhzl8Kp6X0dbextXgg0FRdsNJSwvlLWBhPkcD2fV4Y-VH3rPILat4TVqtkyMmFdESKVXZExOdjaBSNOjn1wg19kj10kviGUyVz9H6_SJFZUPl-9ZqjPCvDV5INmIt1ETnaJIsk3fpER24X89jA1BylFZzlXYxS7n0knAzeZUXz_cHc4t7-6aAcdfRX1BoA8F-4HqsGW2IHOgLZAFB5NaQ2lbGghw5r1rEpqtqo-"/>
+</div>
+<div>
+<h3 class="text-xl font-bold text-on-surface">Rajbir Mann</h3>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="location_on">location_on</span>
+<span class="text-sm font-medium">Phagwara, Punjab</span>
+</div>
+</div>
+</div>
+<span class="px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-xs tracking-wider uppercase">Completed</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-container-highest pt-6">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Date &amp; Time</span>
+<div class="flex items-center gap-1.5 text-on-surface font-medium">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="calendar_today">calendar_today</span>
+<span>22 Oct 2024, 09:15 AM</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">Earning</span>
+<p class="text-2xl font-black text-primary">₹5,150</p>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full bg-white dark:bg-[#1a1c19] flex justify-around items-center px-4 pt-3 pb-6 rounded-t-[2rem] z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] border-t border-[#f4f4ef]/10">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-[#1a1c19]/60 dark:text-[#fafaf5]/60 px-6 py-2 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Inter'] text-[12px] tracking-wide font-medium">Home</span>
+</a>
+<!-- Bookings (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#2e7d32]/10 text-[#0d631b] dark:text-[#2e7d32] rounded-2xl px-6 py-2 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-['Inter'] text-[12px] tracking-wide font-bold">Bookings</span>
+</a>
+<!-- Earnings -->
+<a class="flex flex-col items-center justify-center text-[#1a1c19]/60 dark:text-[#fafaf5]/60 px-6 py-2 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+<span class="font-['Inter'] text-[12px] tracking-wide font-medium">Earnings</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-[#1a1c19]/60 dark:text-[#fafaf5]/60 px-6 py-2 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-['Inter'] text-[12px] tracking-wide font-medium">Profile</span>
+</a>
+</nav>
+</body></html>

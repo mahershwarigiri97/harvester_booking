@@ -19,7 +19,7 @@ function OwnerTabBar({ state, descriptors, navigation }: any) {
         const isFocused = state.index === index;
 
         // Force exactly 4 strict tabs, block everything else (index, _sitemap, cached ghosts)
-        const allowedRoutes = ['dashboard', 'machines', 'earnings', 'profile'];
+        const allowedRoutes = ['dashboard', 'bookings', 'earnings', 'profile'];
         if (!allowedRoutes.includes(route.name)) {
           return null;
         }
@@ -38,8 +38,8 @@ function OwnerTabBar({ state, descriptors, navigation }: any) {
 
         let iconName: any = 'home';
         let label = 'Home';
-        if (route.name === 'bookings' || route.name === 'machines') {
-          iconName = 'agriculture';
+        if (route.name === 'bookings') {
+          iconName = 'history';
           label = 'Bookings';
         } else if (route.name === 'earnings') {
           iconName = 'payments';
@@ -90,7 +90,7 @@ export default function OwnerLayout() {
       {/* Explicitly hide the redirect index from rendering a tab */}
       <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen name="dashboard" options={{ title: 'Home' }} />
-      <Tabs.Screen name="machines" options={{ title: 'Machines' }} />
+      <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
       <Tabs.Screen name="earnings" options={{ title: 'Earnings' }} />
       <Tabs.Screen name="profile" options={{ title: 'Account' }} />
     </Tabs>
