@@ -3,11 +3,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { Image, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { StatusBar } from 'expo-status-bar';
+import BookingRequestPopup from '../../components/BookingRequestPopup';
 
 export default function OwnerDashboard() {
   const [isOnline, setIsOnline] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
   const insets = useSafeAreaInsets();
 
   return (
@@ -188,6 +189,7 @@ export default function OwnerDashboard() {
                     <Text className="text-error font-bold">Reject</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={() => setShowPopup(true)}
                     className="flex-1 rounded-2xl active:scale-95 duration-200"
                     style={{
                       elevation: 8,
@@ -248,6 +250,7 @@ export default function OwnerDashboard() {
                     <Text className="text-error font-bold">Reject</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={() => setShowPopup(true)}
                     className="flex-1 rounded-2xl active:scale-95 duration-200"
                     style={{
                       elevation: 8,
@@ -292,6 +295,12 @@ export default function OwnerDashboard() {
 
         </View>
       </ScrollView>
+      
+      {/* Booking Request Popup overlay matched exactly to Stitch design */}
+      <BookingRequestPopup 
+        visible={showPopup} 
+        onClose={() => setShowPopup(false)} 
+      />
     </View>
   );
 }

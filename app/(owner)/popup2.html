@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#707a6c",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#eeeee9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#ffb957",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdbcf",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fafaf5",
+                        "outline-variant": "#bfcaba",
+                        "on-primary-fixed": "#002204",
+                        "error-container": "#ffdad6",
+                        "surface": "#fafaf5",
+                        "secondary-fixed": "#ffddb5",
+                        "inverse-surface": "#2f312e",
+                        "primary": "#0d631b",
+                        "tertiary": "#993300",
+                        "primary-fixed": "#a3f69c",
+                        "surface-variant": "#e3e3de",
+                        "primary-container": "#2e7d32",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005312",
+                        "on-tertiary-container": "#ffeee8",
+                        "inverse-primary": "#88d982",
+                        "primary-fixed-dim": "#88d982",
+                        "on-tertiary-fixed-variant": "#802a00",
+                        "error": "#ba1a1a",
+                        "secondary": "#835400",
+                        "surface-container-high": "#e8e8e3",
+                        "surface-tint": "#1b6d24",
+                        "secondary-container": "#fcab28",
+                        "surface-container-low": "#f4f4ef",
+                        "on-surface-variant": "#40493d",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "on-primary-container": "#cbffc2",
+                        "surface-dim": "#dadad5",
+                        "surface-bright": "#fafaf5",
+                        "on-background": "#1a1c19",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "on-secondary-container": "#694300",
+                        "on-tertiary-fixed": "#380d00",
+                        "on-surface": "#1a1c19",
+                        "inverse-on-surface": "#f1f1ec",
+                        "surface-container-highest": "#e3e3de",
+                        "tertiary-container": "#c24300",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .countdown-timer {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 25; /* Visual representation of 15/20 seconds remaining */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface">
+<!-- Top App Bar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 bg-stone-50/60 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-800" data-icon="agriculture">agriculture</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-green-800 text-xl font-extrabold text-green-900">New Booking Request</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-500" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="close up portrait of a professional fleet manager wearing a warm vest in a rustic outdoor setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWWUc5PE7O3XK9RxJwljkrbj-b7EGn7Tw_6s2kpm31VIV6apiiSIRbjiOwfONXdUBv4-41SCE-iAVVchxDI9XC_JzQCJTN_C_FlzIosA-V3KOqdTy6J_teMezOiZDppjjLzR4KKygKmZ8-Z7t_DQBg8arRL1gAS77ZV8gtOve2HFOrNDHmBasPbGrNCsDuwuJ_5gEx6oOpy8RtTGHsXxjruRb0L7pPDDdsZg_-ryds_9YE4mwpF883pD1_thhZQWf3mLKjSo4LRpDd"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-32 px-4 min-h-screen">
+<!-- Booking Request Priority Overlay -->
+<div class="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-6 bg-on-surface/20 backdrop-blur-sm">
+<div class="w-full max-w-lg bg-surface rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col max-h-[795px]">
+<!-- Urgent Header & Timer Section -->
+<div class="p-6 bg-primary-container text-on-primary-container flex justify-between items-center relative overflow-hidden">
+<div class="relative z-10">
+<p class="font-headline font-bold text-lg leading-tight">Incoming Request</p>
+<p class="text-xs opacity-90 font-medium">Respond immediately to secure the booking</p>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="relative w-14 h-14 flex items-center justify-center bg-white/20 rounded-full">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-white/30" cx="28" cy="28" fill="transparent" r="24" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-secondary-container" cx="28" cy="28" fill="transparent" r="24" stroke="currentColor" stroke-dasharray="150" stroke-dashoffset="40" stroke-width="4"></circle>
+</svg>
+<span class="font-headline font-extrabold text-xl">15s</span>
+</div>
+</div>
+<!-- Decorative texture -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- Farmer & Crop Bento Header -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-3xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Farmer</p>
+<p class="font-headline font-bold text-on-surface">Amandeep Singh</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-3xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined" data-icon="grass">grass</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Crop Type</p>
+<p class="font-headline font-bold text-on-surface">Wheat</p>
+</div>
+</div>
+</div>
+<!-- Map & Location Section -->
+<div class="space-y-3">
+<div class="flex items-center justify-between px-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+<p class="font-headline font-bold text-on-surface">Nakodar, 5.2 km away</p>
+</div>
+</div>
+<div class="relative h-48 w-full rounded-[2rem] overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover grayscale-[20%] contrast-[1.1]" data-alt="stylized satellite map view of agricultural fields in Punjab India with bright green crop rectangles" data-location="Nakodar, Punjab" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPgNCpXRR8lVkBxz2VkjJ7oCxyB9z2JMiSlia_aM9gYErH9Fnd5FVFE_zZoOgD5BJzbqdHzwXKztEkn1JqK9lkP3flHQjOnqFdsh_vxMmts98Fk3eQ0aC47OzFIhfkMAEF5jgdpjXMN8o06DHRu07ibW_Oiflre8YOSvJXJ2DnACXKWnE7xmASecsgeOG19lvKvlj7uXvZej_fDXY0Y3VyIfoMSb82KSQZddbYHWBxqojePCnAZlFsJDv5-btqnAiCdVdt74B4hL2b"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+<div class="relative">
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-xl animate-pulse">
+<span class="material-symbols-outlined text-sm" data-icon="agriculture" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+</div>
+<div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-black/30 rounded-full blur-sm"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Financials & Duration Bento -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-5 rounded-[2rem]">
+<p class="text-xs text-on-surface-variant font-medium mb-1">Estimated Work</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<p class="font-headline font-extrabold text-xl text-on-surface">4 Hours</p>
+</div>
+</div>
+<div class="bg-secondary-container/10 border-2 border-secondary-container/20 p-5 rounded-[2rem]">
+<p class="text-xs text-on-secondary-container font-medium mb-1">Total Earning</p>
+<div class="flex items-center gap-2">
+<p class="font-headline font-extrabold text-2xl text-on-secondary-container">₹4,500</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="p-6 bg-surface-container-low grid grid-cols-2 gap-4">
+<button class="h-16 rounded-3xl bg-surface-container-highest text-on-surface font-headline font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+                        Reject
+                    </button>
+<button class="h-16 rounded-3xl bg-primary text-on-primary font-headline font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-transform bg-gradient-to-r from-primary to-primary-container">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Accept
+                    </button>
+</div>
+</div>
+</div>
+<!-- Background Content (Simulated Dashboard) -->
+<div class="space-y-6 blur-sm">
+<div class="h-40 rounded-[2.5rem] bg-surface-container-low animate-pulse"></div>
+<div class="h-40 rounded-[2.5rem] bg-surface-container-low animate-pulse"></div>
+<div class="h-40 rounded-[2.5rem] bg-surface-container-low animate-pulse"></div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white dark:bg-zinc-950 rounded-t-3xl border-t border-stone-100 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
+<button class="flex flex-col items-center justify-center bg-green-100 text-green-900 rounded-2xl px-5 py-2.5 font-['Inter'] font-medium text-xs tracking-wide active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="pending_actions" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+<span>Requests</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 px-5 py-2.5 font-['Inter'] font-medium text-xs tracking-wide hover:bg-stone-50 active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span>My Fleet</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 px-5 py-2.5 font-['Inter'] font-medium text-xs tracking-wide hover:bg-stone-50 active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Earnings</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 px-5 py-2.5 font-['Inter'] font-medium text-xs tracking-wide hover:bg-stone-50 active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Profile</span>
+</button>
+</nav>
+</body></html>
