@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
+import { useAuthStore } from '../utils/authStore';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -49,9 +50,17 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
+    const init = async () => {
+      // Clear storage on every fresh app load for clean debugging
+      // Remove this line later for production persistence
+      await useAuthStore.getState().clearAuth();
+      
+      await useAuthStore.getState().loadAuth();
+      if (loaded || error) {
+        SplashScreen.hideAsync();
+      }
+    };
+    init();
   }, [loaded, error]);
 
   if (!loaded && !error) {

@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
+import { useAuthStore } from '../utils/authStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,14 +15,24 @@ export default function SplashScreen() {
   useEffect(() => {
     Animated.timing(progressAnim, {
       toValue: 100,
-      duration: 10000,
+      duration: 3000,
       easing: Easing.linear,
       useNativeDriver: false,
     }).start();
-
+    
     const timer = setTimeout(() => {
-      router.replace('/login');
-    }, 10000);
+      const { isAuthenticated, user } = useAuthStore.getState();
+      
+      if (isAuthenticated && user) {
+        if (user.role === 'owner') {
+          router.replace(user.is_profile_complete ? '/(owner)' : '/owner-registration');
+        } else {
+          router.replace('/(farmer)');
+        }
+      } else {
+        router.replace('/login');
+      }
+    }, 3000);
     return () => clearTimeout(timer);
   }, [router, progressAnim]);
 

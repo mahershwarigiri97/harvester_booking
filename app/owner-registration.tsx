@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -10,16 +10,26 @@ import { Step1BasicInfo } from '../components/registration/Step1BasicInfo';
 import { Step2MachineDetails } from '../components/registration/Step2MachineDetails';
 import { Step3WorkCapability } from '../components/registration/Step3WorkCapability';
 import { useLocation } from '../hooks/useLocation';
+import { authApi } from '../utils/api';
+import { useAuthStore } from '../utils/authStore';
 
 export default function OwnerRegistrationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { userId } = useLocalSearchParams<{ userId: string }>();
+
+  useEffect(() => {
+    console.log('[OwnerRegistrationScreen] Received userId:', userId);
+    console.log('[OwnerRegistrationScreen] AuthStore user:', useAuthStore.getState().user?.id);
+  }, [userId]);
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [village, setVillage] = useState('');
   const [streetAddress, setStreetAddress] = useState('');
   const [pincode, setPincode] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const { locationStr: location, setLocationStr: setLocation, fetchLiveLocation, loadingLocation } = useLocation((data) => {
     if (data.city) setVillage(data.city);
@@ -60,9 +70,100 @@ export default function OwnerRegistrationScreen() {
     isStepValid = workSpeed.trim().length > 0 && images.filter(Boolean).length > 0;
   }
 
-  const handleNextStep = () => {
-    if (step < 3) setStep(step + 1);
-    else router.replace('/(tabs)' as any);
+  const handleNextStep = async () => {
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      setLoading(true);
+      try {
+        // Upload images first
+        const formData = new FormData();
+        images.filter(Boolean).forEach((uri) => {
+          const name = uri.split('/').pop() || 'image.jpg';
+          const match = /\.(\w+)$/.exec(name);
+          let type = match ? `image/${match[1].toLowerCase()}` : `image/jpeg`;
+          if (type === 'image/jpg') type = 'image/jpeg';
+
+          const uploadUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
+
+          console.log('[Registration] Appending image:', { name, type, uri: uploadUri });
+          formData.append('images', {
+            uri: uploadUri,
+            name: name,
+            type: typeof type === 'string' ? type : 'image/jpeg'
+          } as any);
+        });
+
+        const uploadRes = await authApi.uploadImages(formData, 'machine');
+        const imageUrls = uploadRes.data.data.urls;
+        // Upload Profile Image if selected
+        let avatarUrl = '';
+        if (profileImage) {
+          const profileFormData = new FormData();
+          const pName = profileImage.split('/').pop() || 'profile.jpg';
+          const pMatch = /\.(\w+)$/.exec(pName);
+          let pType = pMatch ? `image/${pMatch[1].toLowerCase()}` : `image/jpeg`;
+          if (pType === 'image/jpg') pType = 'image/jpeg';
+
+          const pUploadUri = Platform.OS === 'android' ? profileImage : profileImage.replace('file://', '');
+
+          console.log('[Registration] Appending profile image:', { name: pName, type: pType, uri: pUploadUri });
+          profileFormData.append('images', {
+            uri: pUploadUri,
+            name: pName,
+            type: typeof pType === 'string' ? pType : 'image/jpeg'
+          } as any);
+
+          const profileRes = await authApi.uploadImages(profileFormData, 'profile');
+          avatarUrl = profileRes.data.data.urls[0];
+        }
+
+        const [dist, st] = location.split(',').map(s => s.trim());
+        const currentUserId = userId || useAuthStore.getState().user?.id;
+
+        if (!currentUserId) {
+          console.error('[Registration] No User ID found in params or store');
+          setLoading(false);
+          return;
+        }
+
+        const res = await authApi.completeOwnerProfile({
+          userId: parseInt(currentUserId.toString()),
+          name,
+          avatar: avatarUrl,
+          address: {
+            village,
+            street_address: streetAddress,
+            pincode,
+            district: dist,
+            state: st,
+          },
+          type: machineType,
+          brand,
+          model: year,
+          pricePerHour: rate,
+          pricePerAcre: rate,
+          images: imageUrls
+        });
+
+        console.log('[Registration] Profile completed successfully');
+
+        const { redirectTo, user, token } = res.data.data;
+
+        // Sync local auth store with updated profile data
+        await useAuthStore.getState().setAuth(user, token);
+
+        router.replace({ pathname: redirectTo as any, params: { userId: user.id.toString() } });
+      } catch (error: any) {
+        console.error('Failed to complete profile', error);
+        if (error.response) {
+          console.error('[Registration] Server Error Data:', error.response.data);
+          console.error('[Registration] Server Status:', error.response.status);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleBack = () => {
@@ -99,16 +200,17 @@ export default function OwnerRegistrationScreen() {
 
           {/* Form Section */}
           {step === 1 ? (
-            <Step1BasicInfo 
-              name={name} setName={setName} 
-              location={location} setLocation={setLocation} 
+            <Step1BasicInfo
+              name={name} setName={setName}
+              location={location} setLocation={setLocation}
               village={village} setVillage={setVillage}
               streetAddress={streetAddress} setStreetAddress={setStreetAddress}
               pincode={pincode} setPincode={setPincode}
+              profileImage={profileImage} setProfileImage={setProfileImage}
               loadingLocation={loadingLocation} onUseLocation={fetchLiveLocation}
             />
           ) : step === 2 ? (
-            <Step2MachineDetails 
+            <Step2MachineDetails
               machineType={machineType} setMachineType={setMachineType}
               brand={brand} setBrand={setBrand}
               year={year} setYear={setYear}
@@ -116,9 +218,9 @@ export default function OwnerRegistrationScreen() {
               rate={rate} setRate={setRate}
             />
           ) : (
-            <Step3WorkCapability 
-              workSpeed={workSpeed} setWorkSpeed={setWorkSpeed} 
-              images={images} setImages={setImages} 
+            <Step3WorkCapability
+              workSpeed={workSpeed} setWorkSpeed={setWorkSpeed}
+              images={images} setImages={setImages}
             />
           )}
 
@@ -141,17 +243,17 @@ export default function OwnerRegistrationScreen() {
 
         {/* Fixed Bottom Action Container */}
         <View style={{ paddingHorizontal: 24, paddingBottom: Math.max(insets.bottom, 24), paddingTop: 16, backgroundColor: '#fafaf5', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' }}>
-          <TouchableOpacity 
-             disabled={!isStepValid}
-             activeOpacity={0.88} 
-             onPress={handleNextStep} 
-             style={{ opacity: isStepValid ? 1 : 0.4, borderRadius: 16, overflow: 'hidden', elevation: isStepValid ? 4 : 0, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: isStepValid ? 0.2 : 0, shadowRadius: 8 }}
+          <TouchableOpacity
+            disabled={!isStepValid || loading}
+            activeOpacity={0.88}
+            onPress={handleNextStep}
+            style={{ opacity: isStepValid && !loading ? 1 : 0.4, borderRadius: 16, overflow: 'hidden', elevation: isStepValid ? 4 : 0, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: isStepValid ? 0.2 : 0, shadowRadius: 8 }}
           >
             <LinearGradient colors={['#0d631b', '#2e7d32']} style={{ height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
               <Text style={{ color: '#fff', fontFamily: 'headline', fontWeight: 'bold', fontSize: 20 }}>
-                {currentStatus.cta}
+                {loading ? 'Uploading...' : currentStatus.cta}
               </Text>
-              {(currentStatus as any).ctaIcon && (
+              {!loading && (currentStatus as any).ctaIcon && (
                 <MaterialIcons name={(currentStatus as any).ctaIcon} size={24} color="#fff" />
               )}
             </LinearGradient>

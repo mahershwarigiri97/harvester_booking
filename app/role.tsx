@@ -1,20 +1,34 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { authApi } from '../utils/api';
+import { useAuthStore } from '../utils/authStore';
 
 export default function RoleSelectionScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { phone } = useLocalSearchParams<{ phone: string }>();
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'owner' | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleContinue = () => {
-    if (selectedRole === 'owner') {
-      router.replace('/(owner)' as any);
-    } else if (selectedRole === 'farmer') {
-      router.replace('/(farmer)' as any);
+  const handleContinue = async () => {
+    if (!selectedRole || !phone) return;
+    setLoading(true);
+    try {
+      const res = await authApi.register({ phone, role: selectedRole });
+      const { redirectTo, user, token } = res.data.data;
+      
+      // Store auth data globally
+      await useAuthStore.getState().setAuth(user, token);
+      
+      router.replace({ pathname: redirectTo as any, params: { userId: user.id.toString() } });
+    } catch (error) {
+      console.error('Registration failed', error);
+    } finally {
+      setLoading(false);
     }
   };
 

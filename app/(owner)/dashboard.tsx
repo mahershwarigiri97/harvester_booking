@@ -1,15 +1,61 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { Image, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useLocalSearchParams } from 'expo-router';
+import { authApi } from '../../utils/api';
+import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
 
 export default function OwnerDashboard() {
   const [isOnline, setIsOnline] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  const { userId } = useLocalSearchParams<{ userId: string }>();
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      // 1. Try to get user from global store first for immediate UI
+      const storedUser = useAuthStore.getState().user;
+      console.log(storedUser, "storedUser")
+      if (storedUser) {
+        setUser(storedUser);
+        // If we have stored user, we can stop loading early unless we specifically need a fresh fetch
+        setLoading(false);
+      }
+
+      // 2. Fetch fresh profile if userId is available to ensure data accuracy
+      const idToFetch = userId || (storedUser?.id ? String(storedUser.id) : null);
+
+      if (!idToFetch) {
+        setLoading(false); // Stop loading if no ID is available to prevent infinite loader
+        return;
+      }
+
+      try {
+        const res = await authApi.getProfile(idToFetch);
+        console.log(res.data.data, "res")
+        setUser(res.data.data);
+      } catch (err) {
+        console.error('Fetch profile failed', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface">
+        <ActivityIndicator color="#0d631b" size="large" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-surface">
@@ -23,13 +69,13 @@ export default function OwnerDashboard() {
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
               <Image
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAf9n4KoRbSHPB_d4GTdcV1F290tXpjqMY0-CskNDmAOhoIFuSpqXaKzhmGhlCAc4oZ1Pfg7q1hY1dGaFaN2-Cfb_J9eu3EavfsQ000egQc4RSNVH-3NLPH1JO7jWclB3n5r2-FktzEO7ep20j5OU2FLmMErdCvxuJhsBp8qSwQyf_9dqUmruPw2i-MRRuY5nuFXgwk1x_cEB8QNHyn4JlKfE4ys1bXIVtrQ_M4NDOaw7uoRd54WA2n_52ImUbaUOFUI5lYQdRjDQkD' }}
+                source={{ uri: user?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAf9n4KoRbSHPB_d4GTdcV1F290tXpjqMY0-CskNDmAOhoIFuSpqXaKzhmGhlCAc4oZ1Pfg7q1hY1dGaFaN2-Cfb_J9eu3EavfsQ000egQc4RSNVH-3NLPH1JO7jWclB3n5r2-FktzEO7ep20j5OU2FLmMErdCvxuJhsBp8qSwQyf_9dqUmruPw2i-MRRuY5nuFXgwk1x_cEB8QNHyn4JlKfE4ys1bXIVtrQ_M4NDOaw7uoRd54WA2n_52ImUbaUOFUI5lYQdRjDQkD' }}
                 className="w-full h-full"
-                accessibilityLabel="portrait of a confident middle-aged Indian farmer"
+                accessibilityLabel="portrait of the owner"
               />
             </View>
             <View className="flex-col">
-              <Text className="font-headline font-bold text-lg text-primary leading-tight">Krishi Harvester</Text>
+              <Text className="font-headline font-bold text-lg text-primary leading-tight">{user?.name || 'Harvester Owner'}</Text>
             </View>
           </View>
           <View className="flex-row items-center gap-4">
@@ -54,11 +100,10 @@ export default function OwnerDashboard() {
           <View className="space-y-4">
             <View className="flex-row items-start justify-between">
               <View>
-                <Text className="font-headline font-extrabold text-3xl tracking-tight text-on-surface">Sukhwinder Singh</Text>
+                <Text className="font-headline font-extrabold text-3xl tracking-tight text-on-surface">{user?.name || 'User'}</Text>
                 <View className="flex-row items-center gap-2 mt-1">
                   <MaterialIcons name="star" size={20} color="#835400" />
-                  <Text className="font-bold text-lg text-on-surface">4.8</Text>
-                  <Text className="text-on-surface-variant text-sm ml-1">• Ludhiana, Punjab</Text>
+                  <Text className="font-bold text-lg text-on-surface">{user?.rating || '0.0'}</Text>
                 </View>
               </View>
               <View className="flex-col items-end">
@@ -118,7 +163,9 @@ export default function OwnerDashboard() {
                 }}
               >
                 <Text className="text-on-surface-variant text-sm font-semibold">Bookings</Text>
-                <Text className="text-3xl font-headline font-bold text-on-surface mt-1">3</Text>
+                <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
+                  {user?.owner_bookings?.filter((b: any) => ['requested', 'accepted', 'on_the_way', 'arrived', 'in_progress'].includes(b.status)).length || 0}
+                </Text>
                 <Text className="text-xs text-primary font-bold mt-2 uppercase">Upcoming</Text>
               </View>
 
@@ -133,7 +180,9 @@ export default function OwnerDashboard() {
                 }}
               >
                 <Text className="text-on-surface-variant text-sm font-semibold">Total Jobs</Text>
-                <Text className="text-3xl font-headline font-bold text-on-surface mt-1">142</Text>
+                <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
+                  {user?.owner_bookings?.filter((b: any) => b.status === 'completed').length || 0}
+                </Text>
                 <Text className="text-xs text-on-surface-variant font-bold mt-2 uppercase">Lifetime</Text>
               </View>
             </View>
@@ -287,7 +336,7 @@ export default function OwnerDashboard() {
               </View>
               <View>
                 <Text className="text-xs font-bold text-on-surface-variant uppercase">Your Location</Text>
-                <Text className="font-bold text-on-surface">Ludhiana, Punjab</Text>
+                <Text className="font-bold text-on-surface">{user?.address?.village || user?.address?.district || 'Location'}, {user?.address?.state || ''}</Text>
               </View>
             </View>
             <MaterialIcons name="map" size={24} color="#0d631b" />
@@ -295,11 +344,11 @@ export default function OwnerDashboard() {
 
         </View>
       </ScrollView>
-      
+
       {/* Booking Request Popup overlay matched exactly to Stitch design */}
-      <BookingRequestPopup 
-        visible={showPopup} 
-        onClose={() => setShowPopup(false)} 
+      <BookingRequestPopup
+        visible={showPopup}
+        onClose={() => setShowPopup(false)}
       />
     </View>
   );

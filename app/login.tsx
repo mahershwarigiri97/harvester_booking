@@ -1,17 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
-import { OtpCounter } from '../components/OtpCounter';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { OtpCounter } from '../components/OtpCounter';
+import { authApi } from '../utils/api';
+import { useAuthStore } from '../utils/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
@@ -35,22 +38,32 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (phoneNumber.length !== 10) {
       setPhoneError('Please enter a valid 10-digit mobile number.');
       return;
     }
     setPhoneError('');
-    setStep('otp');
+    setLoading(true);
+
+    try {
+      await authApi.sendOtp(phoneNumber);
+      setStep('otp');
+    } catch (error: any) {
+      console.error('Send OTP Error:', error);
+      setPhoneError(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isOtpComplete = otp.every((digit) => digit.length === 1);
-  
+
   const insets = useSafeAreaInsets();
-  
+
   return (
-    <View 
-      className="flex-1 bg-background" 
+    <View
+      className="flex-1 bg-background"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <StatusBar hidden />
@@ -58,12 +71,12 @@ export default function LoginScreen() {
       <View className="absolute top-[-100px] right-[-100px] w-64 h-64 bg-[#a3f69c] opacity-20 rounded-full" />
       <View className="absolute bottom-[-150px] left-[-150px] w-80 h-80 bg-[#ffddb5] opacity-20 rounded-full" />
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
-          
+
           {/* Logo Section */}
           <View className="mb-12 items-center">
             <View className="items-center justify-center w-20 h-20 rounded-[32px] bg-primary mb-6 shadow-sm">
@@ -98,7 +111,7 @@ export default function LoginScreen() {
                     <View className="border-r border-outline-variant pr-4 mr-4">
                       <Text className="text-on-surface-variant font-bold">+91</Text>
                     </View>
-                    <TextInput 
+                    <TextInput
                       style={{ outlineStyle: 'none' } as any}
                       className="flex-1 text-lg font-bold tracking-widest text-on-surface"
                       placeholder="00000 00000"
@@ -117,23 +130,24 @@ export default function LoginScreen() {
                   ) : null}
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={handleSendOTP}
                   className="mt-6"
                   style={{ outlineStyle: 'none' } as any}
+                  disabled={loading}
                 >
                   <LinearGradient
                     colors={['#0d631b', '#2e7d32']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    className="h-16 rounded-xl flex-row items-center justify-center px-4"
+                    className={`h-16 rounded-xl flex-row items-center justify-center px-4 ${loading ? 'opacity-70' : ''}`}
                     style={styles.buttonShadow}
                   >
                     <Text className="text-on-primary font-headline font-bold text-lg mr-3">
-                      Send OTP
+                      {loading ? 'Sending...' : 'Send OTP'}
                     </Text>
-                    <MaterialIcons name="arrow-forward" size={24} color="white" />
+                    {!loading && <MaterialIcons name="arrow-forward" size={24} color="white" />}
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -153,7 +167,7 @@ export default function LoginScreen() {
               <View className="space-y-6">
                 <View className="flex-row justify-between gap-3 mb-6">
                   {otp.map((digit, index) => (
-                    <TextInput 
+                    <TextInput
                       key={index}
                       ref={(el) => { inputRefs.current[index] = el; }}
                       className="w-14 h-16 bg-surface-container-lowest text-center text-2xl font-bold rounded-xl border-b-2 border-transparent focus:border-secondary-container"
@@ -164,22 +178,47 @@ export default function LoginScreen() {
                       cursorColor="#0d631b"
                       selectionColor="#0d631b"
                       value={digit}
-                      onChangeText={(text) => handleOtpChange(text, index)}
+                      onChangeText={(text) => {
+                        handleOtpChange(text, index);
+                        setPhoneError('');
+                      }}
                       onKeyPress={(e) => handleOtpKeyPress(e, index)}
                     />
                   ))}
                 </View>
 
-                <OtpCounter onResend={() => {/* Handle resend logic */}} />
+                {phoneError ? (
+                  <Text className="text-error text-[13px] font-bold text-center mt-[-10px] mb-4">
+                    {phoneError}
+                  </Text>
+                ) : null}
 
-                <TouchableOpacity 
-                  activeOpacity={0.8} 
-                  onPress={() => router.replace('/role')} 
+                <OtpCounter onResend={handleSendOTP} />
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={async () => {
+                    try {
+                      const res = await authApi.verifyOtp(phoneNumber, otp.join(''));
+                      const { userExists, redirectTo, user, token } = res.data.data;
+                      
+                      if (userExists) {
+                        // Store auth data globally
+                        await useAuthStore.getState().setAuth(user, token);
+                        router.replace({ pathname: redirectTo as any, params: { userId: user.id.toString() } });
+                      } else {
+                        // Pass phone to role selection for registration
+                        router.push({ pathname: '/role', params: { phone: phoneNumber } });
+                      }
+                    } catch (error: any) {
+                      setPhoneError(error.response?.data?.message || 'Verification failed');
+                    }
+                  }}
                   style={{ outlineStyle: 'none' } as any}
                   disabled={!isOtpComplete}
                 >
-                  <View 
-                    className={`w-full h-16 rounded-xl flex items-center justify-center ${isOtpComplete ? 'bg-secondary-container' : 'bg-surface-variant'}`} 
+                  <View
+                    className={`w-full h-16 rounded-xl flex items-center justify-center ${isOtpComplete ? 'bg-secondary-container' : 'bg-surface-variant'}`}
                     style={isOtpComplete ? styles.buttonShadow : undefined}
                   >
                     <Text className={`font-headline font-bold text-lg ${isOtpComplete ? 'text-on-secondary-container' : 'text-outline-variant'}`}>
@@ -187,10 +226,10 @@ export default function LoginScreen() {
                     </Text>
                   </View>
                 </TouchableOpacity>
-                
+
                 {/* Temp button to go back */}
-                <TouchableOpacity onPress={() => setStep('phone')} className="mt-4 pt-2 items-center" style={{ outlineStyle: 'none' } as any}>
-                   <Text className="text-outline text-xs underline">Change number</Text>
+                <TouchableOpacity onPress={() => { setStep('phone'); setPhoneError(''); }} className="mt-4 pt-2 items-center" style={{ outlineStyle: 'none' } as any}>
+                  <Text className="text-outline text-xs underline">Change number</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -234,6 +273,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    borderRadius: 20,
     elevation: 4,
   }
 });

@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dimensions,
   Image,
@@ -9,12 +9,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
+import { getHarvesterById } from '../../constants/harvesterData';
 
 import { HarvesterMap } from '../../components/HarvesterMap';
 import { OwnerCard } from '../../components/OwnerCard';
 import { Specification } from '../../components/Specification';
-import { getHarvesterById } from '../../constants/harvesterData';
+import { authApi } from '../../utils/api';
+import { Harvester } from '../../constants/harvesterData';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -22,11 +25,58 @@ export default function HarvesterDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
+  const [harvester, setHarvester] = useState<Harvester | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // ── Dynamic lookup from shared data ──
-  const harvester = getHarvesterById(id ?? '1');
+  useEffect(() => {
+    const fetchHarvester = async () => {
+      if (!id) return;
+      try {
+        const res = await authApi.getHarvesterById(id);
+        const item = res.data.data;
+        if (item) {
+          const mapped: Harvester = {
+            id: String(item.id),
+            name: `${item.brand} ${item.model}`,
+            distance: '2.4 km',
+            price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
+            perUnit: item.price_per_acre ? '/ acre' : '/ hour',
+            rating: item.owner?.rating?.toFixed(1) || '0.0',
+            jobs: (item.bookings?.length || 0).toString() + '+',
+            year: item.model,
+            image: item.images[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLGvKSPRqo9QcOGgXchxQD_30CplkCQx8qPUdl1bxd9vA0beMT33oRij4EJJumWtMxMDR54FcYQ44CzO7NErxWKdTKXjl6uEHtsyTZNhBuy--gzwBMCou-sQZ8yyT7dbiS60NA412n383OSOboZDfVsxgFrve48F5MypV0KP5k2fxdEbu4rmPbyAIx_xF01MV0bxglqZwoxKXbiDml3ub_m4F5wdaJ_du2T-PXzJhSXLgx8sZxEnoXeudlgTBCu4efMnw0yK9AdEuZ',
+            status: item.is_available ? 'available' : 'busy',
+            workSpeed: '2 acres / hour',
+            estimatedTime: '~3 hours',
+            owner: {
+              name: item.owner?.name || 'Owner',
+              experience: '10',
+              avatar: item.owner?.avatar
+            },
+          };
+          setHarvester(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch harvester details', err);
+        // Fallback or show error
+        const mock = getHarvesterById(id ?? '1');
+        if (mock) setHarvester(mock);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHarvester();
+  }, [id]);
 
-  // Graceful fallback (should never happen in normal flow)
+  if (loading) {
+    return (
+      <View className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" color="#0d631b" />
+      </View>
+    );
+  }
+
+  // Graceful fallback
   if (!harvester) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">

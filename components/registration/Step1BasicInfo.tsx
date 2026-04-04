@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { LocationDropdowns } from './LocationDropdowns';
@@ -14,13 +15,47 @@ interface Step1Props {
   setStreetAddress: (val: string) => void;
   pincode: string;
   setPincode: (val: string) => void;
+  profileImage: string | null;
+  setProfileImage: (val: string | null) => void;
   loadingLocation?: boolean;
   onUseLocation?: () => void;
 }
 
-export function Step1BasicInfo({ name, setName, location, setLocation, village, setVillage, streetAddress, setStreetAddress, pincode, setPincode, loadingLocation, onUseLocation }: Step1Props) {
+export function Step1BasicInfo({ name, setName, location, setLocation, village, setVillage, streetAddress, setStreetAddress, pincode, setPincode, profileImage, setProfileImage, loadingLocation, onUseLocation }: Step1Props) {
   return (
     <View style={{ gap: 32 }}>
+      {/* Profile Picture Upload */}
+      <View style={{ alignItems: 'center', marginBottom: 8 }}>
+        <TouchableOpacity 
+          activeOpacity={0.8}
+          onPress={async () => {
+             // Basic image picker directly here for simplicity or use a shared hook
+             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+             if (status !== 'granted') return;
+             const result = await ImagePicker.launchImageLibraryAsync({
+               mediaTypes: ImagePicker.MediaTypeOptions.Images,
+               allowsEditing: true,
+               aspect: [1, 1],
+               quality: 0.5,
+             });
+             if (!result.canceled) {
+               setProfileImage(result.assets[0].uri);
+             }
+          }}
+          style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: '#f4f4ef', borderStyle: 'dashed', borderWidth: 2, borderColor: '#0d631b', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+        >
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%' }} />
+          ) : (
+            <View style={{ alignItems: 'center' }}>
+              <MaterialIcons name="add-a-photo" size={32} color="#0d631b" />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: '#0d631b', marginTop: 4 }}>PHOTO</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        <Text style={{ marginTop: 12, fontSize: 14, fontWeight: '700', color: '#1a1c19' }}>Profile Picture</Text>
+      </View>
+
       {/* Name Input */}
       <View>
         <Text style={{ fontSize: 14, fontWeight: '700', color: '#0d631b', marginBottom: 8, paddingHorizontal: 4 }}>Owner Name <Text style={{ color: 'red' }}>*</Text></Text>

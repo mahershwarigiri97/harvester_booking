@@ -5,7 +5,8 @@ import { DatePicker } from './DatePicker';
 
 const PLATFORM_FEE = 150;
 
-export function BookingForm({ harvester, pricePerAcre = 2400 }: { harvester: any, pricePerAcre?: number }) {
+export function BookingForm({ harvester, pricePerAcre = 2400, initialName = '' }: { harvester: any, pricePerAcre?: number, initialName?: string }) {
+  const [name, setName] = useState(initialName);
   const [landSize, setLandSize] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -93,6 +94,29 @@ export function BookingForm({ harvester, pricePerAcre = 2400 }: { harvester: any
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* ── Farmer Name Input (If missing) ── */}
+      {!initialName && (
+        <View className="bg-[#f4f4ef] rounded-[2rem] p-8">
+          <View className="flex-row items-center gap-3 mb-6">
+            <View className="w-12 h-12 rounded-2xl bg-[#0d631b]/10 items-center justify-center">
+              <MaterialIcons name="person" size={24} color="#0d631b" />
+            </View>
+            <View>
+              <Text className="text-lg font-bold text-[#1a1c19] font-headline">Your Name</Text>
+              <Text className="text-sm text-[#40493d]">Please enter your name to book</Text>
+            </View>
+          </View>
+          <TextInput
+            placeholder="John Doe"
+            placeholderTextColor="#707a6c"
+            value={name}
+            onChangeText={setName}
+            className="w-full h-20 bg-[#e3e3de] rounded-2xl px-6 text-xl font-bold text-[#1a1c19]"
+            style={{ outlineStyle: 'none' } as any}
+          />
+        </View>
+      )}
 
       {/* ── Land Size Input ── */}
       <View className="bg-[#f4f4ef] rounded-[2rem] p-8">

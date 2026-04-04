@@ -10,9 +10,10 @@ export interface ListingProps {
   price: string;
   rating: string;
   image: string;
+  jobs?: string;
 }
 
-export function ListingCard({ id, name, distance, price, rating, image }: ListingProps) {
+export function ListingCard({ id, name, distance, price, rating, image, jobs }: ListingProps) {
   const router = useRouter();
   return (
     <View className="bg-surface-container-lowest rounded-[32px] overflow-hidden shadow-sm mb-6 pb-2" style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
@@ -22,9 +23,20 @@ export function ListingCard({ id, name, distance, price, rating, image }: Listin
           className="w-full h-full"
           resizeMode="cover"
         />
-        <View className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full flex-row items-center gap-1">
-          <MaterialIcons name="star" size={16} color="#835400" />
-          <Text className="text-xs font-bold text-on-surface">{rating}</Text>
+        <View className="absolute top-4 right-4 bg-white/90 px-3 py-1.5 rounded-full flex-row items-center gap-2">
+          <View className="flex-row items-center gap-1">
+            <MaterialIcons name="star" size={16} color="#835400" />
+            <Text className="text-xs font-bold text-on-surface">{rating}</Text>
+          </View>
+          {jobs && (
+            <>
+              <View className="w-[1px] h-3 bg-outline/20" />
+              <View className="flex-row items-center gap-1">
+                <MaterialIcons name="history" size={14} color="#0d631b" />
+                <Text className="text-[10px] font-bold text-primary">{jobs} jobs</Text>
+              </View>
+            </>
+          )}
         </View>
       </View>
       
