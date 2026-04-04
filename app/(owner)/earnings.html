@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e3e3de",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#bfcaba",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2f312e",
+                    "on-secondary-fixed": "#2a1800",
+                    "surface-container-highest": "#e3e3de",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#e8e8e3",
+                    "secondary-fixed-dim": "#ffb957",
+                    "on-background": "#1a1c19",
+                    "secondary": "#835400",
+                    "primary": "#0d631b",
+                    "surface-container": "#eeeee9",
+                    "secondary-fixed": "#ffddb5",
+                    "tertiary-container": "#c24300",
+                    "primary-container": "#2e7d32",
+                    "background": "#fafaf5",
+                    "tertiary": "#993300",
+                    "on-tertiary-container": "#ffeee8",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "outline": "#707a6c",
+                    "on-surface": "#1a1c19",
+                    "surface-dim": "#dadad5",
+                    "surface": "#fafaf5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#40493d",
+                    "primary-fixed": "#a3f69c",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-bright": "#fafaf5",
+                    "secondary-container": "#fcab28",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-secondary-container": "#694300",
+                    "on-primary-container": "#cbffc2",
+                    "surface-container-low": "#f4f4ef",
+                    "surface-tint": "#1b6d24",
+                    "on-tertiary-fixed": "#380d00",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f1f1ec",
+                    "inverse-primary": "#88d982"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#fafaf5]/60 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-green-800" data-icon="menu">menu</span>
+<h1 class="text-xl font-black text-[#0d631b] font-['Plus_Jakarta_Sans'] tracking-tight">Earnings Dashboard</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
+<img alt="Owner profile photo" class="w-full h-full object-cover" data-alt="Close up portrait of a middle-aged Indian farmer smiling, warm natural lighting, rural Punjab background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7dJZ5HeKKTOGfqrmlieN5H9M0GmzN64V-wnQSgZ8ZqWnW-UUYrugTKS-hfryBpjalLZYI5crwxepBhqmodYsZvM-5YYWCO6EPjc0R3pu65i7raW2rejoccqUsd8CrzvSCywNA_uxDDcgrb1UYAotb3vJrJCPKXnebjdoLEW5chtnYNyL7NSy05Tl7rEg4E2reMJkCZukB4v_eUk3mzEBuIPmtlZEXN65mFtbGu6Ovjzxtl1EuATCsjup-oyCzUN0XN5Bb_dQ8C0Hl"/>
+</div>
+</header>
+<main class="pt-20 px-4">
+<!-- Hero Section: Total Earnings -->
+<section class="mt-6 mb-8">
+<div class="bg-surface-container-lowest rounded-3xl p-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)] relative overflow-hidden">
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full"></div>
+<p class="text-on-surface-variant font-semibold tracking-wide text-sm uppercase">Total Earnings</p>
+<h2 class="text-5xl font-extrabold text-on-background mt-2 tracking-tighter">₹28,400</h2>
+<div class="mt-4 inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span>12% from last month</span>
+</div>
+</div>
+</section>
+<!-- Filter: Segmented Control -->
+<nav class="flex p-1.5 bg-surface-container-low rounded-2xl mb-8">
+<button class="flex-1 py-3 px-4 text-sm font-bold rounded-xl text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200">Today</button>
+<button class="flex-1 py-3 px-4 text-sm font-bold rounded-xl bg-surface-container-lowest text-primary shadow-sm ring-1 ring-black/5">Weekly</button>
+<button class="flex-1 py-3 px-4 text-sm font-bold rounded-xl text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200">Monthly</button>
+</nav>
+<!-- Chart Section -->
+<section class="mb-10">
+<div class="flex justify-between items-end mb-4 px-2">
+<h3 class="text-lg font-bold text-on-surface">Weekly Overview</h3>
+<span class="text-xs font-semibold text-on-surface-variant">Oct 18 - Oct 24</span>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+<div class="flex items-end justify-between h-40 gap-3"><!-- Mon -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 45%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Mon</span>
+</div>
+<!-- Tue -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 65%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Tue</span>
+</div>
+<!-- Wed -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 35%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Wed</span>
+</div>
+<!-- Thu (Highlighted/Current) -->
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-[#2E7D32] rounded-t-lg shadow-[0_4px_12px_rgba(46,125,50,0.3)]" style="height: 85%;"></div>
+<span class="text-[11px] font-bold text-[#2E7D32]">Thu</span>
+</div>
+<!-- Fri -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 55%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Fri</span>
+</div>
+<!-- Sat -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 75%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Sat</span>
+</div>
+<!-- Sun -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-[#2E7D32]/20 rounded-t-lg transition-all duration-300 group-hover:bg-[#2E7D32]" style="height: 25%;"></div>
+<span class="text-[11px] font-bold text-on-surface-variant">Sun</span>
+</div></div>
+</div>
+</section>
+<!-- List: Recent Jobs -->
+<section class="mb-10">
+<div class="flex justify-between items-center mb-6 px-2">
+<h3 class="text-xl font-bold text-on-surface">Recent Jobs</h3>
+<button class="text-primary text-sm font-bold flex items-center">View All <span class="material-symbols-outlined text-sm ml-1" data-icon="chevron_right">chevron_right</span></button>
+</div>
+<div class="space-y-4">
+<!-- Job Card 1 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-[2rem] shadow-[0_4px_12px_rgba(0,0,0,0.01)] transition-transform active:scale-95 duration-150">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-2xl font-bold" data-icon="agriculture">agriculture</span>
+</div>
+<div>
+<p class="font-bold text-on-surface text-lg">Baljit Singh</p>
+<p class="text-sm text-on-surface-variant font-medium">24 Oct • Wheat Harvesting</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-primary font-black text-lg">+₹4,500</p>
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">Settled</span>
+</div>
+</div>
+<!-- Job Card 2 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-[2rem] shadow-[0_4px_12px_rgba(0,0,0,0.01)] transition-transform active:scale-95 duration-150">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-2xl font-bold" data-icon="agriculture">agriculture</span>
+</div>
+<div>
+<p class="font-bold text-on-surface text-lg">Gurnam Sidhu</p>
+<p class="text-sm text-on-surface-variant font-medium">23 Oct • Soil Prep</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-primary font-black text-lg">+₹2,800</p>
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">Settled</span>
+</div>
+</div>
+<!-- Job Card 3 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-[2rem] shadow-[0_4px_12px_rgba(0,0,0,0.01)] transition-transform active:scale-95 duration-150">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-2xl font-bold" data-icon="agriculture">agriculture</span>
+</div>
+<div>
+<p class="font-bold text-on-surface text-lg">Rajesh Kumar</p>
+<p class="text-sm text-on-surface-variant font-medium">22 Oct • Paddy Harvest</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-primary font-black text-lg">+₹8,200</p>
+<span class="text-[10px] uppercase font-bold tracking-widest text-secondary font-black bg-secondary-fixed px-2 py-0.5 rounded">Pending</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (FAB) -->
+</body></html>

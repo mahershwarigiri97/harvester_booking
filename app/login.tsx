@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -45,8 +46,13 @@ export default function LoginScreen() {
 
   const isOtpComplete = otp.every((digit) => digit.length === 1);
   
+  const insets = useSafeAreaInsets();
+  
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View 
+      className="flex-1 bg-background" 
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
       <StatusBar hidden />
       {/* Background Visual Elements (Simplified for React Native without heavy SVG blur) */}
       <View className="absolute top-[-100px] right-[-100px] w-64 h-64 bg-[#a3f69c] opacity-20 rounded-full" />
@@ -204,7 +210,7 @@ export default function LoginScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -2,9 +2,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RoleSelectionScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'owner' | null>(null);
 
@@ -17,7 +19,7 @@ export default function RoleSelectionScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fafaf5' }}>
+    <View style={{ flex: 1, backgroundColor: '#fafaf5', paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar hidden />
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 48 }}>
@@ -105,6 +107,6 @@ export default function RoleSelectionScreen() {
           {selectedRole ? 'Press continue to enter Harvester Hub' : 'Please select a role to proceed'}
         </Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
