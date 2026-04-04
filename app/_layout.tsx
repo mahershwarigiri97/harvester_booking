@@ -47,6 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="owner-registration" options={{ headerShown: false }} />
         <Stack.Screen name="track/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="navigation" options={{ headerShown: false }} />
+        <Stack.Screen name="work_tracker" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
