@@ -5,22 +5,17 @@ import React from 'react';
 import { TouchableOpacity, View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
-import Skeleton from 'react-native-reanimated-skeleton';
 import { BookingForm } from '../../components/BookingForm';
 import { authApi } from '../../utils/api';
 import { Harvester, getHarvesterById } from '../../constants/harvesterData';
-
-const DUMMY_HARVESTER: Harvester = {
-  id: '', name: 'Loading Harvester...', distance: '2.4 km', price: '₹3000', perUnit: '/ acre', rating: '0.0', jobs: '0', year: '2024', image: '', status: 'available', workSpeed: '', estimatedTime: '',
-  owner: { name: 'Owner', experience: '0', avatar: '' }
-};
+import { DetailsSkeleton } from '../../components/DetailsSkeleton';
 
 export default function BookHarvester() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { data: harvesterData, isLoading } = useQuery({
+  const { data: harvester, isLoading } = useQuery({
     queryKey: ['harvester', id],
     queryFn: async () => {
       if (!id) return null;
@@ -57,11 +52,11 @@ export default function BookHarvester() {
     enabled: !!id,
   });
 
-  const harvester = harvesterData || DUMMY_HARVESTER;
-  const showSkeleton = isLoading && !harvesterData;
+  if (isLoading) {
+    return <DetailsSkeleton />;
+  }
 
-  // Graceful fallback
-  if (!isLoading && !harvesterData) {
+  if (!harvester) {
     return (
       <View className="flex-1 bg-[#fafaf5] items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
@@ -80,7 +75,6 @@ export default function BookHarvester() {
 
   return (
     <View className="flex-1 bg-[#fafaf5]">
-      <Skeleton isLoading={showSkeleton}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" translucent backgroundColor="transparent" />
 
@@ -142,7 +136,6 @@ export default function BookHarvester() {
           Secure Payment Powered by HarvestLink
         </Text>
       </View>
-      </Skeleton>
     </View>
   );
 }

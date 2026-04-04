@@ -6,11 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import Skeleton from 'react-native-reanimated-skeleton';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { DashboardSkeleton } from '../../components/DashboardSkeleton';
 
 export default function OwnerDashboard() {
   const { locationName } = useCurrentLocation();
@@ -39,15 +39,18 @@ export default function OwnerDashboard() {
     initialData: storedUser || undefined
   });
 
+  if (isLoading && !user) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
-      <Skeleton isLoading={isLoading && !user}>
-        {/* TopAppBar */}
-        <View
-          className="absolute top-0 w-full z-50 bg-surface border-b"
-          style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
-        >
+      {/* TopAppBar */}
+      <View
+        className="absolute top-0 w-full z-50 bg-surface border-b"
+        style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
+      >
         <View className="flex-row justify-between items-center px-6 py-4 w-full">
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
@@ -333,7 +336,6 @@ export default function OwnerDashboard() {
         </View>
       </ScrollView>
 
-      </Skeleton>
       {/* Booking Request Popup overlay matched exactly to Stitch design */}
       <BookingRequestPopup
         visible={showPopup}

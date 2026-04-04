@@ -1,47 +1,42 @@
 import React from 'react';
-import { View, ScrollView } from 'react-native';
-import Skeleton from 'react-native-reanimated-skeleton';
+import { View } from 'react-native';
+import { SkeletonBox } from './SkeletonBox';
 
 export function DetailsSkeleton() {
   return (
     <View className="flex-1 bg-background">
-      <Skeleton isLoading={true}>
-        <ScrollView className="flex-1 px-4 mt-16" showsVerticalScrollIndicator={false}>
-          {/* Hero Area */}
-          <View className="h-64 rounded-3xl bg-gray-200 mb-6" />
-          
-          <View className="px-1 space-y-4 mb-8">
-            {/* Status Badge */}
-            <View className="w-32 h-7 rounded-full bg-gray-200 mb-4" />
-            
-            {/* Title */}
-            <View className="w-3/4 h-8 bg-gray-200 rounded-lg mb-2" />
-            
-            {/* Subtitle */}
-            <View className="w-1/2 h-4 bg-gray-200 rounded-md" />
-          </View>
+      {/* Hero image */}
+      <SkeletonBox style={{ height: 280, width: '100%', borderRadius: 0 }} />
 
-          {/* Grid Blocks */}
-          <View className="flex-row gap-4 px-1 mb-8">
-            <View className="flex-1 h-20 bg-gray-200 rounded-2xl" />
-            <View className="flex-1 h-20 bg-gray-200 rounded-2xl" />
-          </View>
+      <View className="px-5 mt-6 flex-1">
+        {/* Status badge */}
+        <SkeletonBox style={{ width: 120, height: 28, borderRadius: 14, marginBottom: 14 }} />
+        {/* Title */}
+        <SkeletonBox style={{ width: '80%', height: 30, marginBottom: 10 }} />
+        {/* Subtitle */}
+        <SkeletonBox style={{ width: '45%', height: 18, marginBottom: 28 }} />
 
-          {/* Large Area / Specs */}
-          <View className="h-24 w-full bg-gray-200 rounded-[24px] mb-8" />
-          
-          {/* Map Area */}
-          <View className="h-44 w-full bg-gray-200 rounded-[32px] mb-8" />
-        </ScrollView>
-
-        <View className="absolute bottom-0 w-full bg-white px-5 py-6 flex-row items-center justify-between border-t border-outline/10 h-24">
-          <View>
-            <View className="w-16 h-3 bg-gray-200 rounded mb-2" />
-            <View className="w-24 h-7 bg-gray-200 rounded" />
-          </View>
-          <View className="w-36 h-14 bg-gray-200 rounded-full" />
+        {/* Spec row */}
+        <View className="flex-row gap-4 mb-6">
+          <SkeletonBox style={{ flex: 1, height: 84, borderRadius: 20 }} />
+          <SkeletonBox style={{ flex: 1, height: 84, borderRadius: 20 }} />
         </View>
-      </Skeleton>
+
+        {/* Owner card */}
+        <SkeletonBox style={{ width: '100%', height: 90, borderRadius: 24, marginBottom: 16 }} />
+
+        {/* Map */}
+        <SkeletonBox style={{ width: '100%', height: 160, borderRadius: 32 }} />
+      </View>
+
+      {/* Bottom bar */}
+      <View className="absolute bottom-0 w-full bg-white px-5 py-5 flex-row items-center justify-between border-t border-outline/10">
+        <View className="gap-2">
+          <SkeletonBox style={{ width: 60, height: 12 }} />
+          <SkeletonBox style={{ width: 100, height: 26 }} />
+        </View>
+        <SkeletonBox style={{ width: 140, height: 52, borderRadius: 28 }} />
+      </View>
     </View>
   );
 }

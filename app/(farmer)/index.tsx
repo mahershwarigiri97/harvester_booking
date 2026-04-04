@@ -3,12 +3,12 @@ import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'rea
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import Skeleton from 'react-native-reanimated-skeleton';
 import { HomeHeader } from '../../components/HomeHeader';
 import { SearchBar } from '../../components/SearchBar';
 import { ListMapToggle } from '../../components/ListMapToggle';
 import { ListingCard } from '../../components/ListingCard';
 import { SmallListingCard } from '../../components/SmallListingCard';
+import { ListingSkeletonList } from '../../components/ListingSkeleton';
 import { HARVESTERS } from '../../constants/harvesterData';
 import { authApi } from '../../utils/api';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
@@ -70,12 +70,7 @@ export default function HomeScreen() {
         <ListMapToggle viewMode={viewMode} onToggle={setViewMode} />
         
         {isLoading ? (
-          <Skeleton isLoading={true}>
-            <View className="pt-2">
-              <ListingCard id="1" name="Loading..." distance="0 km" price="₹0" rating="0.0" image="https://via.placeholder.com/400" />
-              <ListingCard id="2" name="Loading..." distance="0 km" price="₹0" rating="0.0" image="https://via.placeholder.com/400" />
-            </View>
-          </Skeleton>
+          <ListingSkeletonList />
         ) : viewMode === 'list' ? (
           <View className="pt-2">
             <View className="flex-row items-baseline justify-between mb-4">

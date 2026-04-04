@@ -12,8 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import Skeleton from 'react-native-reanimated-skeleton';
 import { getHarvesterById } from '../../constants/harvesterData';
+import { DetailsSkeleton } from '../../components/DetailsSkeleton';
 
 import { HarvesterMap } from '../../components/HarvesterMap';
 import { OwnerCard } from '../../components/OwnerCard';
@@ -23,17 +23,13 @@ import { Harvester } from '../../constants/harvesterData';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const DUMMY_HARVESTER: Harvester = {
-  id: '', name: 'Loading Harvester...', distance: '0 km', price: '₹0', perUnit: '/ hour', rating: '0.0', jobs: '0', year: '2024', image: 'https://via.placeholder.com/600', status: 'available', workSpeed: '0 acres/h', estimatedTime: '0h',
-  owner: { name: 'Loading...', experience: '0', avatar: '' }
-};
 
 export default function HarvesterDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const { data: harvesterData, isLoading } = useQuery({
+  const { data: harvester, isLoading } = useQuery({
     queryKey: ['harvester', id],
     queryFn: async () => {
       if (!id) return null;
@@ -70,11 +66,11 @@ export default function HarvesterDetails() {
     enabled: !!id,
   });
 
-  const harvester = harvesterData || DUMMY_HARVESTER;
-  const showSkeleton = isLoading && !harvesterData;
+  if (isLoading) {
+    return <DetailsSkeleton />;
+  }
 
-  // Graceful fallback for non-existent harvester after loading
-  if (!isLoading && !harvesterData) {
+  if (!harvester) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
@@ -97,7 +93,6 @@ export default function HarvesterDetails() {
 
   return (
     <View className="flex-1 bg-background">
-      <Skeleton isLoading={showSkeleton}>
       <StatusBar style="light" translucent backgroundColor="transparent" />
 
       {/* ── Floating Nav ── */}
@@ -273,8 +268,6 @@ export default function HarvesterDetails() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      </Skeleton>
     </View>
   );
 }
