@@ -10,6 +10,7 @@ import { useAuthStore } from '../../utils/authStore';
 import { BookingAddress } from '../../components/BookingAddress';
 import { CancelBookingModal } from '../../components/CancelBookingModal';
 import { getBookingStatusInfo } from '../../utils/bookingHelpers';
+import { useBookingSocket } from '../../hooks/useBookingSocket';
 
 export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
@@ -18,6 +19,9 @@ export default function BookingsScreen() {
   const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState('Active');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+
+  // Initialize Socket.io for real-time updates
+  useBookingSocket();
 
   const tabs = ['Active', 'Completed', 'Cancelled'];
 
@@ -29,7 +33,6 @@ export default function BookingsScreen() {
       return res.data.data || [];
     },
     enabled: !!user?.id,
-    refetchInterval: 3000,
   });
 
   useFocusEffect(
