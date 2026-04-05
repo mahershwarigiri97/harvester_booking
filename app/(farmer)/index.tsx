@@ -12,13 +12,15 @@ import { ListingSkeletonList } from '../../components/ListingSkeleton';
 import { HARVESTERS } from '../../constants/harvesterData';
 import { authApi } from '../../utils/api';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { getLastJobDuration } from '../../utils/bookingUtils';
+
 
 export default function HomeScreen() {
-  const { locationName } = useCurrentLocation();
+  const { locationName, currentLocation } = useCurrentLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { data: harvesters = [], isLoading } = useQuery({
-    queryKey: ['harvesters'],
+    queryKey: ['harvesters', currentLocation?.coords.latitude, currentLocation?.coords.longitude],
     queryFn: async () => {
       try {
         const res = await authApi.getHarvesters();
@@ -28,11 +30,13 @@ export default function HomeScreen() {
           return dbData.map((item: any) => ({
             id: String(item.id),
             name: `${item.brand} ${item.model}`,
-            distance: (Math.random() * 5 + 1).toFixed(1) + ' km',
             price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
             rating: item.owner?.rating?.toFixed(1) || '0.0',
             jobs: (item.bookings?.length || 0).toString(),
-            image: item.images[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLGvKSPRqo9QcOGgXchxQD_30CplkCQx8qPUdl1bxd9vA0beMT33oRij4EJJumWtMxMDR54FcYQ44CzO7NErxWKdTKXjl6uEHtsyTZNhBuy--gzwBMCou-sQZ8yyT7dbiS60NA412n383OSOboZDfVsxgFrve48F5MypV0KP5k2fxdEbu4rmPbyAIx_xF01MV0bxglqZwoxKXbiDml3ub_m4F5wdaJ_du2T-PXzJhSXLgx8sZxEnoXeudlgTBCu4efMnw0yK9AdEuZ'
+            image: item.images[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLGvKSPRqo9QcOGgXchxQD_30CplkCQx8qPUdl1bxd9vA0beMT33oRij4EJJumWtMxMDR54FcYQ44CzO7NErxWKdTKXjl6uEHtsyTZNhBuy--gzwBMCou-sQZ8yyT7dbiS60NA412n383OSOboZDfVsxgFrve48F5MypV0KP5k2fxdEbu4rmPbyAIx_xF01MV0bxglqZwoxKXbiDml3ub_m4F5wdaJ_du2T-PXzJhSXLgx8sZxEnoXeudlgTBCu4efMnw0yK9AdEuZ',
+            lastJobDuration: getLastJobDuration(item.bookings),
+            ownerLocation: item.owner,
+            farmerLocation: currentLocation ? { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude } : null,
           }));
         }
 
@@ -45,7 +49,6 @@ export default function HomeScreen() {
           image: h.image
         }));
       } catch (err) {
-        console.error('Failed to fetch harvesters', err);
         return HARVESTERS.filter(h => !h.isNew).map(h => ({
           id: h.id,
           name: h.name,

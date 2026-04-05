@@ -20,11 +20,15 @@ import { OwnerCard } from '../../components/OwnerCard';
 import { Specification } from '../../components/Specification';
 import { authApi } from '../../utils/api';
 import { Harvester } from '../../constants/harvesterData';
+import { getLastJobDuration } from '../../utils/bookingUtils';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { DistanceBadge } from '../../components/DistanceBadge';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
 
 export default function HarvesterDetails() {
+  const { currentLocation } = useCurrentLocation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
@@ -36,11 +40,11 @@ export default function HarvesterDetails() {
       try {
         const res = await authApi.getHarvesterById(id);
         const item = res.data.data;
+        console.log(item, "item")
         if (item) {
           return {
             id: String(item.id),
             name: `${item.brand} ${item.model}`,
-            distance: '2.4 km',
             price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
             perUnit: item.price_per_acre ? '/ acre' : '/ hour',
             rating: item.owner?.rating?.toFixed(1) || '0.0',
@@ -55,7 +59,9 @@ export default function HarvesterDetails() {
               experience: '10',
               avatar: item.owner?.avatar
             },
-          } as Harvester;
+            ownerRaw: item.owner,
+            lastJobDuration: getLastJobDuration(item.bookings),
+          } as Harvester & { lastJobDuration?: string; ownerRaw?: any };
         }
         return getHarvesterById(id) || null;
       } catch (err) {
@@ -203,6 +209,10 @@ export default function HarvesterDetails() {
                 Model Year: {harvester.year}
               </Text>
             </View>
+            <View className="bg-primary/10 px-3 py-1 rounded-full flex-row items-center gap-1">
+              <MaterialIcons name="history" size={14} color="#0d631b" />
+              <Text className="text-primary text-[10px] font-bold uppercase tracking-tight">Last Job: {(harvester as any).lastJobDuration}</Text>
+            </View>
           </View>
         </View>
 
@@ -226,7 +236,10 @@ export default function HarvesterDetails() {
         </View>
 
         <View className="px-5">
-          <HarvesterMap distance={harvester.distance} />
+          <HarvesterMap
+            ownerLocation={(harvester as any).ownerRaw}
+            farmerLocation={currentLocation ? { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude } : null}
+          />
         </View>
 
       </ScrollView>

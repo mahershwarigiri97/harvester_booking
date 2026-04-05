@@ -16,13 +16,16 @@ export const useBookingSocket = (bookingId?: number) => {
 
     // Refresh all bookings when broad refresh is emitted
     const handleRefresh = () => {
-      console.log('Refreshing bookings due to socket alert');
+      if (bookingId) {
+        queryClient.invalidateQueries({ queryKey: ['booking', bookingId.toString()] });
+        // Also refresh tracking
+        queryClient.invalidateQueries({ queryKey: ['tracking', bookingId.toString()] });
+      }
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     };
 
     // Update specific booking
     const handleBookingUpdate = (data: any) => {
-      console.log('Booking updated via socket:', data);
       if (bookingId) {
         queryClient.invalidateQueries({ queryKey: ['booking', bookingId.toString()] });
         // Also refresh tracking

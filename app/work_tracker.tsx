@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../utils/api';
 import { BookingAddress } from '../components/BookingAddress';
 import { ConfirmEndWorkModal } from '../components/ConfirmEndWorkModal';
+import { getLastJobDuration } from '../utils/bookingUtils';
 
 // Design token values from work_tracker.html
 const COLORS = {
@@ -34,7 +35,7 @@ export default function WorkTracker() {
   const [workStarted, setWorkStarted] = useState(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
 
-  const { data: bookingResponse, isLoading } = useQuery({
+  const { data: bookingResponse } = useQuery({
     queryKey: ['booking', bookingId],
     queryFn: () => authApi.getBookingById(bookingId as string),
     enabled: !!bookingId,
@@ -126,22 +127,20 @@ export default function WorkTracker() {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* ── TIMER CARD — only shown after work starts ── */}
-        {workStarted && (
-          <View
-            className="bg-surface-container-lowest p-8 rounded-3xl items-center justify-center mb-4 relative overflow-hidden"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 24, elevation: 2 }}
-          >
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: COLORS.primaryContainer }} />
-            <Text className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: COLORS.primary }}>
-              ACTIVE DURATION
+        {/* ── TIMER CARD — always shown for completed or active work ── */}
+        {(workStarted || booking?.status === 'completed') && (
+          <View className="items-center py-8 bg-surface-container-low rounded-3xl mb-8 border border-outline/10">
+            <Text className="text-on-surface-variant font-bold text-xs uppercase tracking-widest mb-2">
+              {booking?.status === 'completed' ? 'Total Work Session' : 'Active Work Timer'}
             </Text>
-            <Text className="font-headline font-extrabold tracking-tight mb-2" style={{ fontSize: 56, color: COLORS.onSurface }}>
-              {formatTime(seconds)}
+            <Text className="text-4xl font-headline font-black text-on-surface mb-2">
+              {booking?.status === 'completed' ? getLastJobDuration([booking]) : formatTime(seconds)}
             </Text>
             <View className="flex-row items-center gap-2">
-              <View className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.primaryContainer }} />
-              <Text className="font-medium" style={{ color: COLORS.primaryContainer }}>Tracking Live</Text>
+              <View className={`w-2 h-2 rounded-full ${booking?.status === 'completed' ? 'bg-outline' : 'bg-primary'}`} />
+              <Text className="text-on-surface-variant font-medium text-sm">
+                {booking?.status === 'completed' ? 'Session Finalized' : 'Timer running...'}
+              </Text>
             </View>
           </View>
         )}

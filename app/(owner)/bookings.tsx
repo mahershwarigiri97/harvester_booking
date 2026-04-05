@@ -13,10 +13,13 @@ import { AcceptBookingModal } from '../../components/AcceptBookingModal';
 import { BookingDetailsModal } from '../../components/BookingDetailsModal';
 import { getBookingStatusInfo } from '../../utils/bookingHelpers';
 import { useSocket } from '../../hooks/useSocket';
+import { useCurrentLocation } from '../../hooks/useCurrentLocation';
+import { calculateDistance } from '../../utils/locationUtils';
 
 export default function BookingHistory() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { currentLocation } = useCurrentLocation();
   const user = useAuthStore(state => state.user);
   const [activeFilter, setActiveFilter] = useState('All');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
@@ -40,7 +43,7 @@ export default function BookingHistory() {
   const filters = ['All', 'Active', 'Pending', 'Completed', 'Cancelled'];
 
   const cancelMutation = useMutation({
-    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) => 
+    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
       authApi.updateBookingStatus(bookingId, 'cancelled', undefined, reason, 'owner'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
@@ -97,13 +100,13 @@ export default function BookingHistory() {
   };
 
   const startNavigationMutation = useMutation({
-    mutationFn: (bookingId: string) => 
+    mutationFn: (bookingId: string) =>
       authApi.updateBookingStatus(bookingId, 'on_the_way', 'Harvester is starting navigation'),
     onSuccess: (_, bookingId) => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
-      router.push({ 
-        pathname: '/navigation', 
-        params: { bookingId } 
+      router.push({
+        pathname: '/navigation',
+        params: { bookingId }
       });
     },
   });
@@ -152,6 +155,8 @@ export default function BookingHistory() {
       cancel_reason: b.cancel_reason,
       updated_by_user: b.updated_by_user,
       size: `${b.land_area} Ac`,
+      farm_latitude: b.farm_latitude,
+      farm_longitude: b.farm_longitude,
     };
   });
 
@@ -214,21 +219,6 @@ export default function BookingHistory() {
               </TouchableOpacity>
             ))}
           </ScrollView>
-
-          {/* Summary Widget */}
-          <View className="mb-10 bg-surface-container-low rounded-[32px] p-8" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 }}>
-            <View className="flex-row justify-between items-end">
-              <View>
-                <Text className="text-on-surface-variant font-bold text-sm mb-1">Total Earnings</Text>
-                <Text className="text-4xl font-headline font-black text-primary tracking-tight">₹12,850</Text>
-              </View>
-              <View className="items-end">
-                <Text className="text-on-surface-variant font-bold text-sm mb-1">Bookings</Text>
-                <Text className="text-4xl font-headline font-black text-on-surface tracking-tight">08</Text>
-              </View>
-            </View>
-          </View>
-
           {/* Bookings List */}
           <View className="space-y-6">
             {isLoading ? (
@@ -265,18 +255,26 @@ export default function BookingHistory() {
                           <Text className="text-xl font-headline font-bold text-on-surface">{booking.name}</Text>
                           <View className="flex-row items-center gap-1 mt-1">
                             <MaterialIcons name="location-on" size={16} color="#40493d" />
-                            <BookingAddress
-                              address={booking.full_address}
-                              className="text-sm font-medium text-on-surface-variant flex-1"
-                            />
+                            <Text className="text-sm font-medium text-on-surface-variant flex-1" numberOfLines={1}>
+                              {booking.size} • {(() => {
+                                if (!currentLocation || !booking.farm_latitude || !booking.farm_longitude) return 'View Location';
+                                const d = calculateDistance(
+                                  currentLocation.coords.latitude,
+                                  currentLocation.coords.longitude,
+                                  booking.farm_latitude,
+                                  booking.farm_longitude
+                                );
+                                return `${d} km away`;
+                              })()}
+                            </Text>
                           </View>
                         </View>
                       </View>
-                      <View 
+                      <View
                         className="px-4 py-1.5 rounded-full"
                         style={{ backgroundColor: booking.hexBg }}
                       >
-                        <Text 
+                        <Text
                           className="font-headline font-bold text-xs tracking-wider uppercase"
                           style={{ color: booking.hexColor }}
                         >
@@ -357,7 +355,7 @@ export default function BookingHistory() {
             )}
           </View>
         </View>
-    </ScrollView>
+      </ScrollView>
 
       <CancelBookingModal
         visible={!!cancellingBookingId}
@@ -384,9 +382,9 @@ export default function BookingHistory() {
                 params: { bookingId: id }
               });
             } else if (rawStatus === 'on_the_way') {
-              router.push({ 
-                pathname: '/navigation', 
-                params: { bookingId: id } 
+              router.push({
+                pathname: '/navigation',
+                params: { bookingId: id }
               });
             } else {
               startNavigationMutation.mutate(id);

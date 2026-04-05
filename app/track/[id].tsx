@@ -73,10 +73,16 @@ export default function BookingStatusScreen() {
 
   const currentStepIndex = timelineSteps.findIndex(s => s.key === activeStepForLine);
   
-  // Determine line progress - for completed/cancelled, it goes to the relevant point
+  // Determine line progress - it should reach the current "yellow" next step if applicable
   const totalSteps = timelineSteps.length;
-  const activeLineHeight = currentStepIndex >= 0 
-    ? `${(currentStepIndex / (totalSteps - 1)) * 100}%` 
+  let lineStepIndex = currentStepIndex;
+  
+  if (booking && booking.status !== 'completed' && booking.status !== 'cancelled' && currentStepIndex < totalSteps - 1) {
+    lineStepIndex = currentStepIndex + 1;
+  }
+
+  const activeLineHeight = lineStepIndex >= 0 
+    ? `${(lineStepIndex / (totalSteps - 1)) * 100}%` 
     : '0%';
 
   return (
@@ -170,26 +176,27 @@ export default function BookingStatusScreen() {
                 <View style={{ position: 'absolute', left: 20, top: 16, height: activeLineHeight as any, width: 8, backgroundColor: '#0d631b', borderRadius: 4, zIndex: 10 }} />
 
                 {timelineSteps.map((step, index) => {
-                  const isPast = currentStepIndex > index;
-                  const isCurrent = currentStepIndex === index;
-                  const isCancelledOnThisStep = booking.status === 'cancelled' && isCurrent;
-                  const isFuture = currentStepIndex < index && !isCancelledOnThisStep;
-                  const isCancelled = booking.status === 'cancelled';
-
-                  const trackRecord = trackingData.find((t: any) => t.status === step.key);
-                  const timeString = trackRecord ? `${new Date(trackRecord.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(trackRecord.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : '';
+                  const isDone = index <= currentStepIndex;
+                  const isNext = index === currentStepIndex + 1 && booking.status !== 'completed' && booking.status !== 'cancelled';
+                  const isCancelledOnThisStep = booking.status === 'cancelled' && index === currentStepIndex;
 
                   let bgColor = '#e3e3de'; // Future
                   let iconColor = '#707a6c';
-                  if (isPast) {
-                    bgColor = '#0d631b';
+
+                  if (isDone) {
+                    bgColor = '#0d631b'; // Green for completed
                     iconColor = '#fff';
+                  } else if (isNext) {
+                    bgColor = '#fcab28'; // Yellow for next up
+                    iconColor = '#694300';
                   } else if (isCancelledOnThisStep) {
                     bgColor = '#fee2e2';
                     iconColor = '#ba1a1a';
-                  } else if (isCurrent) {
-                    bgColor = '#fcab28';
                   }
+
+                  const trackRecord = trackingData.find((t: any) => t.status === step.key);
+                  const timeString = trackRecord ? `${new Date(trackRecord.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(trackRecord.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : '';
+                  const isFuture = !isDone && !isNext;
 
                   return (
                     <View key={step.key} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 24, paddingBottom: index === timelineSteps.length - 1 ? 0 : 40, zIndex: 20 }}>
@@ -197,12 +204,12 @@ export default function BookingStatusScreen() {
                         width: 48, height: 48, borderRadius: 24, 
                         backgroundColor: bgColor, 
                         alignItems: 'center', justifyContent: 'center', 
-                        ...(isCurrent ? { borderWidth: 4, borderColor: '#fff', elevation: 4, shadowColor: '#fcab28', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {}),
-                        ...(isPast ? { elevation: 4, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {})
+                        ...(isNext ? { borderWidth: 4, borderColor: '#fff', elevation: 4, shadowColor: '#fcab28', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {}),
+                        ...(isDone ? { elevation: 4, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {})
                       }}>
                         {isCancelledOnThisStep ? (
                           <MaterialIcons name="cancel" size={24} color="#ba1a1a" />
-                        ) : isCurrent ? (
+                        ) : isNext ? (
                           <MaterialIcons name={step.icon as any} size={20} color="#694300" />
                         ) : (
                           <MaterialIcons name={step.icon as any} size={24} color={iconColor} />
@@ -211,7 +218,7 @@ export default function BookingStatusScreen() {
                       <View style={{ paddingTop: 4, flex: 1 }}>
                         <Text style={{ 
                           fontSize: 18, fontWeight: 'bold', 
-                          color: isCancelledOnThisStep ? '#ba1a1a' : (isCurrent ? '#0d631b' : (isPast ? '#1a1c19' : '#707a6c')), 
+                          color: isCancelledOnThisStep ? '#ba1a1a' : (isNext ? '#835400' : (isDone ? '#1a1c19' : '#707a6c')), 
                           lineHeight: 22 
                         }}>
                           {step.title} {isCancelledOnThisStep && '(Cancelled Here)'}

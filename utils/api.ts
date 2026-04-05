@@ -67,6 +67,7 @@ export const authApi = {
   updateBookingStatus: (id: string, status: string, note?: string, cancelReason?: string, updatedByUser?: string, duration?: string) =>
     api.patch(`/bookings/${id}/status`, { status, note, cancelReason, updatedByUser, duration }),
   getBookingTracking: (id: string) => api.get(`/bookings/${id}/tracking`),
+  updateProfile: (userId: number, data: any) => api.patch('/auth/profile/update', { userId, ...data }),
 };
 
 export default api;

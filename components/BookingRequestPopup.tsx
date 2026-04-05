@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, Animated, Easing, Platform } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, Animated, Easing, Platform, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-export default function BookingRequestPopup({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { authApi } from '../utils/api';
+import { Alert } from 'react-native';
+import SuccessModal from './SuccessModal';
+
+interface BookingRequestPopupProps {
+  visible: boolean;
+  onClose: () => void;
+  booking: any;
+}
+
+export default function BookingRequestPopup({ visible, onClose, booking }: BookingRequestPopupProps) {
+  const queryClient = useQueryClient();
   const [timeLeft, setTimeLeft] = useState(15);
+  const [showSuccess, setShowSuccess] = useState(false);
   const animatedValue = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -36,7 +49,27 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
 
       return () => clearInterval(interval);
     }
-  }, [visible]);
+  }, [visible, onClose]);
+
+  const statusMutation = useMutation({
+    mutationFn: (status: 'accepted' | 'cancelled') => 
+      authApi.updateBookingStatus(booking?.id, status, undefined, status === 'cancelled' ? 'Owner rejected mapping' : undefined, 'owner'),
+    onSuccess: (_, status) => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['harvesters'] });
+      
+      if (status === 'accepted') {
+        setShowSuccess(true);
+      } else {
+        onClose();
+      }
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to update booking. Please check your connection.');
+    }
+  });
+
+  if (!booking && visible) return null;
 
   // The Ring has r=24 on a 56x56 view (cx=28 cy=28). Circumference = 2 * PI * 24 = ~150.796
   const circumference = 2 * Math.PI * 24;
@@ -104,7 +137,9 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
                 </View>
                 <View className="flex-shrink">
                   <Text className="text-xs text-on-surface-variant font-medium">Farmer</Text>
-                  <Text className="font-headline font-bold text-on-surface">Amandeep Singh</Text>
+                  <Text className="font-headline font-bold text-on-surface" numberOfLines={1}>
+                    {booking?.farmer?.name || booking?.customer_name || 'Farmer'}
+                  </Text>
                 </View>
               </View>
               <View className="flex-1 bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4">
@@ -113,7 +148,9 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
                 </View>
                 <View className="flex-shrink">
                   <Text className="text-xs text-on-surface-variant font-medium">Crop Type</Text>
-                  <Text className="font-headline font-bold text-on-surface">Wheat</Text>
+                  <Text className="font-headline font-bold text-on-surface" numberOfLines={1}>
+                    {booking?.crop_type || 'General'}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -122,7 +159,9 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
             <View className="mt-6 mb-2">
               <View className="flex-row items-center gap-2 mb-3 px-2">
                 <MaterialIcons name="location-on" size={24} color="#0d631b" />
-                <Text className="font-headline font-bold text-on-surface text-lg">Nakodar, 5.2 km away</Text>
+                <Text className="font-headline font-bold text-on-surface text-lg">
+                  {booking?.full_address?.village || booking?.full_address?.district || 'Location Details'}
+                </Text>
               </View>
               <View className="h-48 w-full rounded-[32px] overflow-hidden bg-surface-container-highest relative">
                 <Image 
@@ -150,15 +189,15 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
             {/* Financials & Duration Bento */}
             <View className="flex-row gap-4 w-full mt-4">
               <View className="flex-1 bg-surface-container-low p-5 rounded-[32px]">
-                <Text className="text-xs text-on-surface-variant font-medium mb-1">Estimated Work</Text>
+                <Text className="text-xs text-on-surface-variant font-medium mb-1">Total land Area</Text>
                 <View className="flex-row items-center gap-2">
-                  <MaterialIcons name="schedule" size={22} color="#0d631b" />
-                  <Text className="font-headline font-extrabold text-xl text-on-surface">4 Hours</Text>
+                  <MaterialIcons name="map" size={22} color="#0d631b" />
+                  <Text className="font-headline font-extrabold text-xl text-on-surface">{booking?.land_area} Ac</Text>
                 </View>
               </View>
               <View className="flex-1 bg-secondary-container/10 border-[2px] p-5 rounded-[32px]" style={{ borderColor: 'rgba(252, 171, 40, 0.2)' }}>
                 <Text className="text-xs font-medium mb-1" style={{ color: '#694300' }}>Total Earning</Text>
-                <Text className="font-headline font-extrabold text-2xl mt-1" style={{ color: '#694300' }}>₹4,500</Text>
+                <Text className="font-headline font-extrabold text-2xl mt-1" style={{ color: '#694300' }}>₹{booking?.price?.toLocaleString() || '0'}</Text>
               </View>
             </View>
           </View>
@@ -166,38 +205,47 @@ export default function BookingRequestPopup({ visible, onClose }: { visible: boo
           {/* Action Buttons */}
           <View className="p-6 bg-surface-container-low flex-row gap-4 border-t" style={{ borderColor: 'rgba(191,202,186,0.1)' }}>
             <TouchableOpacity 
-              onPress={onClose}
-              className="flex-1 h-16 rounded-3xl bg-surface-container-highest flex-row items-center justify-center gap-2 active:scale-95 duration-200"
+              onPress={() => statusMutation.mutate('cancelled')}
+              disabled={statusMutation.isPending}
+              className="flex-1 h-16 rounded-3xl bg-surface-container-highest flex-row items-center justify-center gap-2 active:scale-95"
             >
               <MaterialIcons name="close" size={24} color="#1a1c19" />
               <Text className="font-headline font-bold text-on-surface text-lg">Reject</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              onPress={onClose}
-              className="flex-1 h-16 rounded-3xl flex-row items-center justify-center gap-2 active:scale-95 duration-200"
-              style={{
-                elevation: 8,
-                shadowColor: '#0d631b',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 10,
-              }}
+              onPress={() => statusMutation.mutate('accepted')}
+              disabled={statusMutation.isPending}
+              className="flex-1 h-16 rounded-3xl flex-row items-center justify-center gap-2 active:scale-95"
+              style={{ elevation: 8, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10 }}
             >
               <View className="absolute inset-0 rounded-3xl overflow-hidden">
-                <LinearGradient 
-                  colors={['#0d631b', '#2e7d32']} 
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} 
-                  className="w-full h-full"
-                />
+                <LinearGradient colors={['#0d631b', '#2e7d32']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} className="w-full h-full" />
               </View>
-              <MaterialIcons name="check-circle" size={24} color="white" />
-              <Text className="font-headline font-extrabold text-white text-lg ml-1">Accept</Text>
+              {statusMutation.isPending ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <MaterialIcons name="check-circle" size={24} color="white" />
+                  <Text className="font-headline font-extrabold text-white text-lg ml-1">Accept</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
         </View>
       </View>
+
+      <SuccessModal 
+        visible={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          onClose();
+        }}
+        title="Accepted!"
+        message={`You've successfully accepted ${booking?.farmer?.name || booking?.customer_name}'s request.`}
+        buttonLabel="Go to Dashboard"
+      />
     </Modal>
   );
 }

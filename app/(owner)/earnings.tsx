@@ -4,6 +4,9 @@ import React, { useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useQuery } from '@tanstack/react-query';
+import { authApi } from '../../utils/api';
+import { useAuthStore } from '../../utils/authStore';
 
 const COLORS = {
   primary: '#0d631b',
@@ -76,8 +79,39 @@ const CHART_DATA: Record<string, any> = {
 
 export default function EarningsDashboard() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('Weekly');
 
+  const { data: serverBookings, isLoading } = useQuery({
+    queryKey: ['bookings', 'owner', 'earnings'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const res = await authApi.getMyBookings(user.id, 'owner');
+      return res.data.data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const completedBookings = useMemo(() => {
+    return (serverBookings || []).filter((b: any) => b.status === 'completed');
+  }, [serverBookings]);
+
+  const totalEarnings = useMemo(() => {
+    return completedBookings.reduce((sum: number, b: any) => sum + (b.price || 0), 0);
+  }, [completedBookings]);
+
+  const recentJobs = useMemo(() => {
+    return completedBookings.slice(0, 10).map((b: any) => ({
+      id: b.id,
+      name: b.customer_name || b.farmer?.name || 'Unknown Farmer',
+      date: new Date(b.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+      type: b.crop_type || 'Harvesting',
+      amount: `+₹${b.price?.toLocaleString()}`,
+      status: 'Settled',
+    }));
+  }, [completedBookings]);
+
+  // For charts, we'll use limited mock data or simplify for now since we don't have deep history logic yet
   const data = useMemo(() => CHART_DATA[activeTab] || CHART_DATA.Weekly, [activeTab]);
 
   return (
@@ -105,13 +139,12 @@ export default function EarningsDashboard() {
         contentContainerStyle={{ paddingTop: insets.top + 80, paddingBottom: 120, paddingHorizontal: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Earnings Card */}
         <View style={styles.heroCard}>
-          <Text style={styles.heroLabel}>Total Earnings</Text>
-          <Text style={styles.heroAmount}>{data.total}</Text>
+          <Text style={styles.heroLabel}>Total Earnings (Completed Jobs)</Text>
+          <Text style={styles.heroAmount}>₹{totalEarnings.toLocaleString()}</Text>
           <View style={styles.tag}>
-            <MaterialIcons name="trending-up" size={14} color={COLORS.primary} />
-            <Text style={styles.tagText}>{data.change}</Text>
+            <MaterialIcons name="check-circle" size={14} color={COLORS.primary} />
+            <Text style={styles.tagText}>{completedBookings.length} Finished Projects</Text>
           </View>
         </View>
 
@@ -161,25 +194,32 @@ export default function EarningsDashboard() {
         </View>
 
         <View style={{ gap: 12 }}>
-          {data.jobs.map((job: any) => (
-            <View key={`${activeTab}-job-${job.id}`} style={styles.jobCard}>
-              <View style={styles.jobLeft}>
-                <View style={[styles.jobIcon, job.status === 'Pending' ? styles.jobIconPending : styles.jobIconSettled]}>
-                  <MaterialIcons name="agriculture" size={24} color={job.status === 'Pending' ? COLORS.onSurfaceVariant : COLORS.onSecondaryContainer} />
-                </View>
-                <View>
-                  <Text style={styles.jobName}>{job.name}</Text>
-                  <Text style={styles.jobDetails}>{job.date} • {job.type}</Text>
-                </View>
-              </View>
-              <View style={styles.jobRight}>
-                <Text style={styles.jobAmount}>{job.amount}</Text>
-                <View style={[styles.statusBadge, job.status === 'Pending' ? styles.statusPending : styles.statusSettled]}>
-                  <Text style={styles.statusText}>{job.status}</Text>
-                </View>
-              </View>
+          {recentJobs.length === 0 ? (
+            <View className="items-center py-10">
+              <MaterialIcons name="info-outline" size={32} color={COLORS.onSurfaceVariant} />
+              <Text className="text-on-surface-variant mt-2 font-body">No completed jobs yet</Text>
             </View>
-          ))}
+          ) : (
+            recentJobs.map((job: any) => (
+              <View key={`job-${job.id}`} style={styles.jobCard}>
+                <View style={styles.jobLeft}>
+                  <View style={[styles.jobIcon, styles.jobIconSettled]}>
+                    <MaterialIcons name="agriculture" size={24} color={COLORS.onSecondaryContainer} />
+                  </View>
+                  <View>
+                    <Text style={styles.jobName}>{job.name}</Text>
+                    <Text style={styles.jobDetails}>{job.date} • {job.type}</Text>
+                  </View>
+                </View>
+                <View style={styles.jobRight}>
+                  <Text style={styles.jobAmount}>{job.amount}</Text>
+                  <View style={[styles.statusBadge, styles.statusSettled]}>
+                    <Text style={styles.statusText}>{job.status}</Text>
+                  </View>
+                </View>
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>

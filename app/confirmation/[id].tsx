@@ -113,10 +113,10 @@ export default function BookingConfirmation() {
               <View className="w-full items-center z-50 pb-8 mt-4">
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={() => router.replace('/(tabs)' as any)}
-                  className="py-4 px-8 items-center bg-[#0d631b]/10 rounded-full"
+                  onPress={() => router.replace('/(farmer)/bookings' as any)}
+                  className="py-4 px-10 items-center bg-[#0d631b] rounded-2xl shadow-sm shadow-black/20"
                 >
-                  <Text className="text-[#0d631b] font-bold text-base">Back to Home</Text>
+                  <Text className="text-white font-bold text-base">View My Bookings</Text>
                 </TouchableOpacity>
               </View>
             </>

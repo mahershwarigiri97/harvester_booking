@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams } from 'expo-router';
@@ -11,12 +11,17 @@ import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { DashboardSkeleton } from '../../components/DashboardSkeleton';
+import BookingActivityCard from '../../components/BookingActivityCard';
+import { useRouter } from 'expo-router';
 
 export default function OwnerDashboard() {
-  const { locationName } = useCurrentLocation();
+  const router = useRouter();
+  const { locationName, currentLocation } = useCurrentLocation(true);
   const [isOnline, setIsOnline] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const insets = useSafeAreaInsets();
+
   const { userId: paramsUserId } = useLocalSearchParams<{ userId: string }>();
 
   // Use stored user for immediate UI, but let useQuery handle the fetch
@@ -39,6 +44,43 @@ export default function OwnerDashboard() {
     initialData: storedUser || undefined,
     refetchInterval: 3000,
   });
+
+  // Sync owner location to server for farmer distance calculation
+  React.useEffect(() => {
+    if (user?.id && currentLocation?.coords && isOnline) {
+      authApi.updateProfile(user.id, {
+        current_latitude: currentLocation.coords.latitude,
+        current_longitude: currentLocation.coords.longitude
+      }).catch(err => console.error('[LocationUpdate] Failed:', err));
+    }
+  }, [currentLocation?.coords.latitude, currentLocation?.coords.longitude, user?.id, isOnline]);
+
+  const todayEarnings = React.useMemo(() => {
+    if (!user?.owner_bookings) return 0;
+    const today = new Date().toDateString();
+    return user.owner_bookings
+      .filter((b: any) => b && b.status === 'completed' && b.created_at && new Date(b.created_at).toDateString() === today)
+      .reduce((sum: number, b: any) => sum + (b.price || 0), 0);
+  }, [user]);
+
+  const activeBookingsCount = React.useMemo(() => {
+    if (!user?.owner_bookings) return 0;
+    return user.owner_bookings.filter((b: any) =>
+      b && b.status && !['completed', 'cancelled'].includes(b.status)
+    ).length;
+  }, [user]);
+
+  const totalCompletedJobs = React.useMemo(() => {
+    if (!user?.owner_bookings) return 0;
+    return user.owner_bookings.filter((b: any) => b && b.status === 'completed').length;
+  }, [user]);
+
+  const pendingBookings = React.useMemo(() => {
+    if (!user?.owner_bookings) return [];
+    return user.owner_bookings.filter((b: any) =>
+      !['completed', 'cancelled'].includes(b.status)
+    );
+  }, [user]);
 
   if (isLoading && !user) {
     return <DashboardSkeleton />;
@@ -134,10 +176,10 @@ export default function OwnerDashboard() {
                   className="w-full p-6"
                 >
                   <Text className="text-on-primary/80 text-sm font-semibold">Today's Earnings</Text>
-                  <Text className="text-4xl font-headline font-black text-on-primary mt-2">₹8,500</Text>
+                  <Text className="text-4xl font-headline font-black text-on-primary mt-2">₹{todayEarnings.toLocaleString()}</Text>
                   <View className="mt-4 flex-row items-center gap-1 bg-white/20 px-3 py-1 rounded-full self-start">
                     <MaterialIcons name="trending-up" size={16} color="white" />
-                    <Text className="text-on-primary text-xs">12% vs yesterday</Text>
+                    <Text className="text-on-primary text-xs">Dynamic from Completed Jobs</Text>
                   </View>
                 </LinearGradient>
               </View>
@@ -157,9 +199,9 @@ export default function OwnerDashboard() {
               >
                 <Text className="text-on-surface-variant text-sm font-semibold">Bookings</Text>
                 <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
-                  {user?.owner_bookings?.filter((b: any) => ['requested', 'accepted', 'on_the_way', 'arrived', 'in_progress'].includes(b.status)).length || 0}
+                  {activeBookingsCount}
                 </Text>
-                <Text className="text-xs text-primary font-bold mt-2 uppercase">Upcoming</Text>
+                <Text className="text-xs text-primary font-bold mt-2 uppercase">Active Jobs</Text>
               </View>
 
               <View
@@ -174,7 +216,7 @@ export default function OwnerDashboard() {
               >
                 <Text className="text-on-surface-variant text-sm font-semibold">Total Jobs</Text>
                 <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
-                  {user?.owner_bookings?.filter((b: any) => b.status === 'completed').length || 0}
+                  {totalCompletedJobs}
                 </Text>
                 <Text className="text-xs text-on-surface-variant font-bold mt-2 uppercase">Lifetime</Text>
               </View>
@@ -184,136 +226,36 @@ export default function OwnerDashboard() {
           {/* New Booking Requests */}
           <View className="flex-col mt-4">
             <View className="flex-row items-center justify-between mb-6">
-              <Text className="font-headline font-bold text-xl text-primary">New Booking Requests</Text>
-              <View className="bg-tertiary-container px-3 py-1 rounded-full">
-                <Text className="text-on-tertiary-container text-xs font-bold">2 NEW</Text>
+              <Text className="font-headline font-bold text-xl text-primary">Live Activity</Text>
+              <View className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'bg-error-container' : 'bg-primary-container'} px-3 py-1 rounded-full`}>
+                <Text className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'text-on-error-container' : 'text-on-primary-container'} text-xs font-bold`}>
+                  {pendingBookings.length} {pendingBookings.some((b: any) => b && b.status === 'requested') ? 'NEW' : 'ACTIVE'}
+                </Text>
               </View>
             </View>
 
             <View className="flex-col gap-4">
-              {/* Request Item 1 */}
-              <View
-                className="bg-surface-container-lowest p-5 rounded-[32px] overflow-hidden"
-                style={{
-                  elevation: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.04,
-                  shadowRadius: 32,
-                }}
-              >
-                <View className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12" />
-
-                <View className="flex-col gap-4 z-10 w-full mb-6">
-                  <View className="flex-row items-center gap-4 w-full">
-                    <View className="w-14 h-14 rounded-2xl overflow-hidden shrink-0">
-                      <Image
-                        source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYscZG3focAbBfPNU0v_rUEVMQXE5FHobwbxPHjl5Vvlt29jsyapJlCELSVqH2lCMJ_MKnuqNYwd7z5l-BFS46u9VKxv-wETGg8JfHN2tw0SjWxUjxeKFvGf7tcug7sgls_2V4g6JQvSF7Zl7YLAGfi8il00oCjwfUcAtRgMLxNPLqfobvBf_dOCouBRvLDti3I6pgkhZyvyNMMp4UUb6SncpLVljDqth2BzVq9HKX5el4nBDRP3L-t0tfhipFgxjAxN1XO8GeTWhc' }}
-                        className="w-full h-full"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="font-bold text-lg text-on-surface">Amandeep Singh</Text>
-                      <View className="flex-row items-center gap-1">
-                        <MaterialIcons name="location-on" size={14} color="#40493d" />
-                        <Text className="text-on-surface-variant text-sm flex-shrink">2.4 km away • Phillaur</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View className="flex-col items-end self-end w-full">
-                    <Text className="text-2xl font-headline font-black text-primary">₹3,000</Text>
-                    <Text className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-tighter">Est. Payout</Text>
-                  </View>
+              {pendingBookings.length === 0 ? (
+                <View className="items-center py-12 bg-surface-container-lowest rounded-[32px] border border-outline/10">
+                  <MaterialIcons name="event-note" size={48} color="#bfcaba" />
+                  <Text className="text-on-surface-variant font-bold mt-4">No active bookings found</Text>
+                  <Text className="text-on-surface-variant text-xs mt-1">New requests will appear here</Text>
                 </View>
-
-                <View className="flex-row gap-4 w-full">
-                  <TouchableOpacity className="flex-1 bg-surface-container-low hover:bg-error-container py-4 rounded-2xl items-center justify-center active:scale-95 duration-200 transition-colors">
-                    <Text className="text-error font-bold">Reject</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setShowPopup(true)}
-                    className="flex-1 rounded-2xl active:scale-95 duration-200"
-                    style={{
-                      elevation: 8,
-                      shadowColor: '#0d631b',
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 12,
+              ) : (
+                pendingBookings.map((booking: any) => (
+                  <BookingActivityCard
+                    key={booking.id}
+                    booking={booking}
+                    ownerLocation={currentLocation?.coords}
+                    onViewRequest={(b: any) => {
+                      setSelectedBooking(b);
+                      setShowPopup(true);
                     }}
-                  >
-                    <View className="w-full rounded-2xl overflow-hidden">
-                      <LinearGradient
-                        colors={['#0d631b', '#2e7d32']}
-                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                        className="w-full py-4 items-center justify-center"
-                      >
-                        <Text className="text-on-primary font-bold">Accept</Text>
-                      </LinearGradient>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Request Item 2 */}
-              <View
-                className="bg-surface-container-lowest p-5 rounded-[32px] overflow-hidden pt-4"
-                style={{
-                  elevation: 6,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.04,
-                  shadowRadius: 32,
-                }}
-              >
-                <View className="flex-col gap-4 z-10 w-full mb-6">
-                  <View className="flex-row items-center gap-4 w-full">
-                    <View className="w-14 h-14 rounded-2xl overflow-hidden shrink-0">
-                      <Image
-                        source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDpT2CLa35WFfkpR5e5Gf1i3HFwZDXd4wYMhy4qVDSjQ9lZHx4oGapuTSBWMYylikQiN482dIxUNFlKMkftt229ZOvcZFDPIPC3TPLs61DWB4yrU0SJO21zhEOnZy7mqiXPNVuIzEceb771N-qJQ0f6Un5XNtWlHU4V4eH0uwEwI3BCIX4TAiuJ2HDRCgrNoPNTgbm4MaNSnKUL0zIdpPPP2NEhfvPjCWfAjscI136MiamSdxhyszWouwOx8vZhNViOQF-3RUNkl0EG' }}
-                        className="w-full h-full"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="font-bold text-lg text-on-surface">Gurdeep Singh</Text>
-                      <View className="flex-row items-center gap-1">
-                        <MaterialIcons name="location-on" size={14} color="#40493d" />
-                        <Text className="text-on-surface-variant text-sm flex-shrink">5.1 km away • Nakodar</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View className="flex-col items-end self-end w-full">
-                    <Text className="text-2xl font-headline font-black text-primary">₹5,400</Text>
-                    <Text className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-tighter">Est. Payout</Text>
-                  </View>
-                </View>
-
-                <View className="flex-row gap-4 w-full">
-                  <TouchableOpacity className="flex-1 bg-surface-container-low hover:bg-error-container py-4 rounded-2xl items-center justify-center active:scale-95 duration-200 transition-colors">
-                    <Text className="text-error font-bold">Reject</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setShowPopup(true)}
-                    className="flex-1 rounded-2xl active:scale-95 duration-200"
-                    style={{
-                      elevation: 8,
-                      shadowColor: '#0d631b',
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 12,
-                    }}
-                  >
-                    <View className="w-full rounded-2xl overflow-hidden">
-                      <LinearGradient
-                        colors={['#0d631b', '#2e7d32']}
-                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                        className="w-full py-4 items-center justify-center"
-                      >
-                        <Text className="text-on-primary font-bold">Accept</Text>
-                      </LinearGradient>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
+                    onNavigateToNavigation={(id) => router.push({ pathname: '/navigation', params: { bookingId: id } } as any)}
+                    onNavigateToTracker={(id) => router.push({ pathname: '/work_tracker', params: { bookingId: id } } as any)}
+                  />
+                ))
+              )}
             </View>
           </View>
 
@@ -340,7 +282,11 @@ export default function OwnerDashboard() {
       {/* Booking Request Popup overlay matched exactly to Stitch design */}
       <BookingRequestPopup
         visible={showPopup}
-        onClose={() => setShowPopup(false)}
+        booking={selectedBooking}
+        onClose={() => {
+          setShowPopup(false);
+          setSelectedBooking(null);
+        }}
       />
     </View>
   );

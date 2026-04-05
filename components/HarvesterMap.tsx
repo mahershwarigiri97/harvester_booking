@@ -1,13 +1,22 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { DistanceBadge } from './DistanceBadge';
 
 // Stitch-sourced map image
 const MAP_IMAGE =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCD7eh1-U4YysxDircGjINv8Q07emPHj-Ch3TYgnE72Pakw-TfLSIR4Nx66hqLxhjDwIdGVKHrLU2CSB5Iq1Q9Cxva1XGofIy5i2D_W8Tc574X9KW8mdU1C-RML7pGmqfkCr_IPg6SfiSPbGXEsNZqYSd3MxqjFeozZe5Q7j-4qPey_iJ9p40JTO6i8UutDg43avR2MNSFg62Qnsl_rHW8IpgCL436VHZPGKMPm_rq_usTX4uPdhh-4O6hMHdybriE5j8zy_1bStOvN';
 
 // ─────────────────────────────────────────────────────
-export function HarvesterMap({ distance = '2.5 km' }: { distance?: string }) {
+export function HarvesterMap({
+  ownerLocation,
+  farmerLocation
+}: {
+  ownerLocation?: { current_latitude: number; current_longitude: number } | null;
+  farmerLocation?: { latitude: number; longitude: number } | null;
+}) {
+  console.log(ownerLocation, "ownerLocation")
+  console.log(farmerLocation, "farmerLocation")
   return (
     <View style={{ marginBottom: 32 }}>
 
@@ -22,10 +31,13 @@ export function HarvesterMap({ distance = '2.5 km' }: { distance?: string }) {
             Location
           </Text>
         </View>
-        {/* "2.5 km away" badge */}
-        <View className="bg-surface-container-highest px-3 py-1 rounded-lg">
-          <Text className="font-bold text-on-surface-variant text-sm">{distance} away</Text>
-        </View>
+
+        <DistanceBadge
+          ownerLocation={ownerLocation}
+          farmerLocation={farmerLocation}
+          className="bg-surface-container-highest px-3 py-1 rounded-lg flex-row items-center gap-1"
+          textSize="text-sm font-bold"
+        />
       </View>
 
       {/* ── Map Image (rounded-3xl, h-300, gradient + button overlay) ── */}

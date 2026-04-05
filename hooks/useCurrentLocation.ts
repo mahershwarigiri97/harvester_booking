@@ -13,7 +13,7 @@ export interface LocationDetail {
   name: string | null;
 }
 
-export function useCurrentLocation() {
+export function useCurrentLocation(shouldWatch: boolean = false) {
   const [locationName, setLocationName] = useState<string>('Fetching location...');
   const [locationData, setLocationData] = useState<LocationDetail | null>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -21,6 +21,8 @@ export function useCurrentLocation() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let watchSubscription: Location.LocationSubscription | null = null;
+
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
@@ -31,48 +33,65 @@ export function useCurrentLocation() {
           return;
         }
 
+        const handleLocationUpdate = async (locationResp: Location.LocationObject) => {
+          setLocation(locationResp);
+          const { latitude, longitude } = locationResp.coords;
+
+          try {
+            let response = await Location.reverseGeocodeAsync({
+              latitude,
+              longitude,
+            });
+
+            if (response.length > 0) {
+              const place = response[0];
+              const district = place.district || place.subregion || place.city || 'Unknown District';
+              const state = place.region || 'Unknown State';
+              setLocationName(`${district}, ${state}`);
+              setLocationData({
+                street: place.street || null,
+                city: place.city || null,
+                district: place.district || null,
+                subregion: place.subregion || null,
+                region: place.region || null,
+                postalCode: place.postalCode || null,
+                country: place.country || null,
+                isoCountryCode: place.isoCountryCode || null,
+                name: place.name || null,
+              });
+            }
+          } catch (e) {}
+        };
+
+        // Initial fetch
         let locationResp = await Location.getCurrentPositionAsync({});
-        setLocation(locationResp);
-        const { latitude, longitude } = locationResp.coords;
+        await handleLocationUpdate(locationResp);
 
-        let response = await Location.reverseGeocodeAsync({
-          latitude,
-          longitude,
-        });
-
-        if (response.length > 0) {
-          const place = response[0];
-
-          // Full object with all details
-          const fullLocation: LocationDetail = {
-            street: place.street,
-            city: place.city,
-            district: place.district,
-            subregion: place.subregion,
-            region: place.region,
-            postalCode: place.postalCode,
-            country: place.country,
-            isoCountryCode: place.isoCountryCode,
-            name: place.name,
-          };
-          setLocationData(fullLocation);
-
-          // Dashboard display string: District, State
-          const district = place.district || place.subregion || place.city || 'Unknown District';
-          const state = place.region || 'Unknown State';
-          setLocationName(`${district}, ${state}`);
-        } else {
-          setLocationName('Location not found');
+        // Optional watching
+        if (shouldWatch) {
+          watchSubscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.Balanced,
+              timeInterval: 60000, // Update every minute
+              distanceInterval: 100, // Or every 100 meters
+            },
+            handleLocationUpdate
+          );
         }
       } catch (error) {
         console.error('Error getting location:', error);
         setErrorMsg('Error fetching location');
-        setLocationName('Error');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+
+    return () => {
+      if (watchSubscription) {
+        watchSubscription.remove();
+      }
+    };
+  }, [shouldWatch]);
 
   return { locationName, locationData, errorMsg, loading, currentLocation: location };
 }
