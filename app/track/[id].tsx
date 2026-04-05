@@ -5,27 +5,48 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../utils/api';
 import { getBookingStatusInfo } from '../../utils/bookingHelpers';
+import { useBookingSocket } from '../../hooks/useBookingSocket';
+import { CancelBookingModal } from '../../components/CancelBookingModal';
+import { useState } from 'react';
+import { Alert } from 'react-native';
 
 export default function BookingStatusScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+
+  // Initialize Socket.io for real-time tracking
+  useBookingSocket(Number(id));
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['booking', id],
     queryFn: () => authApi.getBookingById(id as string),
     enabled: !!id,
-    refetchInterval: 3000,
   });
 
   const { data: trackingResponse } = useQuery({
     queryKey: ['tracking', id],
     queryFn: () => authApi.getBookingTracking(id as string),
     enabled: !!id,
-    refetchInterval: 3000,
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (reason: string) => 
+      authApi.updateBookingStatus(id as string, 'cancelled', undefined, reason, 'farmer'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
+      queryClient.invalidateQueries({ queryKey: ['tracking', id] });
+      setIsCancelModalVisible(false);
+    },
+    onError: () => {
+      Alert.alert('Error', 'Could not cancel booking. Please try again.');
+      setIsCancelModalVisible(false);
+    },
   });
 
   const booking = response?.data?.data;
@@ -40,8 +61,23 @@ export default function BookingStatusScreen() {
     { key: 'completed', icon: 'task-alt', title: 'Completed', desc: 'Work finished' },
   ];
 
-  const currentStepIndex = timelineSteps.findIndex(s => s.key === booking?.status);
-  const activeLineHeight = currentStepIndex >= 0 ? `${(currentStepIndex / (timelineSteps.length - 1)) * 100}%` : '0%';
+  const currentStatus = booking?.status || 'requested';
+  
+  // For cancelled orders, find what the status was right before cancellation
+  // based on tracking history, so we can show where progress stopped.
+  let activeStepForLine = currentStatus;
+  if (currentStatus === 'cancelled' && trackingData.length > 1) {
+    // Second-to-last entry in chronological tracking is normally the status before cancellation
+    activeStepForLine = trackingData[trackingData.length - 2]?.status || 'requested';
+  }
+
+  const currentStepIndex = timelineSteps.findIndex(s => s.key === activeStepForLine);
+  
+  // Determine line progress - for completed/cancelled, it goes to the relevant point
+  const totalSteps = timelineSteps.length;
+  const activeLineHeight = currentStepIndex >= 0 
+    ? `${(currentStepIndex / (totalSteps - 1)) * 100}%` 
+    : '0%';
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fafaf5' }}>
@@ -88,7 +124,7 @@ export default function BookingStatusScreen() {
                   </View>
                   <View>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1a1c19' }}>{booking.harvester?.brand} {booking.harvester?.model}</Text>
-                    <Text style={{ fontSize: 12, color: '#40493d', marginTop: 2 }}>Operated by: {booking.harvester?.brand ? 'Certified Pro' : 'N/A'}</Text>
+                    <Text style={{ fontSize: 12, color: '#40493d', marginTop: 2 }}>{booking.owner?.name ? `Operated by: ${booking.owner.name}` : 'Owner details loading...'}</Text>
                   </View>
                 </View>
               </View>
@@ -98,8 +134,8 @@ export default function BookingStatusScreen() {
               </View>
             </View>
 
-            {/* Cancellation Notice (Only if accepted earlier) */}
-            {booking.status === 'cancelled' && trackingData.some((t: any) => t.status === 'accepted') && (
+            {/* Cancellation Notice */}
+            {booking.status === 'cancelled' && (
               <View 
                 style={{ 
                   backgroundColor: '#fee2e2', 
@@ -136,7 +172,8 @@ export default function BookingStatusScreen() {
                 {timelineSteps.map((step, index) => {
                   const isPast = currentStepIndex > index;
                   const isCurrent = currentStepIndex === index;
-                  const isFuture = currentStepIndex < index && booking.status !== 'cancelled';
+                  const isCancelledOnThisStep = booking.status === 'cancelled' && isCurrent;
+                  const isFuture = currentStepIndex < index && !isCancelledOnThisStep;
                   const isCancelled = booking.status === 'cancelled';
 
                   const trackRecord = trackingData.find((t: any) => t.status === step.key);
@@ -147,11 +184,11 @@ export default function BookingStatusScreen() {
                   if (isPast) {
                     bgColor = '#0d631b';
                     iconColor = '#fff';
-                  } else if (isCurrent) {
-                    bgColor = '#fcab28';
-                  } else if (isCancelled) {
+                  } else if (isCancelledOnThisStep) {
                     bgColor = '#fee2e2';
                     iconColor = '#ba1a1a';
+                  } else if (isCurrent) {
+                    bgColor = '#fcab28';
                   }
 
                   return (
@@ -163,19 +200,21 @@ export default function BookingStatusScreen() {
                         ...(isCurrent ? { borderWidth: 4, borderColor: '#fff', elevation: 4, shadowColor: '#fcab28', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {}),
                         ...(isPast ? { elevation: 4, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {})
                       }}>
-                        {isCurrent ? (
+                        {isCancelledOnThisStep ? (
+                          <MaterialIcons name="cancel" size={24} color="#ba1a1a" />
+                        ) : isCurrent ? (
                           <MaterialIcons name={step.icon as any} size={20} color="#694300" />
                         ) : (
-                          <MaterialIcons name={isCancelled && isCurrent ? 'cancel' : step.icon as any} size={24} color={iconColor} />
+                          <MaterialIcons name={step.icon as any} size={24} color={iconColor} />
                         )}
                       </View>
                       <View style={{ paddingTop: 4, flex: 1 }}>
                         <Text style={{ 
                           fontSize: 18, fontWeight: 'bold', 
-                          color: isCurrent ? '#0d631b' : (isPast ? '#1a1c19' : '#707a6c'), 
+                          color: isCancelledOnThisStep ? '#ba1a1a' : (isCurrent ? '#0d631b' : (isPast ? '#1a1c19' : '#707a6c')), 
                           lineHeight: 22 
                         }}>
-                          {step.title}
+                          {step.title} {isCancelledOnThisStep && '(Cancelled Here)'}
                         </Text>
                         <Text style={{ fontSize: 14, color: isFuture ? '#bfcaba' : '#40493d', marginTop: 4 }}>
                           {timeString || step.desc}
@@ -221,9 +260,38 @@ export default function BookingStatusScreen() {
                 </View>
               </View>
             </View>
+
+            {/* Cancel Option for Farmer */}
+            {['requested', 'accepted', 'on_the_way'].includes(booking.status) && (
+              <TouchableOpacity
+                onPress={() => setIsCancelModalVisible(true)}
+                activeOpacity={0.88}
+                style={{ 
+                  marginTop: 32, 
+                  height: 64, 
+                  borderRadius: 16, 
+                  borderWidth: 2, 
+                  borderColor: '#ba1a1a', 
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: 12 
+                }}
+              >
+                <MaterialIcons name="cancel" size={24} color="#ba1a1a" />
+                <Text style={{ color: '#ba1a1a', fontWeight: 'bold', fontSize: 18 }}>Cancel Booking</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
+
+      <CancelBookingModal
+        visible={isCancelModalVisible}
+        onClose={() => setIsCancelModalVisible(false)}
+        onConfirm={(reason) => cancelMutation.mutate(reason)}
+        isLoading={cancelMutation.isPending}
+      />
     </View>
   );
 }

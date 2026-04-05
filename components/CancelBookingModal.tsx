@@ -53,14 +53,7 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
           style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
         />
 
-        {/* Click outside to close (disabled when loading) */}
-        {!isLoading && (
-          <TouchableOpacity
-            activeOpacity={1}
-            style={StyleSheet.absoluteFill}
-            onPress={onClose}
-          />
-        )}
+        {/* Overlay dark tint */}
 
         <View
           className="bg-[#FFFFFF] w-full max-w-sm rounded-xl p-5 space-y-4 my-auto"

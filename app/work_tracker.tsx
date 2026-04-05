@@ -1,10 +1,14 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { authApi } from '../utils/api';
+import { BookingAddress } from '../components/BookingAddress';
+import { ConfirmEndWorkModal } from '../components/ConfirmEndWorkModal';
 
 // Design token values from work_tracker.html
 const COLORS = {
@@ -24,8 +28,62 @@ const COLORS = {
 export default function WorkTracker() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
+  const queryClient = useQueryClient();
   const [seconds, setSeconds] = useState(0);
   const [workStarted, setWorkStarted] = useState(false);
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+
+  const { data: bookingResponse, isLoading } = useQuery({
+    queryKey: ['booking', bookingId],
+    queryFn: () => authApi.getBookingById(bookingId as string),
+    enabled: !!bookingId,
+  });
+
+  const { data: trackingResponse } = useQuery({
+    queryKey: ['tracking', bookingId],
+    queryFn: () => authApi.getBookingTracking(bookingId as string),
+    enabled: !!bookingId,
+  });
+
+  const booking = bookingResponse?.data?.data;
+  const trackingData = trackingResponse?.data?.data || [];
+
+  // Sync internal state with server status
+  useEffect(() => {
+    if (booking?.status === 'in_progress') {
+      setWorkStarted(true);
+      // Calculate elapsed time desde start
+      const startRecord = trackingData.find((t: any) => t.status === 'in_progress');
+      if (startRecord) {
+        const startTime = new Date(startRecord.created_at).getTime();
+        const now = new Date().getTime();
+        setSeconds(Math.floor((now - startTime) / 1000));
+      }
+    } else if (booking?.status === 'completed') {
+      setWorkStarted(true); // show timer but stopped? Or just fixed time.
+      // We'll just keep it simple for now and only tick when active.
+    }
+  }, [booking?.status, trackingData]);
+
+  const startWorkMutation = useMutation({
+    mutationFn: () => authApi.updateBookingStatus(bookingId as string, 'in_progress', 'Harvester has started the work'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+      queryClient.invalidateQueries({ queryKey: ['tracking', bookingId] });
+      setWorkStarted(true);
+      setSeconds(0);
+    },
+  });
+
+  const endWorkMutation = useMutation({
+    mutationFn: (duration: string) => authApi.updateBookingStatus(bookingId as string, 'completed', 'Work completed successfully', undefined, undefined, duration),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+      queryClient.invalidateQueries({ queryKey: ['tracking', bookingId] });
+      router.push('/(owner)');
+    },
+  });
 
   useEffect(() => {
     if (!workStarted) return; // Only tick when work has started
@@ -99,28 +157,26 @@ export default function WorkTracker() {
           >
             <View>
               <Text className="text-sm font-medium mb-2" style={{ color: `${COLORS.onPrimaryContainer}cc` }}>
-                Estimated Earnings
+                {booking?.status === 'completed' ? 'Final Earnings' : 'Estimated Earnings'}
               </Text>
-              {/* Rounded box — pure inline styles to guarantee RN rendering */}
               <View style={{ backgroundColor: 'rgba(203,255,194,0.2)', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'flex-start', marginTop: 4 }}>
                 <Text className="text-3xl font-headline font-extrabold" style={{ color: COLORS.onPrimaryContainer }}>
-                  ₹1,800
+                  ₹{booking?.price?.toLocaleString() || '0'}
                 </Text>
               </View>
             </View>
-            {/* bg-on-primary-container/20 */}
             <View className="p-3 rounded-2xl" style={{ backgroundColor: 'rgba(203,255,194,0.2)' }}>
               <MaterialIcons name="payments" size={32} color={COLORS.onPrimaryContainer} />
             </View>
           </LinearGradient>
 
-          {/* Work Rate: bg-surface-container-low, rounded-3xl, no shadow */}
+          {/* Work Rate: Use land area if available */}
           <View className="bg-surface-container-low p-6 rounded-3xl flex-row items-center justify-between">
             <View>
-              <Text className="text-sm font-medium text-on-surface-variant mb-1">Work Rate</Text>
-              <Text className="text-2xl font-headline font-bold text-on-surface">₹1,200/acre</Text>
+              <Text className="text-sm font-medium text-on-surface-variant mb-1">Land Area</Text>
+              <Text className="text-2xl font-headline font-bold text-on-surface">{booking?.land_area ? `${booking.land_area} Ac` : 'N/A'}</Text>
             </View>
-            <MaterialIcons name="speed" size={32} color="#835400" />
+            <MaterialIcons name="layers" size={32} color="#835400" />
           </View>
         </View>
 
@@ -134,9 +190,26 @@ export default function WorkTracker() {
             <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
               <MaterialIcons name="person" size={20} color={COLORS.primary} />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Farmer</Text>
-              <Text className="font-headline font-bold text-on-surface">Amandeep Singh</Text>
+              <Text className="font-headline font-bold text-on-surface">{booking?.customer_name || booking?.farmer?.name || 'Loading...'}</Text>
+            </View>
+            <TouchableOpacity className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center">
+              <MaterialIcons name="call" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Location row */}
+          <View
+            className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
+            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
+          >
+            <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
+              <MaterialIcons name="location-on" size={20} color={COLORS.primary} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Field Location</Text>
+              <BookingAddress address={booking?.full_address} className="font-headline font-bold text-on-surface" />
             </View>
           </View>
 
@@ -150,7 +223,7 @@ export default function WorkTracker() {
             </View>
             <View>
               <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Crop Type</Text>
-              <Text className="font-headline font-bold text-on-surface">Basmati Rice</Text>
+              <Text className="font-headline font-bold text-on-surface">{booking?.crop_type || 'Rice'}</Text>
             </View>
           </View>
         </View>
@@ -159,7 +232,8 @@ export default function WorkTracker() {
         <View className="gap-4">
           {!workStarted ? (
             <TouchableOpacity
-              onPress={() => { setSeconds(0); setWorkStarted(true); }}
+              onPress={() => startWorkMutation.mutate()}
+              disabled={startWorkMutation.isPending}
               activeOpacity={0.9}
               style={{ shadowColor: '#835400', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 15, elevation: 12 }}
             >
@@ -168,47 +242,53 @@ export default function WorkTracker() {
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
               >
-                <MaterialIcons name="play-circle-filled" size={32} color="white" />
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: '800', letterSpacing: 2, marginTop: 2 }}>Start Work</Text>
+                {startWorkMutation.isPending ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <MaterialIcons name="play-circle-filled" size={32} color="white" />
+                    <Text style={{ color: 'white', fontSize: 20, fontWeight: '800', letterSpacing: 2, marginTop: 2 }}>Start Work</Text>
+                  </>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              onPress={() => router.push('/(owner)')}
-              activeOpacity={0.98}
-              style={{ shadowColor: COLORS.error, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}
-            >
-              <LinearGradient
-                colors={[COLORS.error, '#93000a']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+            booking?.status !== 'completed' && (
+              <TouchableOpacity
+                onPress={() => setIsConfirmModalVisible(true)}
+                disabled={endWorkMutation.isPending}
+                activeOpacity={0.98}
+                style={{ shadowColor: COLORS.error, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}
               >
-                <MaterialIcons name="stop-circle" size={32} color="white" />
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: '800' }}>End Work</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={[COLORS.error, '#93000a']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                  style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+                >
+                  {endWorkMutation.isPending ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <>
+                      <MaterialIcons name="stop-circle" size={32} color="white" />
+                      <Text style={{ color: 'white', fontSize: 20, fontWeight: '800' }}>End Work</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            )
           )}
         </View>
-
-        {/* ── FIELD VISUAL ── mt-8 rounded-3xl h-48 */}
-        <View className="mt-8 rounded-3xl overflow-hidden relative bg-surface-container-high" style={{ height: 192 }}>
-          <Image
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCZAv2nyXgrEv8dNTgod1Vze3lilpYinr07_SK19Q7EWwPMlp5D8cH4qxl0chmhk7cno0LMQj8DFze5GRqHUfIYocSMPqDT0d6aYya96t6DLq83snmao7GFircaTkxNfordu6DG3lCO4T5CAxI_ANs9STJdyO0RofGIpMv7I0mk8F9MRrVHVdN_iIvaacenK8c0eUloUsKiSaAMDSdZAZzvqKgYOwHZVdCr9XLy7rPrX2_Hvb87YdBDOuvsNxCf2s2S1-0kqllm8a4p' }}
-            className="w-full h-full"
-            style={{ opacity: 0.75 }}  // brightness-75 equivalent
-          />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.6)']}
-            className="absolute inset-0 justify-end p-6"
-          >
-            <View className="flex-row items-center gap-1 mb-1">
-              <MaterialIcons name="location-on" size={14} color="white" />
-              <Text className="text-white/80 text-sm font-medium">Sangrur, Punjab</Text>
-            </View>
-            <Text className="text-white font-headline font-bold">Block 4A - North Field</Text>
-          </LinearGradient>
-        </View>
       </ScrollView>
+
+      <ConfirmEndWorkModal
+        visible={isConfirmModalVisible}
+        onClose={() => setIsConfirmModalVisible(false)}
+        onConfirm={() => {
+          setIsConfirmModalVisible(false);
+          endWorkMutation.mutate(formatTime(seconds));
+        }}
+        isLoading={endWorkMutation.isPending}
+      />
     </View>
   );
 }

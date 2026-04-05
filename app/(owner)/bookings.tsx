@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import { CancelBookingModal } from '../../components/CancelBookingModal';
 import { AcceptBookingModal } from '../../components/AcceptBookingModal';
 import { BookingDetailsModal } from '../../components/BookingDetailsModal';
 import { getBookingStatusInfo } from '../../utils/bookingHelpers';
+import { useSocket } from '../../hooks/useSocket';
 
 export default function BookingHistory() {
   const insets = useSafeAreaInsets();
@@ -23,7 +24,20 @@ export default function BookingHistory() {
   const [selectedBookingForDetails, setSelectedBookingForDetails] = useState<any>(null);
   const queryClient = useQueryClient();
 
-  const filters = ['All', 'Completed', 'Cancelled'];
+  // Real-time list refresh
+  const socket = useSocket();
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
+    };
+    socket.on('bookings_refresh', handleRefresh);
+    return () => {
+      socket.off('bookings_refresh', handleRefresh);
+    };
+  }, [socket]);
+
+  const filters = ['All', 'Active', 'Pending', 'Completed', 'Cancelled'];
 
   const cancelMutation = useMutation({
     mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) => 
@@ -82,6 +96,18 @@ export default function BookingHistory() {
     }
   };
 
+  const startNavigationMutation = useMutation({
+    mutationFn: (bookingId: string) => 
+      authApi.updateBookingStatus(bookingId, 'on_the_way', 'Harvester is starting navigation'),
+    onSuccess: (_, bookingId) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
+      router.push({ 
+        pathname: '/navigation', 
+        params: { bookingId } 
+      });
+    },
+  });
+
   const { data: serverBookings, isLoading, refetch } = useQuery({
     queryKey: ['bookings', 'owner'],
     queryFn: async () => {
@@ -90,7 +116,6 @@ export default function BookingHistory() {
       return res.data.data || [];
     },
     enabled: !!user?.id,
-    refetchInterval: 3000,
   });
 
   useFocusEffect(
@@ -352,10 +377,20 @@ export default function BookingHistory() {
         booking={selectedBookingForDetails}
         onNavigateToTrack={() => {
           if (selectedBookingForDetails) {
-            router.push({ 
-              pathname: '/navigation', 
-              params: { bookingId: selectedBookingForDetails.id } 
-            });
+            const { id, rawStatus } = selectedBookingForDetails;
+            if (['arrived', 'in_progress'].includes(rawStatus)) {
+              router.push({
+                pathname: '/work_tracker',
+                params: { bookingId: id }
+              });
+            } else if (rawStatus === 'on_the_way') {
+              router.push({ 
+                pathname: '/navigation', 
+                params: { bookingId: id } 
+              });
+            } else {
+              startNavigationMutation.mutate(id);
+            }
           }
         }}
       />

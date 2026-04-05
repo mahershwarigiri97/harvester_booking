@@ -235,6 +235,17 @@ export default function BookingsScreen() {
                         </TouchableOpacity>
                       )}
                       
+                      {booking.status === 'Cancelled' && (
+                        <TouchableOpacity
+                          ripple-color="#ff0000"
+                          onPress={() => router.push(`/track/${booking.id}` as any)}
+                          activeOpacity={0.88}
+                          className="h-14 rounded-2xl border-2 border-[#bfcaba] flex-row items-center justify-center px-6"
+                        >
+                          <Text className="text-[#40493d] font-headline font-bold text-[16px]">View Reason & Details</Text>
+                        </TouchableOpacity>
+                      )}
+                      
                       {booking.status === 'Completed' && (
                         <TouchableOpacity activeOpacity={0.88} className="h-14 rounded-2xl bg-[#e3e3de] flex-row items-center justify-center px-6">
                           <Text className="text-[#1a1c19] font-headline font-bold text-[16px]">Download Receipt</Text>

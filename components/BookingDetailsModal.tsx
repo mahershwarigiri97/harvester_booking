@@ -111,11 +111,24 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
             <View className="gap-4">
               {['accepted', 'on_the_way', 'arrived', 'in_progress'].includes(booking.rawStatus) && onNavigateToTrack && (
                 <TouchableOpacity 
-                  onPress={() => { onClose(); onNavigateToTrack(); }}
-                  className="w-full bg-primary h-16 rounded-2xl flex-row items-center justify-center gap-2"
+                   onPress={() => { onClose(); onNavigateToTrack(); }}
+                   style={{ 
+                     backgroundColor: booking.rawStatus === 'accepted' ? '#0d631b' : '#835400',
+                   }}
+                   className="w-full h-16 rounded-2xl flex-row items-center justify-center gap-2 shadow-sm"
                 >
-                  <MaterialIcons name="navigation" size={24} color="#fff" />
-                  <Text className="text-white font-bold text-lg">Start Navigation</Text>
+                  <MaterialIcons 
+                    name={
+                      booking.rawStatus === 'accepted' ? "navigation" : 
+                      (['arrived', 'in_progress'].includes(booking.rawStatus) ? "speed" : "map")
+                    } 
+                    size={24} 
+                    color="#fff" 
+                  />
+                  <Text className="text-white font-bold text-lg">
+                    {booking.rawStatus === 'accepted' ? 'Start Navigation' : 
+                     (['arrived', 'in_progress'].includes(booking.rawStatus) ? 'View Progress' : 'View Route')}
+                  </Text>
                 </TouchableOpacity>
               )}
               

@@ -6,8 +6,10 @@ import React, { useState } from 'react';
 import { Animated, Dimensions, Image, PanResponder, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../utils/api';
+import { ConfirmArrivedModal } from '../components/ConfirmArrivedModal';
+import { Alert } from 'react-native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = 30; 
@@ -18,6 +20,8 @@ export default function DriverNavigation() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const [navigationStarted, setNavigationStarted] = useState(false);
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: bookingResponse, isLoading } = useQuery({
     queryKey: ['booking', bookingId],
@@ -33,6 +37,12 @@ export default function DriverNavigation() {
 
   const translateY = React.useRef(new Animated.Value(600)).current;
   const lastOffset = React.useRef(0);
+
+  React.useEffect(() => {
+    if (booking?.status === 'on_the_way') {
+      setNavigationStarted(true);
+    }
+  }, [booking?.status]);
 
   React.useEffect(() => {
     Animated.spring(translateY, {
@@ -109,11 +119,25 @@ export default function DriverNavigation() {
     extrapolate: 'clamp',
   });
 
+  const arrivedMutation = useMutation({
+    mutationFn: () => authApi.updateBookingStatus(bookingId as string, 'arrived', 'Harvester has reached the location'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+      router.push({
+        pathname: '/work_tracker',
+        params: { bookingId }
+      });
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to update arrival status. Please try again.');
+    }
+  });
+
   const onCtaPress = () => {
     if (!navigationStarted) {
       setNavigationStarted(true);
     } else {
-      router.push('/work_tracker');
+      setIsConfirmModalVisible(true);
     }
   };
 
@@ -179,94 +203,58 @@ export default function DriverNavigation() {
         </TouchableOpacity>
       </View>
 
-      {/* Interactive Bottom Sheet */}
-      <Animated.View
-        {...panResponder.panHandlers}
-        className="absolute bottom-0 left-0 right-0 z-40 bg-surface-container-lowest"
-        style={{ transform: [{ translateY }], borderTopLeftRadius: 40, borderTopRightRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: -12 }, shadowOpacity: 0.15, shadowRadius: 40, elevation: 20 }}
-      >
-        <View className="pt-2 px-8 pb-[100px] min-h-[460px]">
-          {/* Top Handle Area */}
-          <View className="w-full py-6 items-center">
-            <View className="w-12 h-1.5 bg-surface-container-highest rounded-full" />
+      {/* Exit Button */}
+      <View style={{ paddingTop: insets.top + 16, paddingLeft: 24 }} className="absolute top-0 left-0 z-50">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="w-12 h-12 bg-white rounded-full items-center justify-center shadow-lg"
+        >
+          <MaterialIcons name="arrow-back" size={24} color="#1a1c19" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Floating CTA Button (Bottom Right) */}
+      <View style={{ position: 'absolute', bottom: insets.bottom + 24, right: 24, zIndex: 100 }}>
+        <TouchableOpacity
+          onPress={onCtaPress}
+          activeOpacity={0.88}
+          className="h-16 px-8 rounded-3xl flex-row items-center justify-center gap-3 active:scale-95 duration-200"
+          style={{
+            minWidth: 180,
+            elevation: 12,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.35,
+            shadowRadius: 15,
+          }}
+        >
+          <View className="absolute inset-0 rounded-3xl overflow-hidden">
+            <LinearGradient
+              colors={navigationStarted ? ['#835400', '#fcab28'] : ['#0d631b', '#2e7d32']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              className="w-full h-full"
+            />
           </View>
+          <MaterialIcons 
+            name={navigationStarted ? "check-circle" : "navigation"} 
+            size={24} 
+            color="white" 
+          />
+          <Text className="text-white font-headline font-bold text-lg uppercase tracking-tight">
+            {arrivedMutation.isPending ? 'Updating...' : (navigationStarted ? 'Arrived' : 'Start Navigation')}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-          <Animated.View style={{ opacity: infoOpacity, transform: [{ translateY: infoTranslateY }] }}>
-            <View className="flex-row items-center justify-between mb-8 mt-2">
-              <View className="flex-row items-center gap-4">
-                <View className="w-16 h-16 rounded-2xl bg-surface-container overflow-hidden">
-                  <Image
-                    source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnH-Q92pOvcRu8x5vBsmB_DEDct6lH7arcfKKS-3Mez1_lJAJHsBMWMMfejNy2rkeYd_prWmmVYBz5fpoEbExPFEHBp2XVzoWdA1IoCZNQxt2nkawb7dZANsHZugSWkemiwulUor5PE3loEycsh57HZHKE81PzsyNCNrRDmidXJpbr1c4BckkgmROY3YyZiGmx-lhQitU1Jje99dduEDd4-SpblFJ8d5wFwtBkBmqa7tiuuow2vqpdULsmUMXnD8HNPPANmbOAyFYk' }}
-                    className="w-full h-full object-cover"
-                  />
-                </View>
-                <View>
-                  <Text className="text-on-surface-variant font-medium text-xs tracking-wide uppercase mb-0.5">{navigationStarted ? 'Arriving At' : 'Navigating To'}</Text>
-                  <Text className="font-headline text-2xl font-extrabold text-on-surface">
-                    {isLoading ? 'Loading...' : booking?.customer_name || booking?.farmer?.name || 'Farmer'}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
-                <MaterialIcons name="call" size={24} color="#0d631b" />
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row gap-4 mb-2">
-              <View className="flex-1 bg-surface-container-low p-4 rounded-[24px]">
-                <View className="flex-row items-center gap-2 mb-1">
-                  <MaterialIcons name="grass" size={16} color="#0d631b" />
-                  <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Crop Type</Text>
-                </View>
-                <Text className="font-headline font-bold text-lg">
-                  {isLoading ? '...' : booking?.crop_type || 'Not specified'}
-                </Text>
-              </View>
-              <View className="flex-1 bg-surface-container-low p-4 rounded-[24px]">
-                <View className="flex-row items-center gap-2 mb-1">
-                  <MaterialIcons name="straighten" size={16} color="#0d631b" />
-                  <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Area</Text>
-                </View>
-                <Text className="font-headline font-bold text-lg">
-                  {isLoading ? '...' : (booking?.land_area ? `${booking.land_area} Acres` : 'Unknown')}
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
-
-          <Animated.View style={{ transform: [{ translateY: ctaTranslateY }] }}>
-            <View className="mt-8">
-              <TouchableOpacity
-                onPress={onCtaPress}
-                className="h-20 rounded-[32px] flex-row items-center justify-center gap-3 active:scale-[0.98] duration-300"
-                style={{
-                  elevation: 12,
-                  shadowColor: navigationStarted ? '#835400' : '#0d631b',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 15,
-                }}
-              >
-                <View className="absolute inset-0 rounded-[32px] overflow-hidden">
-                  <LinearGradient
-                    colors={navigationStarted ? ['#835400', '#fcab28'] : ['#0d631b', '#2e7d32']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    className="w-full h-full"
-                  />
-                </View>
-                <MaterialIcons 
-                  name={navigationStarted ? "check-circle" : "navigation"} 
-                  size={28} 
-                  color="white" 
-                />
-                <Text className="text-white font-headline text-xl font-extrabold uppercase tracking-widest mt-1">
-                  {navigationStarted ? 'Arrived' : 'Start Navigation'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </View>
-      </Animated.View>
+      <ConfirmArrivedModal
+        visible={isConfirmModalVisible}
+        onClose={() => setIsConfirmModalVisible(false)}
+        onConfirm={() => {
+          setIsConfirmModalVisible(false);
+          arrivedMutation.mutate();
+        }}
+        isLoading={arrivedMutation.isPending}
+      />
     </View>
   );
 }
