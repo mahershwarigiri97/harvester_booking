@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { HomeHeader } from '../../components/HomeHeader';
 import { SearchBar } from '../../components/SearchBar';
 import { ListMapToggle } from '../../components/ListMapToggle';
@@ -13,9 +14,11 @@ import { HARVESTERS } from '../../constants/harvesterData';
 import { authApi } from '../../utils/api';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { getLastJobDuration } from '../../utils/bookingUtils';
+import { HarvesterFullMap } from '../../components/HarvesterFullMap';
 
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { locationName, currentLocation } = useCurrentLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
@@ -68,32 +71,37 @@ export default function HomeScreen() {
       <StatusBar style="dark" translucent backgroundColor="transparent" />
       <HomeHeader location={locationName} />
 
-      <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+      <View className="flex-1 px-4 pt-4">
         <SearchBar />
         <ListMapToggle viewMode={viewMode} onToggle={setViewMode} />
 
         {isLoading ? (
-          <ListingSkeletonList />
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+            <ListingSkeletonList />
+          </ScrollView>
         ) : viewMode === 'list' ? (
-          <View className="pt-2">
-            <View className="flex-row items-baseline justify-between mb-4">
-              <Text className="text-2xl font-headline font-extrabold text-primary tracking-tight">Available Near You</Text>
-              <Text className="text-sm font-bold text-secondary">{harvesters.length} Units</Text>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+            <View className="pt-2">
+              <View className="flex-row items-baseline justify-between mb-4">
+                <Text className="text-2xl font-headline font-extrabold text-primary tracking-tight">Available Near You</Text>
+                <Text className="text-sm font-bold text-secondary">{harvesters.length} Units</Text>
+              </View>
+
+              {harvesters.map((item: any) => (
+                <ListingCard key={item.id} {...item} />
+              ))}
+
+              <SmallListingCard {...newArrival} />
             </View>
-
-            {harvesters.map((item: any) => (
-              <ListingCard key={item.id} {...item} />
-            ))}
-
-            <SmallListingCard {...newArrival} />
-          </View>
+          </ScrollView>
         ) : (
-          <View className="flex-1 items-center justify-center pt-20">
-            <MaterialIcons name="map" size={64} color="#bfcaba" />
-            <Text className="text-on-surface-variant mt-4 font-bold text-lg">Map view coming soon...</Text>
-          </View>
+          <HarvesterFullMap 
+            harvesters={harvesters} 
+            userLocation={currentLocation ? { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude } : null}
+            onPressMarker={(id) => router.push({ pathname: '/details/[id]', params: { id } })}
+          />
         )}
-      </ScrollView>
+      </View>
 
       {/* Floating Action Button */}
       <TouchableOpacity

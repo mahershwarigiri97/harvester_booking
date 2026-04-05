@@ -3,15 +3,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Animated, Dimensions, Image, PanResponder, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Animated, Dimensions, PanResponder, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../utils/api';
 import { ConfirmArrivedModal } from '../components/ConfirmArrivedModal';
 import { Alert } from 'react-native';
+import { NavigationMapView } from '../components/NavigationMapView';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = 30; 
 const MINIMIZED_OFFSET = 300;
 
@@ -145,49 +144,13 @@ export default function DriverNavigation() {
     <View className="flex-1 bg-surface relative overflow-hidden">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
 
-      {/* Background Map Imagery */}
+      {/* Background Map */}
       <View className="absolute inset-0 z-0">
-        <Image
-          source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCe6xa8JQBN0zHDKLZzzdnp_VO7cVPQddnEYitI5ruz_pSD2amCpl1rAKwqPM9WLto6-a3UDLOWiZE3rK2HgLdxlwCEyos8OLTcAPkOjxpESPFvoFcfpYaixeaJ6iUXFu7QozLEHX2Cl9Ayvp9TtttrNR3rykSuEZpr_vzEDAtNoUrKusteH2ASYedWs05qkFOKaGBsRvs5d1oGaBYuQRCdWIeGzeQCZHlTbaUo6FpubJQh3YQZkf9oIQn3_0hvgniS3rb3FnmQv3RJ' }}
-          className="w-full h-full object-cover"
-          style={{ opacity: 0.9 }}
+        <NavigationMapView
+          navigationStarted={navigationStarted}
+          farmerCoords={booking?.farm_latitude ? { latitude: booking.farm_latitude, longitude: booking.farm_longitude } : { latitude: 20.61, longitude: 78.98 }}
+          ownerCoords={undefined}
         />
-        <LinearGradient
-          colors={['rgba(0,0,0,0.1)', 'transparent', 'transparent', 'rgba(26,28,25,0.6)']}
-          locations={[0, 0.2, 0.7, 1]}
-          className="absolute inset-0"
-        />
-        <View className="absolute inset-0">
-          <Svg height="100%" width="100%" viewBox="0 0 400 800" className="opacity-90">
-            <Path
-              d="M 100 700 Q 150 500, 250 450 T 320 200"
-              fill="none" stroke={navigationStarted ? "#0d631b" : "#fcab28"} strokeLinecap="round" strokeOpacity="0.4" strokeWidth="16"
-            />
-            <Path
-              d="M 100 700 Q 150 500, 250 450 T 320 200"
-              fill="none" stroke={navigationStarted ? "#0d631b" : "#fcab28"} strokeDasharray="1 15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="8"
-            />
-          </Svg>
-        </View>
-
-        {/* Map Markers */}
-        <View className="absolute bottom-[20%] left-[20%] z-10">
-          <View className="items-center justify-center relative">
-            <View className="absolute w-12 h-12 bg-primary/20 rounded-full" style={{ transform: [{ scale: 1.5 }] }} />
-            <View className="w-10 h-10 bg-primary rounded-full items-center justify-center border-2 border-white shadow-lg">
-              <MaterialIcons name="agriculture" size={20} color="white" />
-            </View>
-          </View>
-        </View>
-
-        <View className="absolute top-[25%] right-[15%] z-10">
-          <View className="items-center">
-            <View className="bg-surface-container-lowest px-3 py-1 rounded-lg border border-outline-variant/20 shadow-md mb-1">
-              <Text className="text-xs font-bold text-on-surface">Farmer's Field</Text>
-            </View>
-            <MaterialIcons name="location-on" size={40} color="#ba1a1a" />
-          </View>
-        </View>
       </View>
 
       {/* Side Map Controls */}

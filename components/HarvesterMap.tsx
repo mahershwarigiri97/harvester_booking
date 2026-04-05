@@ -1,11 +1,7 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DistanceBadge } from './DistanceBadge';
-
-// Stitch-sourced map image
-const MAP_IMAGE =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCD7eh1-U4YysxDircGjINv8Q07emPHj-Ch3TYgnE72Pakw-TfLSIR4Nx66hqLxhjDwIdGVKHrLU2CSB5Iq1Q9Cxva1XGofIy5i2D_W8Tc574X9KW8mdU1C-RML7pGmqfkCr_IPg6SfiSPbGXEsNZqYSd3MxqjFeozZe5Q7j-4qPey_iJ9p40JTO6i8UutDg43avR2MNSFg62Qnsl_rHW8IpgCL436VHZPGKMPm_rq_usTX4uPdhh-4O6hMHdybriE5j8zy_1bStOvN';
 
 // ─────────────────────────────────────────────────────
 export function HarvesterMap({
@@ -15,8 +11,13 @@ export function HarvesterMap({
   ownerLocation?: { current_latitude: number; current_longitude: number } | null;
   farmerLocation?: { latitude: number; longitude: number } | null;
 }) {
-  console.log(ownerLocation, "ownerLocation")
-  console.log(farmerLocation, "farmerLocation")
+  const initialRegion = {
+    latitude: ownerLocation?.current_latitude || farmerLocation?.latitude || 20.5937,
+    longitude: ownerLocation?.current_longitude || farmerLocation?.longitude || 78.9629,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
+
   return (
     <View style={{ marginBottom: 32 }}>
 
@@ -40,7 +41,7 @@ export function HarvesterMap({
         />
       </View>
 
-      {/* ── Map Image (rounded-3xl, h-300, gradient + button overlay) ── */}
+      {/* ── Map (rounded-3xl, h-240) ── */}
       <View
         className="rounded-3xl overflow-hidden"
         style={{
@@ -53,16 +54,45 @@ export function HarvesterMap({
           shadowRadius: 6,
         }}
       >
-        <Image
-          source={{ uri: MAP_IMAGE }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
+        <MapView
+          style={{ flex: 1 }}
+          initialRegion={initialRegion}
+          scrollEnabled={false}
+          zoomEnabled={false}
+          rotateEnabled={false}
+          pitchEnabled={false}
+          mapType="none"
+        >
+          <UrlTile
+            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            flipY={false}
+          />
+          {ownerLocation && (
+            <Marker
+              coordinate={{
+                latitude: ownerLocation.current_latitude,
+                longitude: ownerLocation.current_longitude,
+              }}
+              title="Harvester"
+            />
+          )}
+          {farmerLocation && (
+            <Marker
+              coordinate={{
+                latitude: farmerLocation.latitude,
+                longitude: farmerLocation.longitude,
+              }}
+              title="You"
+              pinColor="blue"
+            />
+          )}
+        </MapView>
 
-        {/* Subtle overlay */}
+        {/* Subtle overlay (for non-interactive look) */}
         <View
           className="absolute inset-0"
-          style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
           pointerEvents="none"
         />
 
