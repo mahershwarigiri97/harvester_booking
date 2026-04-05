@@ -64,6 +64,9 @@ export const authApi = {
   getBookingById: (id: string) => api.get(`/bookings/${id}`),
   getMyBookings: (userId: number, role: 'farmer' | 'owner') =>
     api.get(`/bookings?userId=${userId}&role=${role}`),
+  updateBookingStatus: (id: string, status: string, note?: string, cancelReason?: string, updatedByUser?: string) =>
+    api.patch(`/bookings/${id}/status`, { status, note, cancelReason, updatedByUser }),
+  getBookingTracking: (id: string) => api.get(`/bookings/${id}/tracking`),
 };
 
 export default api;

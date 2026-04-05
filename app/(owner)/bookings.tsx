@@ -1,23 +1,88 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
-import { GeocodedAddress } from '../../components/GeocodedAddress';
+import { BookingAddress } from '../../components/BookingAddress';
+import { CancelBookingModal } from '../../components/CancelBookingModal';
+import { AcceptBookingModal } from '../../components/AcceptBookingModal';
+import { BookingDetailsModal } from '../../components/BookingDetailsModal';
+import { getBookingStatusInfo } from '../../utils/bookingHelpers';
 
 export default function BookingHistory() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const user = useAuthStore(state => state.user);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+  const [acceptingBookingId, setAcceptingBookingId] = useState<string | null>(null);
+  const [selectedBookingForDetails, setSelectedBookingForDetails] = useState<any>(null);
+  const queryClient = useQueryClient();
 
   const filters = ['All', 'Completed', 'Cancelled'];
 
-  const { data: serverBookings, isLoading } = useQuery({
+  const cancelMutation = useMutation({
+    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) => 
+      authApi.updateBookingStatus(bookingId, 'cancelled', undefined, reason, 'owner'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
+      setCancellingBookingId(null);
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to cancel booking. Please try again.');
+      setCancellingBookingId(null);
+    },
+  });
+
+  const handleCancelClick = (bookingId: string) => {
+    setCancellingBookingId(bookingId);
+  };
+
+  const confirmCancel = (reason: string) => {
+    if (cancellingBookingId) {
+      cancelMutation.mutate({ bookingId: cancellingBookingId, reason });
+    }
+  };
+
+  const closeModal = () => {
+    if (!cancelMutation.isPending) {
+      setCancellingBookingId(null);
+    }
+  };
+
+  const acceptMutation = useMutation({
+    mutationFn: (bookingId: string) => authApi.updateBookingStatus(bookingId, 'accepted'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'owner'] });
+      setAcceptingBookingId(null);
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to accept booking. Please try again.');
+      setAcceptingBookingId(null);
+    },
+  });
+
+  const handleAcceptClick = (bookingId: string) => {
+    setAcceptingBookingId(bookingId);
+  };
+
+  const confirmAccept = () => {
+    if (acceptingBookingId) {
+      acceptMutation.mutate(acceptingBookingId);
+    }
+  };
+
+  const closeAcceptModal = () => {
+    if (!acceptMutation.isPending) {
+      setAcceptingBookingId(null);
+    }
+  };
+
+  const { data: serverBookings, isLoading, refetch } = useQuery({
     queryKey: ['bookings', 'owner'],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -25,37 +90,56 @@ export default function BookingHistory() {
       return res.data.data || [];
     },
     enabled: !!user?.id,
+    refetchInterval: 3000,
   });
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user?.id) {
+        refetch();
+      }
+    }, [user?.id, refetch])
+  );
+
   const bookings = (serverBookings || []).map((b: any) => {
-    let statusText = 'Pending';
-    if (b.status === 'completed') statusText = 'Completed';
-    else if (b.status === 'cancelled') statusText = 'Cancelled';
-    else if (['accepted', 'on_the_way', 'arrived', 'in_progress'].includes(b.status)) statusText = 'Active';
+    let tabCategory = 'Pending';
+    if (b.status === 'completed') tabCategory = 'Completed';
+    else if (b.status === 'cancelled') tabCategory = 'Cancelled';
+    else if (['accepted', 'on_the_way', 'arrived', 'in_progress'].includes(b.status)) tabCategory = 'Active';
+
+    const statusInfo = getBookingStatusInfo(b.status);
 
     return {
       id: b.id.toString(),
       name: b.customer_name || b.farmer?.name || 'Farmer',
-      latitude: b.farm_latitude,
-      longitude: b.farm_longitude,
-      status: statusText,
+      latitude: b.full_address?.latitude,
+      longitude: b.full_address?.longitude,
+      status: statusInfo.text,
+      hexBg: statusInfo.hexBg,
+      hexColor: statusInfo.hexColor,
+      tabCategory: tabCategory,
+      rawStatus: b.status,
       date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       amount: `₹${b.price.toLocaleString()}`,
       amountLabel: b.status === 'completed' ? 'Earned' : 'Estimated',
       image: b.farmer?.avatar || 'https://via.placeholder.com/150',
+      full_address: b.full_address,
+      cancel_reason: b.cancel_reason,
+      updated_by_user: b.updated_by_user,
+      size: `${b.land_area} Ac`,
     };
   });
 
-  const filteredBookings = activeFilter === 'All' 
-    ? bookings 
-    : bookings.filter((b: any) => b.status === activeFilter);
+  const filteredBookings = activeFilter === 'All'
+    ? bookings
+    : bookings.filter((b: any) => b.tabCategory === activeFilter);
 
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
-      
+
       {/* TopAppBar */}
-      <View 
+      <View
         className="absolute top-0 w-full z-50 bg-[#fafaf5]/80 backdrop-blur-md border-b"
         style={{ paddingTop: insets.top, borderColor: 'rgba(191, 202, 186, 0.2)' }}
       >
@@ -72,7 +156,7 @@ export default function BookingHistory() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{
           paddingTop: insets.top + 80,
@@ -83,8 +167,8 @@ export default function BookingHistory() {
       >
         <View className="max-w-2xl mx-auto w-full">
           {/* Filter Bar */}
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             className="mb-8"
             contentContainerStyle={{ gap: 8 }}
@@ -93,15 +177,13 @@ export default function BookingHistory() {
               <TouchableOpacity
                 key={filter}
                 onPress={() => setActiveFilter(filter)}
-                className={`px-6 py-2.5 rounded-full active:scale-95 duration-200 transition-colors ${
-                  activeFilter === filter 
-                    ? 'bg-primary' 
-                    : 'bg-surface-container-high hover:bg-surface-container-highest'
-                }`}
+                className={`px-6 py-2.5 rounded-full active:scale-95 duration-200 transition-colors ${activeFilter === filter
+                  ? 'bg-primary'
+                  : 'bg-surface-container-high hover:bg-surface-container-highest'
+                  }`}
               >
-                <Text className={`text-sm font-bold whitespace-nowrap ${
-                  activeFilter === filter ? 'text-on-primary' : 'text-on-surface-variant'
-                }`}>
+                <Text className={`text-sm font-bold whitespace-nowrap ${activeFilter === filter ? 'text-on-primary' : 'text-on-surface-variant'
+                  }`}>
                   {filter}
                 </Text>
               </TouchableOpacity>
@@ -135,64 +217,148 @@ export default function BookingHistory() {
             ) : (
               filteredBookings.map((booking: any) => {
                 const isCompleted = booking.status === 'Completed';
-              return (
-                <TouchableOpacity 
-                  key={booking.id}
-                  onPress={() => router.push({ pathname: '/navigation', params: { bookingId: booking.id } })}
-                  activeOpacity={0.85}
-                  className="bg-surface-container-lowest rounded-[32px] p-6 mb-4"
-                  style={{
-                    elevation: 4,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.06,
-                    shadowRadius: 24,
-                  }}
-                >
-                  <View className="flex-row justify-between items-start mb-6 w-full">
-                    <View className="flex-row gap-4 items-center flex-1">
-                      <View className={`w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden ${isCompleted ? 'bg-primary/10' : 'bg-[#fcab28]/10'}`}>
-                        <Image source={{ uri: booking.image }} className="w-full h-full" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-xl font-headline font-bold text-on-surface">{booking.name}</Text>
-                        <View className="flex-row items-center gap-1 mt-1">
-                          <MaterialIcons name="location-on" size={16} color="#40493d" />
-                          <GeocodedAddress 
-                            latitude={booking.latitude} 
-                            longitude={booking.longitude} 
-                            className="text-sm font-medium text-on-surface-variant flex-1" 
-                          />
+                return (
+                  <TouchableOpacity
+                    key={booking.id}
+                    onPress={() => setSelectedBookingForDetails(booking)}
+                    activeOpacity={0.85}
+                    className="bg-surface-container-lowest rounded-[32px] p-6 mb-4"
+                    style={{
+                      elevation: 4,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 8 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 24,
+                    }}
+                  >
+                    <View className="flex-row justify-between items-start mb-6 w-full">
+                      <View className="flex-row gap-4 items-center flex-1">
+                        <View className={`w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden ${isCompleted ? 'bg-primary/10' : 'bg-[#fcab28]/10'}`}>
+                          <Image source={{ uri: booking.image }} className="w-full h-full" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-xl font-headline font-bold text-on-surface">{booking.name}</Text>
+                          <View className="flex-row items-center gap-1 mt-1">
+                            <MaterialIcons name="location-on" size={16} color="#40493d" />
+                            <BookingAddress
+                              address={booking.full_address}
+                              className="text-sm font-medium text-on-surface-variant flex-1"
+                            />
+                          </View>
                         </View>
                       </View>
-                    </View>
-                    <View className={`px-4 py-1.5 rounded-full ${isCompleted ? 'bg-primary/10' : 'bg-error/10'}`}>
-                      <Text className={`font-headline font-bold text-xs tracking-wider uppercase ${isCompleted ? 'text-primary' : 'text-error'}`}>
-                        {booking.status}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row items-center justify-between border-t pt-6" style={{ borderColor: 'rgba(191,202,186,0.3)', opacity: isCompleted ? 1 : 0.6 }}>
-                    <View className="flex-col">
-                      <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Date & Time</Text>
-                      <View className="flex-row items-center gap-1.5">
-                        <MaterialIcons name="calendar-today" size={20} color={isCompleted ? "#0d631b" : "#444941"} />
-                        <Text className="font-body font-bold text-on-surface">{booking.date}</Text>
+                      <View 
+                        className="px-4 py-1.5 rounded-full"
+                        style={{ backgroundColor: booking.hexBg }}
+                      >
+                        <Text 
+                          className="font-headline font-bold text-xs tracking-wider uppercase"
+                          style={{ color: booking.hexColor }}
+                        >
+                          {booking.status}
+                        </Text>
                       </View>
                     </View>
-                    <View className="items-end">
-                      <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel || 'Earning'}</Text>
-                      <Text className={`text-2xl font-headline font-black ${isCompleted ? 'text-primary' : 'text-on-surface'}`}>{booking.amount}</Text>
+
+                    <View className="flex-row items-center justify-between border-t pt-6" style={{ borderColor: 'rgba(191,202,186,0.3)', opacity: isCompleted ? 1 : 0.6 }}>
+                      <View className="flex-col">
+                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Date & Time</Text>
+                        <View className="flex-row items-center gap-1.5">
+                          <MaterialIcons name="calendar-today" size={20} color={isCompleted ? "#0d631b" : "#444941"} />
+                          <Text className="font-body font-bold text-on-surface">{booking.date}</Text>
+                        </View>
+                      </View>
+                      <View className="items-end">
+                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel || 'Earning'}</Text>
+                        <Text className={`text-2xl font-headline font-black ${isCompleted ? 'text-primary' : 'text-on-surface'}`}>{booking.amount}</Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              );
+
+                    {/* Action buttons — Pending status: Cancel + Accept side-by-side */}
+                    {booking.status === 'Pending' && (
+                      <View className="mt-4 flex-row gap-3">
+                        <TouchableOpacity
+                          onPress={(e) => { e.stopPropagation?.(); handleCancelClick(booking.id); }}
+                          activeOpacity={0.8}
+                          disabled={(cancellingBookingId === booking.id && cancelMutation.isPending) || (acceptingBookingId === booking.id && acceptMutation.isPending)}
+                          className="flex-1 flex-row items-center justify-center gap-2 border rounded-2xl py-3"
+                          style={{ borderColor: 'rgba(186,26,26,0.4)' }}
+                        >
+                          {cancellingBookingId === booking.id && cancelMutation.isPending ? (
+                            <ActivityIndicator size="small" color="#ba1a1a" />
+                          ) : (
+                            <MaterialIcons name="cancel" size={18} color="#ba1a1a" />
+                          )}
+                          <Text className="text-error font-bold text-sm">Cancel</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={(e) => { e.stopPropagation?.(); handleAcceptClick(booking.id); }}
+                          activeOpacity={0.8}
+                          disabled={(cancellingBookingId === booking.id && cancelMutation.isPending) || (acceptingBookingId === booking.id && acceptMutation.isPending)}
+                          className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-3"
+                          style={{ backgroundColor: '#0d631b' }}
+                        >
+                          {acceptingBookingId === booking.id && acceptMutation.isPending ? (
+                            <ActivityIndicator size="small" color="#ffffff" />
+                          ) : (
+                            <MaterialIcons name="check-circle" size={18} color="#ffffff" />
+                          )}
+                          <Text className="text-white font-bold text-sm">Accept</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {/* Cancel button only — for active non-pending statuses */}
+                    {booking.status !== 'Completed' && booking.status !== 'Cancelled' && booking.status !== 'Pending' && (
+                      <TouchableOpacity
+                        onPress={(e) => { e.stopPropagation?.(); handleCancelClick(booking.id); }}
+                        activeOpacity={0.8}
+                        disabled={cancellingBookingId === booking.id && cancelMutation.isPending}
+                        className="mt-4 flex-row items-center justify-center gap-2 border rounded-2xl py-3"
+                        style={{ borderColor: 'rgba(186,26,26,0.4)' }}
+                      >
+                        {cancellingBookingId === booking.id && cancelMutation.isPending ? (
+                          <ActivityIndicator size="small" color="#ba1a1a" />
+                        ) : (
+                          <MaterialIcons name="cancel" size={18} color="#ba1a1a" />
+                        )}
+                        <Text className="text-error font-bold text-sm">Cancel Booking</Text>
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                );
               })
             )}
           </View>
         </View>
-      </ScrollView>
+    </ScrollView>
+
+      <CancelBookingModal
+        visible={!!cancellingBookingId}
+        onClose={closeModal}
+        onConfirm={confirmCancel}
+        isLoading={cancelMutation.isPending}
+      />
+      <AcceptBookingModal
+        visible={!!acceptingBookingId}
+        onClose={closeAcceptModal}
+        onConfirm={confirmAccept}
+        isLoading={acceptMutation.isPending}
+      />
+      <BookingDetailsModal
+        visible={!!selectedBookingForDetails}
+        onClose={() => setSelectedBookingForDetails(null)}
+        booking={selectedBookingForDetails}
+        onNavigateToTrack={() => {
+          if (selectedBookingForDetails) {
+            router.push({ 
+              pathname: '/navigation', 
+              params: { bookingId: selectedBookingForDetails.id } 
+            });
+          }
+        }}
+      />
     </View>
   );
 }

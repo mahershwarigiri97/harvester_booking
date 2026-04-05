@@ -46,7 +46,7 @@ function StackLayout() {
 
 export default function RootLayout() {
   const queryClient = useMemo(() => new QueryClient(), []);
-  
+
   const [loaded, error] = useFonts({
     'Plus Jakarta Sans': PlusJakartaSans_700Bold,
     'Inter': Inter_400Regular,
@@ -57,13 +57,13 @@ export default function RootLayout() {
       // Clear storage on every fresh app load for clean debugging
       // Remove this line later for production persistence
       await useAuthStore.getState().clearAuth();
-      
+
       await useAuthStore.getState().loadAuth();
       if (loaded || error) {
         SplashScreen.hideAsync();
       }
     };
-    init();
+    // init();
   }, [loaded, error]);
 
   if (!loaded && !error) {

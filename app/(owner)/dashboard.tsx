@@ -36,7 +36,8 @@ export default function OwnerDashboard() {
       }
     },
     enabled: !!finalUserId,
-    initialData: storedUser || undefined
+    initialData: storedUser || undefined,
+    refetchInterval: 3000,
   });
 
   if (isLoading && !user) {

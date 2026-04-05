@@ -1,23 +1,27 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
-import { GeocodedAddress } from '../../components/GeocodedAddress';
+import { BookingAddress } from '../../components/BookingAddress';
+import { CancelBookingModal } from '../../components/CancelBookingModal';
+import { getBookingStatusInfo } from '../../utils/bookingHelpers';
 
 export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState('Active');
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
 
   const tabs = ['Active', 'Completed', 'Cancelled'];
 
-  const { data: serverBookings, isLoading } = useQuery({
+  const { data: serverBookings, isLoading, refetch } = useQuery({
     queryKey: ['bookings', 'farmer'],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -25,43 +29,69 @@ export default function BookingsScreen() {
       return res.data.data || [];
     },
     enabled: !!user?.id,
+    refetchInterval: 3000,
   });
 
-  const getStatusInfo = (dbStatus: string) => {
-    switch (dbStatus) {
-      case 'requested': return { text: 'Pending', icon: 'schedule', color: 'bg-orange-100 text-orange-700' };
-      case 'accepted': 
-      case 'on_the_way': 
-      case 'arrived': return { text: 'Accepted', icon: 'check-circle', color: 'bg-green-100 text-green-700' };
-      case 'in_progress': return { text: 'In Progress', icon: 'pending', color: 'bg-blue-100 text-blue-700' };
-      case 'completed': return { text: 'Completed', icon: 'done-all', color: 'bg-green-100 text-green-700' };
-      case 'cancelled': return { text: 'Cancelled', icon: 'cancel', color: 'bg-red-100 text-red-700' };
-      default: return { text: 'Pending', icon: 'schedule', color: 'bg-orange-100 text-orange-700' };
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user?.id) {
+        refetch();
+      }
+    }, [user?.id, refetch])
+  );
+
+  const cancelMutation = useMutation({
+    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) => 
+      authApi.updateBookingStatus(bookingId, 'cancelled', undefined, reason, 'farmer'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings', 'farmer'] });
+      setCancellingBookingId(null);
+    },
+    onError: () => {
+      Alert.alert('Error', 'Could not cancel booking. Please try again.');
+      setCancellingBookingId(null);
+    },
+  });
+
+  const handleCancelClick = (bookingId: string) => {
+    setCancellingBookingId(bookingId);
+  };
+
+  const confirmCancel = (reason: string) => {
+    if (cancellingBookingId) {
+      cancelMutation.mutate({ bookingId: cancellingBookingId, reason });
+    }
+  };
+
+  const closeModal = () => {
+    if (!cancelMutation.isPending) {
+      setCancellingBookingId(null);
     }
   };
 
   const bookings = (serverBookings || []).map((b: any) => {
-    const statusInfo = getStatusInfo(b.status);
+    const statusInfo = getBookingStatusInfo(b.status);
     return {
       id: b.id.toString(),
       title: b.harvester ? `${b.harvester.brand} ${b.harvester.model}` : 'Harvester',
       date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      latitude: b.farm_latitude,
-      longitude: b.farm_longitude,
+      latitude: b.full_address?.latitude,
+      longitude: b.full_address?.longitude,
       status: statusInfo.text,
       size: `${b.land_area} acres`,
       cost: `₹${b.price.toLocaleString()}`,
       image: b.harvester?.images?.[0] || 'https://via.placeholder.com/600',
       statusColor: statusInfo.color,
+      hexBg: statusInfo.hexBg,
+      hexColor: statusInfo.hexColor,
       icon: statusInfo.icon,
+      group: statusInfo.group,
+      full_address: b.full_address,
     };
   });
 
   const filteredBookings = bookings.filter((b: any) => {
-    if (activeTab === 'Active') {
-      return ['In Progress', 'Accepted', 'Pending'].includes(b.status);
-    }
-    return b.status === activeTab;
+    return b.group === activeTab;
   });
 
   return (
@@ -131,9 +161,8 @@ export default function BookingsScreen() {
                         </View>
                         <View className="flex-row items-center gap-1.5 mt-1">
                           <MaterialIcons name="location-on" size={14} color="#40493d" />
-                          <GeocodedAddress 
-                            latitude={booking.latitude} 
-                            longitude={booking.longitude} 
+                          <BookingAddress 
+                            address={booking.full_address} 
                             className="text-[#40493d] font-medium flex-1 text-sm" 
                             fallback="Farm Location"
                           />
@@ -142,24 +171,12 @@ export default function BookingsScreen() {
                       
                       <View 
                         className="px-4 py-1.5 rounded-full flex-row items-center gap-1.5"
-                        style={{
-                          backgroundColor: booking.status === 'In Progress' ? '#dbeafe' : 
-                                           booking.status === 'Accepted' || booking.status === 'Completed' ? '#dcfce7' : 
-                                           booking.status === 'Cancelled' ? '#fee2e2' : '#ffedd5'
-                        }}
+                        style={{ backgroundColor: booking.hexBg }}
                       >
-                        <MaterialIcons name={booking.icon as any} size={14} color={
-                          booking.status === 'In Progress' ? '#1d4ed8' : 
-                          booking.status === 'Accepted' || booking.status === 'Completed' ? '#15803d' : 
-                          booking.status === 'Cancelled' ? '#b91c1c' : '#c2410c'
-                        } />
+                        <MaterialIcons name={booking.icon as any} size={14} color={booking.hexColor} />
                         <Text 
                           className="text-sm font-bold"
-                          style={{
-                            color: booking.status === 'In Progress' ? '#1d4ed8' : 
-                                   booking.status === 'Accepted' || booking.status === 'Completed' ? '#15803d' : 
-                                   booking.status === 'Cancelled' ? '#b91c1c' : '#c2410c'
-                          }}
+                          style={{ color: booking.hexColor }}
                         >
                           {booking.status}
                         </Text>
@@ -190,7 +207,7 @@ export default function BookingsScreen() {
                         </TouchableOpacity>
                       )}
                       
-                      {booking.status === 'Accepted' && (
+                      {booking.status === 'Accepted' || booking.status === 'On The Way' || booking.status === 'Arrived' ? (
                         <View className="flex-row gap-3">
                           <TouchableOpacity onPress={() => router.push(`/track/${booking.id}` as any)} activeOpacity={0.88} className="flex-1 overflow-hidden rounded-2xl">
                             <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-14 flex-row items-center justify-center px-4">
@@ -198,11 +215,20 @@ export default function BookingsScreen() {
                             </LinearGradient>
                           </TouchableOpacity>
                         </View>
-                      )}
+                      ) : null}
 
                       {booking.status === 'Pending' && (
-                        <TouchableOpacity activeOpacity={0.88} className="h-14 rounded-2xl border-2 border-[#ba1a1a] flex-row items-center justify-center px-6">
-                          <Text className="text-[#ba1a1a] font-headline font-bold text-[16px]">Cancel Booking</Text>
+                        <TouchableOpacity
+                          activeOpacity={0.88}
+                          disabled={cancellingBookingId === booking.id && cancelMutation.isPending}
+                          onPress={() => handleCancelClick(booking.id)}
+                          className="h-14 rounded-2xl border-2 border-[#ba1a1a] flex-row items-center justify-center px-6"
+                        >
+                          {cancellingBookingId === booking.id && cancelMutation.isPending ? (
+                            <ActivityIndicator size="small" color="#ba1a1a" />
+                          ) : (
+                            <Text className="text-[#ba1a1a] font-headline font-bold text-[16px]">Cancel Booking</Text>
+                          )}
                         </TouchableOpacity>
                       )}
                       
@@ -235,6 +261,13 @@ export default function BookingsScreen() {
           </View>
         )}
       </ScrollView>
+
+      <CancelBookingModal
+        visible={!!cancellingBookingId}
+        onClose={closeModal}
+        onConfirm={confirmCancel}
+        isLoading={cancelMutation.isPending}
+      />
     </View>
   );
 }
