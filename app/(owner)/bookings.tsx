@@ -257,12 +257,14 @@ export default function BookingHistory() {
                             <MaterialIcons name="location-on" size={16} color="#40493d" />
                             <Text className="text-sm font-medium text-on-surface-variant flex-1" numberOfLines={1}>
                               {booking.size} • {(() => {
-                                if (!currentLocation || !booking.farm_latitude || !booking.farm_longitude) return 'View Location';
+                                const targetLat = booking.latitude || booking.farm_latitude;
+                                const targetLng = booking.longitude || booking.farm_longitude;
+                                if (!currentLocation || !targetLat || !targetLng) return 'View Location';
                                 const d = calculateDistance(
                                   currentLocation.coords.latitude,
                                   currentLocation.coords.longitude,
-                                  booking.farm_latitude,
-                                  booking.farm_longitude
+                                  targetLat,
+                                  targetLng
                                 );
                                 return `${d} km away`;
                               })()}

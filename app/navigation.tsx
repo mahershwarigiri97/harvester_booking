@@ -10,6 +10,8 @@ import { authApi } from '../utils/api';
 import { ConfirmArrivedModal } from '../components/ConfirmArrivedModal';
 import { Alert } from 'react-native';
 import { NavigationMapView } from '../components/NavigationMapView';
+import { useCurrentLocation } from '../hooks/useCurrentLocation';
+import { socketService } from '../utils/socket';
 
 const SWIPE_THRESHOLD = 30; 
 const MINIMIZED_OFFSET = 300;
@@ -21,6 +23,19 @@ export default function DriverNavigation() {
   const [navigationStarted, setNavigationStarted] = useState(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const queryClient = useQueryClient();
+
+  const { currentLocation } = useCurrentLocation(true);
+
+  React.useEffect(() => {
+    if (bookingId && currentLocation?.coords) {
+      socketService.updateLocation(
+        Number(bookingId),
+        currentLocation.coords.latitude,
+        currentLocation.coords.longitude,
+        currentLocation.coords.heading
+      );
+    }
+  }, [currentLocation?.coords.latitude, currentLocation?.coords.longitude, currentLocation?.coords.heading, bookingId]);
 
   const { data: bookingResponse, isLoading } = useQuery({
     queryKey: ['booking', bookingId],
@@ -140,6 +155,8 @@ export default function DriverNavigation() {
     }
   };
 
+  const farmAddress = booking?.full_address || { latitude: booking?.farm_latitude, longitude: booking?.farm_longitude };
+
   return (
     <View className="flex-1 bg-surface relative overflow-hidden">
       <StatusBar style="dark" backgroundColor="#fafaf5" />
@@ -148,8 +165,9 @@ export default function DriverNavigation() {
       <View className="absolute inset-0 z-0">
         <NavigationMapView
           navigationStarted={navigationStarted}
-          farmerCoords={booking?.farm_latitude ? { latitude: booking.farm_latitude, longitude: booking.farm_longitude } : { latitude: 20.61, longitude: 78.98 }}
-          ownerCoords={undefined}
+          farmerCoords={farmAddress.latitude ? { latitude: Number(farmAddress.latitude), longitude: Number(farmAddress.longitude) } : undefined}
+          ownerCoords={currentLocation?.coords ? { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude } : undefined}
+          ownerHeading={currentLocation?.coords ? currentLocation.coords.heading : 0}
         />
       </View>
 

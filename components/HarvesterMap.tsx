@@ -64,9 +64,10 @@ export function HarvesterMap({
           mapType="none"
         >
           <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
             maximumZ={19}
             flipY={false}
+            tileSize={512}
           />
           {ownerLocation && (
             <Marker

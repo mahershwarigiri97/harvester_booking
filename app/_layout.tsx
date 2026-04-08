@@ -54,10 +54,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Clear storage on every fresh app load for clean debugging
-      // Remove this line later for production persistence
-      await useAuthStore.getState().clearAuth();
-
+      // Removed clearAuth to prevent session reset during fast refresh
       await useAuthStore.getState().loadAuth();
       if (loaded || error) {
         SplashScreen.hideAsync();

@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 import { HomeHeader } from '../../components/HomeHeader';
 import { SearchBar } from '../../components/SearchBar';
-import { ListMapToggle } from '../../components/ListMapToggle';
 import { ListingCard } from '../../components/ListingCard';
 import { SmallListingCard } from '../../components/SmallListingCard';
 import { ListingSkeletonList } from '../../components/ListingSkeleton';
@@ -14,13 +12,10 @@ import { HARVESTERS } from '../../constants/harvesterData';
 import { authApi } from '../../utils/api';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { getLastJobDuration } from '../../utils/bookingUtils';
-import { HarvesterFullMap } from '../../components/HarvesterFullMap';
 
 
 export default function HomeScreen() {
-  const router = useRouter();
   const { locationName, currentLocation } = useCurrentLocation();
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { data: harvesters = [], isLoading } = useQuery({
     queryKey: ['harvesters', currentLocation?.coords.latitude, currentLocation?.coords.longitude],
@@ -73,13 +68,12 @@ export default function HomeScreen() {
 
       <View className="flex-1 px-4 pt-4">
         <SearchBar />
-        <ListMapToggle viewMode={viewMode} onToggle={setViewMode} />
 
         {isLoading ? (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
             <ListingSkeletonList />
           </ScrollView>
-        ) : viewMode === 'list' ? (
+        ) : (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
             <View className="pt-2">
               <View className="flex-row items-baseline justify-between mb-4">
@@ -94,12 +88,6 @@ export default function HomeScreen() {
               <SmallListingCard {...newArrival} />
             </View>
           </ScrollView>
-        ) : (
-          <HarvesterFullMap 
-            harvesters={harvesters} 
-            userLocation={currentLocation ? { latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude } : null}
-            onPressMarker={(id) => router.push({ pathname: '/details/[id]', params: { id } })}
-          />
         )}
       </View>
 

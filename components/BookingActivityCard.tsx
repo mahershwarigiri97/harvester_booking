@@ -15,12 +15,12 @@ interface BookingActivityCardProps {
   onNavigateToTracker: (id: number) => void;
 }
 
-export default function BookingActivityCard({ 
-  booking, 
+export default function BookingActivityCard({
+  booking,
   ownerLocation,
-  onViewRequest, 
-  onNavigateToNavigation, 
-  onNavigateToTracker 
+  onViewRequest,
+  onNavigateToNavigation,
+  onNavigateToTracker
 }: BookingActivityCardProps) {
   const queryClient = useQueryClient();
 
@@ -36,8 +36,8 @@ export default function BookingActivityCard({
   });
 
   const distance = React.useMemo(() => {
-    const lat = booking.farm_latitude || booking.full_address?.latitude;
-    const lon = booking.farm_longitude || booking.full_address?.longitude;
+    const lat = booking.full_address?.latitude || booking.farm_latitude;
+    const lon = booking.full_address?.longitude || booking.farm_longitude;
     if (!ownerLocation || !lat || !lon) return null;
     return calculateDistance(ownerLocation.latitude, ownerLocation.longitude, lat, lon);
   }, [ownerLocation, booking.farm_latitude, booking.farm_longitude, booking.full_address]);
@@ -82,11 +82,16 @@ export default function BookingActivityCard({
                 <MaterialIcons name="location-on" size={14} color="#0d631b" />
                 <Text className="text-primary text-[11px] font-bold uppercase tracking-tight">
                   {(() => {
-                    const lat = booking.farm_latitude || booking.full_address?.latitude;
-                    const lon = booking.farm_longitude || booking.full_address?.longitude;
-                    if (!ownerLocation || !lat || !lon) return 'View Location';
-                    const d = calculateDistance(ownerLocation.latitude, ownerLocation.longitude, lat, lon);
-                    return `${d} km away`;
+                    const block = booking.full_address?.village || booking.full_address?.district || booking.address;
+                    
+                    let distStr = '';
+                    if (distance !== null && distance >= 0) {
+                      distStr = ` • ${distance} km`;
+                    }
+                    
+                    if (block) return `${block}${distStr}`;
+                    if (distStr) return `${distStr.replace(' • ', '')} away`;
+                    return 'View Location';
                   })()}
                 </Text>
               </View>
@@ -98,7 +103,7 @@ export default function BookingActivityCard({
             </Text>
           </View>
         </View>
-        
+
         <View className="flex-col items-end self-end w-full">
           <Text className="text-2xl font-headline font-black text-primary">
             ₹{booking.price?.toLocaleString() || '0'}

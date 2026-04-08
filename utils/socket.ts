@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 // Extract base URL without /api suffix
-const SOCKET_URL = 'http://192.168.1.5:3000';
+const SOCKET_URL = 'http://192.168.1.5:3001';
 
 class SocketService {
   private socket: Socket | null = null;
@@ -29,6 +29,15 @@ class SocketService {
 
   joinBooking(bookingId: number) {
     this.getSocket().emit('join_booking', bookingId.toString());
+  }
+
+  updateLocation(bookingId: number, latitude: number, longitude: number, heading: number | null) {
+    this.getSocket().emit('update_location', {
+      booking_id: bookingId,
+      latitude,
+      longitude,
+      heading
+    });
   }
 
   disconnect() {

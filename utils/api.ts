@@ -3,7 +3,8 @@ import storage from './storage';
 
 // Replace with your machine's IP address for physical device testing
 // Example: http://192.168.1.5:3000/api
-const BASE_URL = 'http://192.168.1.5:3000/api';
+const BASE_URL = 'http://84.46.249.191:3002/api';
+// const BASE_URL = 'http://192.168.1.5:3001/api';
 
 const api = axios.create({
   baseURL: BASE_URL,

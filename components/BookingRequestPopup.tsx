@@ -3,9 +3,8 @@ import { View, Text, Modal, TouchableOpacity, Image, Animated, Easing, Platform,
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
+import MapView, { Marker, UrlTile, Polyline } from 'react-native-maps';
+import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../utils/api';
 import { Alert } from 'react-native';
@@ -19,37 +18,8 @@ interface BookingRequestPopupProps {
 
 export default function BookingRequestPopup({ visible, onClose, booking }: BookingRequestPopupProps) {
   const queryClient = useQueryClient();
-  const [timeLeft, setTimeLeft] = useState(15);
+  const { currentLocation } = useCurrentLocation();
   const [showSuccess, setShowSuccess] = useState(false);
-  const animatedValue = React.useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      setTimeLeft(15);
-      animatedValue.setValue(0);
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: 15000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }).start(() => {
-        // Auto close when time is up
-        onClose();
-      });
-
-      const interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [visible, onClose]);
 
   const statusMutation = useMutation({
     mutationFn: (status: 'accepted' | 'cancelled') => 
@@ -71,12 +41,59 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
 
   if (!booking && visible) return null;
 
-  // The Ring has r=24 on a 56x56 view (cx=28 cy=28). Circumference = 2 * PI * 24 = ~150.796
-  const circumference = 2 * Math.PI * 24;
-  const strokeDashoffset = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, circumference] // Animates from full to completely drained
-  });
+  const destLat = booking?.full_address?.latitude;
+  const destLng = booking?.full_address?.longitude;
+  const sourceLat = currentLocation?.coords?.latitude;
+  const sourceLng = currentLocation?.coords?.longitude;
+
+  const initialRegion = sourceLat && sourceLng && destLat && destLng ? {
+    latitude: (sourceLat + destLat) / 2,
+    longitude: (sourceLng + destLng) / 2,
+    latitudeDelta: Math.abs(sourceLat - destLat) * 1.5 + 0.01,
+    longitudeDelta: Math.abs(sourceLng - destLng) * 1.5 + 0.01,
+  } : {
+    latitude: destLat || 20.5937,
+    longitude: destLng || 78.9629,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  };
+
+  const [routeCoords, setRouteCoords] = useState<{latitude: number, longitude: number}[]>([]);
+
+  useEffect(() => {
+    if (sourceLat && sourceLng && destLat && destLng) {
+      const fetchRoute = async () => {
+        try {
+          const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${sourceLng},${sourceLat};${destLng},${destLat}?overview=full&geometries=geojson`);
+          const data = await res.json();
+          if (data.routes && data.routes.length > 0) {
+            const coords = data.routes[0].geometry.coordinates.map((c: any) => ({
+              latitude: c[1],
+              longitude: c[0]
+            }));
+            setRouteCoords(coords);
+          } else {
+             setRouteCoords([{ latitude: sourceLat, longitude: sourceLng }, { latitude: destLat, longitude: destLng }]);
+          }
+        } catch (e) {
+          setRouteCoords([{ latitude: sourceLat, longitude: sourceLng }, { latitude: destLat, longitude: destLng }]);
+        }
+      };
+      fetchRoute();
+    }
+  }, [sourceLat, sourceLng, destLat, destLng]);
+  const mapRef = React.useRef<MapView>(null);
+
+  useEffect(() => {
+    if (routeCoords.length > 0 && mapRef.current) {
+      setTimeout(() => {
+        mapRef.current?.fitToCoordinates(routeCoords, {
+          edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
+          animated: true,
+        });
+      }, 500);
+    }
+  }, [routeCoords]);
 
   return (
     <Modal 
@@ -100,29 +117,18 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
           }}
         >
           {/* Header & Timer Section */}
-          <View className="p-6 bg-primary-container flex-row justify-between items-center overflow-hidden">
-            <View className="z-10">
+          <View className="p-6 bg-primary-container flex-row justify-between items-center overflow-hidden gap-4">
+            <View className="z-10 flex-1">
               <Text className="font-headline font-bold text-lg text-on-primary-container leading-tight">Incoming Request</Text>
               <Text className="text-xs font-medium mt-1" style={{ color: 'rgba(255,255,255,0.9)' }}>Respond immediately to secure the booking</Text>
             </View>
-            <View className="z-10 items-center justify-center relative w-14 h-14 bg-white/20 rounded-full">
-              <View className="absolute inset-0" style={{ transform: [{ rotate: '-90deg' }] }}>
-                <Svg width="56" height="56" viewBox="0 0 56 56">
-                  <Circle cx="28" cy="28" r="24" stroke="rgba(255,255,255,0.3)" strokeWidth="4" fill="transparent" />
-                  <AnimatedCircle 
-                    cx="28" cy="28" r="24" 
-                    stroke="#fcab28" 
-                    strokeWidth="4" 
-                    fill="transparent" 
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                  />
-                </Svg>
-              </View>
-              <Text className="font-headline font-extrabold text-xl text-on-primary-container">{timeLeft}s</Text>
-            </View>
-            
+            <TouchableOpacity 
+              onPress={onClose} 
+              className="z-10 w-10 h-10 items-center justify-center rounded-full bg-white/20 active:scale-95"
+            >
+              <MaterialIcons name="close" size={24} color="#ffffff" />
+            </TouchableOpacity>
+
             {/* Decorative background circle */}
             <View className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
           </View>
@@ -164,25 +170,77 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
                 </Text>
               </View>
               <View className="h-48 w-full rounded-[32px] overflow-hidden bg-surface-container-highest relative">
-                <Image 
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAPgNCpXRR8lVkBxz2VkjJ7oCxyB9z2JMiSlia_aM9gYErH9Fnd5FVFE_zZoOgD5BJzbqdHzwXKztEkn1JqK9lkP3flHQjOnqFdsh_vxMmts98Fk3eQ0aC47OzFIhfkMAEF5jgdpjXMN8o06DHRu07ibW_Oiflre8YOSvJXJ2DnACXKWnE7xmASecsgeOG19lvKvlj7uXvZej_fDXY0Y3VyIfoMSb82KSQZddbYHWBxqojePCnAZlFsJDv5-btqnAiCdVdt74B4hL2b' }}
-                  className="w-full h-full opacity-80"
-                />
+                <MapView
+                  ref={mapRef}
+                  style={{ width: '100%', height: '100%' }}
+                  initialRegion={initialRegion}
+                  scrollEnabled={true}
+                  zoomEnabled={true}
+                  pitchEnabled={false}
+                  rotateEnabled={false}
+                  mapType="none"
+                >
+                  <UrlTile
+                    urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
+                    maximumZ={19}
+                    flipY={false}
+                    tileSize={512}
+                  />
+                  {(booking?.full_address?.latitude && booking?.full_address?.longitude && currentLocation?.coords) && (
+                    <>
+                      <Polyline 
+                        coordinates={routeCoords.length > 0 ? routeCoords : [
+                          {
+                            latitude: currentLocation.coords.latitude,
+                            longitude: currentLocation.coords.longitude,
+                          },
+                          {
+                            latitude: booking.full_address.latitude,
+                            longitude: booking.full_address.longitude,
+                          }
+                        ]}
+                        strokeColor="#0d631b"
+                        strokeWidth={4}
+                      />
+                      <Marker
+                        coordinate={{
+                          latitude: currentLocation.coords.latitude,
+                          longitude: currentLocation.coords.longitude,
+                        }}
+                        anchor={{ x: 0.5, y: 0.5 }}
+                        title="Your Location"
+                      >
+                        <View className="items-center justify-center">
+                          <View className="w-6 h-6 bg-secondary-fixed rounded-full border-[3px] border-white flex items-center justify-center shadow-sm">
+                            <View className="w-2 h-2 bg-[#2a1800] rounded-full" />
+                          </View>
+                        </View>
+                      </Marker>
+                    </>
+                  )}
+                  <Marker
+                    coordinate={{
+                      latitude: booking?.full_address?.latitude || 20.5937,
+                      longitude: booking?.full_address?.longitude || 78.9629,
+                    }}
+                    title="Farmer's Location"
+                  >
+                    <View className="items-center justify-center">
+                      <View 
+                        className="w-10 h-10 bg-primary rounded-full flex items-center justify-center border-2 border-white" 
+                        style={{ elevation: 12, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
+                      >
+                        <MaterialIcons name="agriculture" size={20} color="white" />
+                      </View>
+                      <View className="mt-1 w-4 h-1 bg-black/40 rounded-full" />
+                    </View>
+                  </Marker>
+                </MapView>
                 <LinearGradient 
                   colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)']} 
-                  className="absolute inset-0" 
-                  start={{ x: 0, y: 0 }} 
-                  end={{ x: 0, y: 1 }} 
+                  className="absolute inset-x-0 bottom-0 h-1/3" 
+                  pointerEvents="none"
                 />
-                <View className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center">
-                  <View 
-                    className="w-10 h-10 bg-primary rounded-full flex items-center justify-center" 
-                    style={{ elevation: 12, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
-                  >
-                    <MaterialIcons name="agriculture" size={20} color="white" />
-                  </View>
-                  <View className="absolute -bottom-2 w-4 h-1 bg-black/40 rounded-full" />
-                </View>
               </View>
             </View>
 

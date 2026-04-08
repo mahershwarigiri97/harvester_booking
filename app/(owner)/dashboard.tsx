@@ -81,7 +81,7 @@ export default function OwnerDashboard() {
       !['completed', 'cancelled'].includes(b.status)
     );
   }, [user]);
-
+  console.log(user, "user");
   if (isLoading && !user) {
     return <DashboardSkeleton />;
   }

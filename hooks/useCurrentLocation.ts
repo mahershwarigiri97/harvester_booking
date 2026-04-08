@@ -71,9 +71,9 @@ export function useCurrentLocation(shouldWatch: boolean = false) {
         if (shouldWatch) {
           watchSubscription = await Location.watchPositionAsync(
             {
-              accuracy: Location.Accuracy.Balanced,
-              timeInterval: 60000, // Update every minute
-              distanceInterval: 100, // Or every 100 meters
+              accuracy: Location.Accuracy.BestForNavigation,
+              timeInterval: 1000, // Update every second
+              distanceInterval: 1, // Or every 1 meter
             },
             handleLocationUpdate
           );

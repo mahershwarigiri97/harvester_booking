@@ -41,6 +41,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         } else if (route.name === 'profile') {
           iconName = 'person';
           label = 'Profile';
+        } else if (route.name === 'map') {
+          iconName = 'map';
+          label = 'Map';
         }
 
         return (
@@ -73,6 +76,7 @@ export default function TabLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
+      <Tabs.Screen name="map" />
       <Tabs.Screen name="bookings" />
       <Tabs.Screen name="profile" />
     </Tabs>
