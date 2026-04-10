@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getHarvesterById } from '../../constants/harvesterData';
 import { DetailsSkeleton } from '../../components/DetailsSkeleton';
 
@@ -31,6 +32,7 @@ export default function HarvesterDetails() {
   const { currentLocation } = useCurrentLocation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const [activeSlide, setActiveSlide] = useState(0);
 
   const { data: harvester, isLoading } = useQuery({
@@ -40,13 +42,12 @@ export default function HarvesterDetails() {
       try {
         const res = await authApi.getHarvesterById(id);
         const item = res.data.data;
-        console.log(item, "item")
         if (item) {
           return {
             id: String(item.id),
             name: `${item.brand} ${item.model}`,
             price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
-            perUnit: item.price_per_acre ? '/ acre' : '/ hour',
+            perUnit: item.price_per_acre ? t('common.perAcre') : t('common.perHour'),
             rating: item.owner?.rating?.toFixed(1) || '0.0',
             jobs: (item.bookings?.length || 0).toString() + '+',
             year: item.model,
@@ -81,13 +82,13 @@ export default function HarvesterDetails() {
       <View className="flex-1 bg-background items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
         <Text className="text-on-surface-variant text-lg font-bold mt-4 text-center">
-          Harvester not found
+          {t('bookings.notFound')}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-6 bg-primary px-8 py-4 rounded-2xl"
         >
-          <Text className="text-white font-bold">Go Back</Text>
+          <Text className="text-white font-bold">{t('common.goBack')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -192,7 +193,7 @@ export default function HarvesterDetails() {
               className="text-xs font-semibold"
               style={{ color: isAvailable ? '#005312' : '#93000a' }}
             >
-              {isAvailable ? 'Available Now' : 'Currently Busy'}
+              {isAvailable ? t('common.available') : t('common.busy')}
             </Text>
           </View>
 
@@ -206,12 +207,12 @@ export default function HarvesterDetails() {
           <View className="flex-row items-center justify-between" style={{ gap: 12 }}>
             <View className="flex-row items-center" style={{ gap: 6 }}>
               <Text className="text-on-surface-variant text-sm font-medium">
-                Model Year: {harvester.year}
+                {t('common.modelYear')}: {harvester.year}
               </Text>
             </View>
             <View className="bg-primary/10 px-3 py-1 rounded-full flex-row items-center gap-1">
               <MaterialIcons name="history" size={14} color="#0d631b" />
-              <Text className="text-primary text-[10px] font-bold uppercase tracking-tight">Last Job: {(harvester as any).lastJobDuration}</Text>
+              <Text className="text-primary text-[10px] font-bold uppercase tracking-tight">{t('common.lastJob')}: {(harvester as any).lastJobDuration}</Text>
             </View>
           </View>
         </View>
@@ -257,7 +258,7 @@ export default function HarvesterDetails() {
         }}
       >
         <View>
-          <Text className="text-on-surface-variant font-medium text-xs mb-0.5">Rental Rate</Text>
+          <Text className="text-on-surface-variant font-medium text-xs mb-0.5">{t('common.rentalRate')}</Text>
           <View className="flex-row items-baseline gap-1.5">
             <Text className="font-extrabold text-on-surface text-2xl">{harvester.price}</Text>
             <Text className="text-on-surface-variant text-sm font-medium">{harvester.perUnit}</Text>
@@ -277,7 +278,7 @@ export default function HarvesterDetails() {
           }}
         >
           <Text className="font-bold text-[#694300] text-[17px]">
-            Book Now
+            {t('common.bookNow')}
           </Text>
         </TouchableOpacity>
       </View>

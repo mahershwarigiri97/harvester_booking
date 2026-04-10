@@ -5,6 +5,7 @@ import React, { useRef, useState } from 'react';
 import { TouchableOpacity, View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { BookingForm, BookingFormData } from '../../components/BookingForm';
 import { authApi } from '../../utils/api';
 import { Harvester, getHarvesterById } from '../../constants/harvesterData';
@@ -17,6 +18,7 @@ export default function BookHarvester() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const user = useAuthStore(state => state.user);
   const { currentLocation } = useCurrentLocation();
 
@@ -35,7 +37,7 @@ export default function BookHarvester() {
             name: `${item.brand} ${item.model}`,
             distance: '2.4 km',
             price: `₹${item.price_per_acre || item.price_per_hour || '0'}`,
-            perUnit: item.price_per_acre ? '/ acre' : '/ hour',
+            perUnit: item.price_per_acre ? t('common.perAcre') : t('common.perHour'),
             rating: item.owner?.rating?.toFixed(1) || '0.0',
             jobs: (item.bookings?.length || 0).toString() + '+',
             year: item.model,
@@ -106,9 +108,9 @@ export default function BookHarvester() {
     return (
       <View className="flex-1 bg-[#fafaf5] items-center justify-center px-8">
         <MaterialIcons name="error-outline" size={64} color="#bfcaba" />
-        <Text className="text-[#40493d] text-lg font-bold mt-4 text-center">Harvester not found</Text>
+        <Text className="text-[#40493d] text-lg font-bold mt-4 text-center">{t('bookings.notFound')}</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-6 bg-[#0d631b] px-8 py-4 rounded-2xl">
-          <Text className="text-white font-bold">Go Back</Text>
+          <Text className="text-white font-bold">{t('common.goBack')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -135,7 +137,7 @@ export default function BookHarvester() {
             <MaterialIcons name="arrow-back" size={24} color="#0d631b" />
           </TouchableOpacity>
           <Text className="font-headline font-extrabold text-[#0d631b] tracking-tight text-xl">
-            Book Your Harvest
+            {t('bookings.process.title')}
           </Text>
         </View>
         <View className="w-10 h-10 rounded-full bg-[#f4f4ef] items-center justify-center">
@@ -189,13 +191,13 @@ export default function BookHarvester() {
             <ActivityIndicator color="white" />
           ) : (
             <>
-              <Text className="text-white font-bold text-lg">Confirm & Book Now</Text>
+              <Text className="text-white font-bold text-lg">{t('bookings.process.confirm')}</Text>
               <MaterialIcons name="chevron-right" size={24} color="#fff" />
             </>
           )}
         </TouchableOpacity>
         <Text className="text-[10px] text-[#40493d] font-medium uppercase tracking-widest mt-3">
-          Secure Payment Powered by HarvestLink
+          {t('bookings.process.paymentNotice')}
         </Text>
       </View>
     </View>

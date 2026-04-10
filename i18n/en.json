@@ -41,7 +41,13 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "viewAll": "View All",
-    "user": "User"
+    "user": "User",
+    "location": "Location",
+    "available": "Available",
+    "busy": "Busy",
+    "modelYear": "Model Year",
+    "rentalRate": "Rental Rate",
+    "tryAgain": "Try Again"
   },
   "map": {
     "findHarvester": "Find nearby harvesters",
@@ -121,7 +127,9 @@
     "arrived": "Arrived",
     "in_progress": "In Progress",
     "completed": "Completed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "busy": "Busy",
+    "available": "Available"
   },
   "bookings": {
     "title": "My Bookings",
@@ -132,7 +140,46 @@
     "downloadReceipt": "Download Receipt",
     "noBookingsYet": "No bookings yet",
     "browseHarvesters": "Browse Harvesters",
-    "emptyDesc": "Book your first harvester to start your seasonal harvest with ease."
+    "emptyDesc": "Book your first harvester to start your seasonal harvest with ease.",
+    "closeDetails": "Close Details",
+    "notFound": "Harvester not found",
+    "process": {
+      "title": "Book Your Harvest",
+      "confirm": "Confirm & Book Now",
+      "paymentNotice": "Secure Payment Powered by HarvestLink",
+      "summary": "Machine Summary",
+      "selected": "Selected",
+      "nameLabel": "Your Name",
+      "nameHint": "Full name for booking confirmation",
+      "phoneLabel": "Phone Number",
+      "phoneHint": "For booking updates & contact",
+      "cropLabel": "Crop Type",
+      "cropHint": "What crop are you harvesting?",
+      "dateLabel": "Harvest Date",
+      "dateHint": "When do you need the machine?",
+      "selectDate": "Select Date",
+      "landLabel": "Land Size",
+      "landHint": "Enter your total harvest area",
+      "acres": "Acres",
+      "paymentTitle": "Payment Summary",
+      "baseRate": "Base Rate",
+      "platformFee": "Platform Fee",
+      "insurance": "Insurance Cover",
+      "totalEstimated": "Total Estimated",
+      "bestPrice": "BEST PRICE",
+      "taxes": "Incl. all taxes",
+      "policyNotice": "By booking, you agree to our Fair Crop Policy. The operator will reach your location within 24 hours of the scheduled time. Payments are held in escrow until completion."
+    },
+    "confirmation": {
+      "title": "Booking Confirmed!",
+      "desc": "Your service has been successfully scheduled. The operator will contact you shortly.",
+      "idLabel": "Booking ID",
+      "viewAll": "View My Bookings",
+      "failed": "Booking Failed",
+      "failedDesc": "Something went wrong while processing your request. Please try again or contact support.",
+      "contactSupport": "Contact Support",
+      "secureNotice": "Secure Agricultural Services"
+    }
   },
   "cancel": {
     "title": "Cancel Booking",
@@ -146,6 +193,22 @@
       "too_far": "Location too far",
       "emergency": "Personal emergency",
       "other": "Other"
-    }
+    },
+    "reasonTitle": "Cancellation Reason",
+    "noReason": "No specific reason provided.",
+    "cancelledBy": "Cancelled by"
+  },
+  "nav": {
+    "startNavigation": "Start Navigation",
+    "viewProgress": "View Progress",
+    "viewRoute": "View Route"
+  },
+  "crops": {
+    "wheat": "Wheat",
+    "rice": "Rice",
+    "mustard": "Mustard",
+    "soybean": "Soybean",
+    "maize": "Maize",
+    "other": "Other"
   }
 }

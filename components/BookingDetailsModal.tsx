@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Image, ScrollView } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { BookingAddress } from './BookingAddress';
 
 interface BookingDetailsModalProps {
@@ -12,7 +13,10 @@ interface BookingDetailsModalProps {
 }
 
 export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTrack }: BookingDetailsModalProps) {
+  const { t } = useTranslation();
   if (!booking) return null;
+
+  const isOwner = booking.updated_by_user === 'owner';
 
   return (
     <Modal visible={visible} transparent animationType="slide" statusBarTranslucent navigationBarTranslucent>
@@ -53,7 +57,7 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
                 </View>
                 <View className="flex-1">
                   <Text className="text-2xl font-headline font-bold text-on-surface">{booking.name}</Text>
-                  <Text className="text-on-surface-variant font-medium">Farmer • {booking.date}</Text>
+                  <Text className="text-on-surface-variant font-medium">{t('role.farmerTitle')} • {booking.date}</Text>
                 </View>
               </View>
               <View 
@@ -72,20 +76,21 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
             {/* Details Grid */}
             <View className="flex-row flex-wrap gap-4 mb-8">
               <View className="flex-1 min-w-[140px] bg-surface-container-low p-5 rounded-3xl">
-                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Land Size</Text>
+                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{t('common.landSize')}</Text>
                 <Text className="text-xl font-headline font-bold text-on-surface">{booking.size || 'N/A'}</Text>
               </View>
               <View className="flex-1 min-w-[140px] bg-surface-container-low p-5 rounded-3xl">
-                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel || 'Earning'}</Text>
+                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel === 'Earned' ? t('owner.earned') : t('owner.estimated')}</Text>
                 <Text className="text-xl font-headline font-bold text-primary">{booking.amount}</Text>
               </View>
               <View className="w-full bg-surface-container-low p-5 rounded-3xl">
-                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Location</Text>
+                <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{t('common.location')}</Text>
                 <View className="flex-row items-center gap-2 mt-1">
                   <MaterialIcons name="location-on" size={20} color="#0d631b" />
                   <BookingAddress
                     address={booking.full_address}
                     className="text-base font-medium text-on-surface flex-1"
+                    fallback={t('common.farmLocation')}
                   />
                 </View>
               </View>
@@ -96,13 +101,13 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
               <View className="bg-error-container/20 p-6 rounded-3xl mb-8 border border-error-container/40">
                 <View className="flex-row items-center gap-2 mb-2">
                   <MaterialIcons name="info" size={20} color="#ba1a1a" />
-                  <Text className="text-error font-bold uppercase text-xs tracking-widest">Cancellation Reason</Text>
+                  <Text className="text-error font-bold uppercase text-xs tracking-widest">{t('cancel.reasonTitle')}</Text>
                 </View>
                 <Text className="text-on-surface text-base leading-relaxed">
-                  {booking.cancel_reason || 'No specific reason provided.'}
+                  {booking.cancel_reason || t('cancel.noReason')}
                 </Text>
                 <Text className="text-on-surface-variant text-xs mt-3 italic">
-                  Cancelled by {booking.updated_by_user === 'owner' ? 'Owner' : 'Farmer'}
+                  {t('cancel.cancelledBy')} {isOwner ? t('role.ownerTitle') : t('role.farmerTitle')}
                 </Text>
               </View>
             )}
@@ -126,8 +131,8 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
                     color="#fff" 
                   />
                   <Text className="text-white font-bold text-lg">
-                    {booking.rawStatus === 'accepted' ? 'Start Navigation' : 
-                     (['arrived', 'in_progress'].includes(booking.rawStatus) ? 'View Progress' : 'View Route')}
+                    {booking.rawStatus === 'accepted' ? t('nav.startNavigation') : 
+                     (['arrived', 'in_progress'].includes(booking.rawStatus) ? t('nav.viewProgress') : t('nav.viewRoute'))}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -136,7 +141,7 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
                 onPress={onClose}
                 className="w-full border border-outline-variant h-14 rounded-2xl items-center justify-center"
               >
-                <Text className="text-on-surface font-bold">Close Details</Text>
+                <Text className="text-on-surface font-bold">{t('bookings.closeDetails')}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

@@ -8,11 +8,13 @@ import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function BookingConfirmation() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const scaleValue = useRef(new Animated.Value(0.8)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
   const translateYValue = useRef(new Animated.Value(50)).current;
@@ -32,7 +34,6 @@ export default function BookingConfirmation() {
           );
         } else {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          // Optional: error sound here if available
         }
       } catch (err) {
         console.warn('Could not play sound:', err);
@@ -99,13 +100,13 @@ export default function BookingConfirmation() {
                   <MaterialIcons name="check-circle" size={48} color="#cbffc2" />
                 </View>
                 <Text className="font-headline font-extrabold text-4xl text-[#0d631b] tracking-tight mb-3 text-center">
-                  Booking Confirmed!
+                  {t('bookings.confirmation.title')}
                 </Text>
                 <Text className="text-[#40493d] text-base leading-relaxed text-center mb-6 max-w-xs">
-                  Your service has been successfully scheduled. The operator will contact you shortly.
+                  {t('bookings.confirmation.desc')}
                 </Text>
                 <View className="px-4 py-2 bg-[#eeeee9] rounded-full">
-                  <Text className="text-[#1a1c19] font-semibold text-sm">Booking ID: #HB-{bookingId}</Text>
+                  <Text className="text-[#1a1c19] font-semibold text-sm">{t('bookings.confirmation.idLabel')}: #HB-{bookingId}</Text>
                 </View>
               </View>
 
@@ -116,7 +117,7 @@ export default function BookingConfirmation() {
                   onPress={() => router.replace('/(farmer)/bookings' as any)}
                   className="py-4 px-10 items-center bg-[#0d631b] rounded-2xl shadow-sm shadow-black/20"
                 >
-                  <Text className="text-white font-bold text-base">View My Bookings</Text>
+                  <Text className="text-white font-bold text-base">{t('bookings.confirmation.viewAll')}</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -125,7 +126,6 @@ export default function BookingConfirmation() {
               {/* Error Visual */}
               <View className="items-center mb-5">
                 <View className="relative flex justify-center mb-6">
-                  {/* Subtle blur background effect in react native could be a scaled circle or shadow, keeping it simple */}
                   <View
                     className="w-24 h-24 bg-[#ffdad6] rounded-full items-center justify-center"
                     style={{ elevation: 4, shadowColor: '#ba1a1a', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 24 }}
@@ -134,10 +134,10 @@ export default function BookingConfirmation() {
                   </View>
                 </View>
                 <Text className="font-headline font-extrabold text-4xl text-[#1a1c19] tracking-tight mb-3 text-center leading-tight">
-                  Booking Failed
+                  {t('bookings.confirmation.failed')}
                 </Text>
                 <Text className="text-[#40493d] text-base leading-relaxed text-center mb-10 max-w-xs">
-                  Something went wrong while processing your payment. Please try again or contact support if the issue persists.
+                  {t('bookings.confirmation.failedDesc')}
                 </Text>
               </View>
 
@@ -150,7 +150,7 @@ export default function BookingConfirmation() {
                   style={{ elevation: 4, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }}
                 >
                   <MaterialIcons name="refresh" size={24} color="#fff" />
-                  <Text className="text-white font-bold text-lg ml-3">Try Again</Text>
+                  <Text className="text-white font-bold text-lg ml-3">{t('common.tryAgain')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -159,7 +159,7 @@ export default function BookingConfirmation() {
                   className="w-full h-16 bg-[#e8e8e3] rounded-2xl flex-row items-center justify-center"
                 >
                   <MaterialIcons name="support-agent" size={24} color="#1a1c19" />
-                  <Text className="text-[#1a1c19] font-bold text-lg ml-3">Contact Support</Text>
+                  <Text className="text-[#1a1c19] font-bold text-lg ml-3">{t('bookings.confirmation.contactSupport')}</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -168,7 +168,7 @@ export default function BookingConfirmation() {
           {/* Contextual/Trust Footer */}
           <View className="mt-12 opacity-50">
             <Text className="text-xs font-semibold uppercase tracking-widest text-[#1a1c19] text-center">
-              {isSuccess ? "Secure Agricultural Services" : `Support ID: KR-${bookingId}-XPL | Krishi Seva`}
+              {isSuccess ? t('bookings.confirmation.secureNotice') : `Support ID: KR-${bookingId}-XPL | Krishi Seva`}
             </Text>
           </View>
         </Animated.View>

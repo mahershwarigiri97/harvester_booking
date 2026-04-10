@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { DatePicker } from './DatePicker';
 
 const PLATFORM_FEE = 150;
@@ -29,6 +30,7 @@ export function BookingForm({
   initialPhone = '',
   onFormChange,
 }: BookingFormProps) {
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
   const [cropType, setCropType] = useState('Wheat');
@@ -47,18 +49,25 @@ export function BookingForm({
     const l = updates.landSize ?? landSize;
     const d = updates.date !== undefined ? updates.date : selectedDate;
     const a = parseFloat(l) || 0;
-    const t = pricePerAcre * a + PLATFORM_FEE;
+    const tVal = pricePerAcre * a + PLATFORM_FEE;
     onFormChange?.({
       customer_name: n,
       customer_phone: p,
       crop_type: c,
       land_area: a,
-      price: t,
+      price: tVal,
       start_time: d?.toISOString(),
     });
   };
 
-  const CROPS = ['Wheat', 'Rice', 'Mustard', 'Soybean', 'Maize', 'Other'];
+  const CROPS = [
+    { key: 'Wheat', label: t('crops.wheat') },
+    { key: 'Rice', label: t('crops.rice') },
+    { key: 'Mustard', label: t('crops.mustard') },
+    { key: 'Soybean', label: t('crops.soybean') },
+    { key: 'Maize', label: t('crops.maize') },
+    { key: 'Other', label: t('crops.other') }
+  ];
 
   return (
     <View style={{ gap: 24 }}>
@@ -70,7 +79,7 @@ export function BookingForm({
         <View className="h-40 rounded-2xl overflow-hidden relative">
           <Image source={{ uri: harvester.image }} className="w-full h-full" resizeMode="cover" />
           <View className="absolute top-2 left-2 bg-[#fcab28] px-3 py-1 rounded-full">
-            <Text className="text-[10px] font-bold text-[#694300] tracking-wider uppercase">Selected</Text>
+            <Text className="text-[10px] font-bold text-[#694300] tracking-wider uppercase">{t('bookings.process.selected')}</Text>
           </View>
         </View>
         <View className="px-1 flex-1">
@@ -94,15 +103,15 @@ export function BookingForm({
             <MaterialIcons name="person" size={24} color="#0d631b" />
           </View>
           <View>
-            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Your Name</Text>
-            <Text className="text-sm text-[#40493d]">Full name for booking confirmation</Text>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">{t('bookings.process.nameLabel')}</Text>
+            <Text className="text-sm text-[#40493d]">{t('bookings.process.nameHint')}</Text>
           </View>
         </View>
         <TextInput
           placeholder="e.g. Harpreet Singh"
           placeholderTextColor="#707a6c"
           value={name}
-          onChangeText={(t) => { setName(t); notifyParent({ name: t }); }}
+          onChangeText={(text) => { setName(text); notifyParent({ name: text }); }}
           className="w-full h-16 bg-[#e3e3de] rounded-2xl px-6 text-lg font-bold text-[#1a1c19]"
           style={{ outlineStyle: 'none' } as any}
         />
@@ -115,8 +124,8 @@ export function BookingForm({
             <MaterialIcons name="phone" size={24} color="#0d631b" />
           </View>
           <View>
-            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Phone Number</Text>
-            <Text className="text-sm text-[#40493d]">For booking updates & contact</Text>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">{t('bookings.process.phoneLabel')}</Text>
+            <Text className="text-sm text-[#40493d]">{t('bookings.process.phoneHint')}</Text>
           </View>
         </View>
         <View className="flex-row items-center bg-[#e3e3de] rounded-2xl px-4 h-16">
@@ -128,7 +137,7 @@ export function BookingForm({
             keyboardType="phone-pad"
             maxLength={10}
             value={phone}
-            onChangeText={(t) => { setPhone(t.replace(/[^0-9]/g, '')); notifyParent({ phone: t }); }}
+            onChangeText={(text) => { setPhone(text.replace(/[^0-9]/g, '')); notifyParent({ phone: text }); }}
             className="flex-1 text-lg font-bold text-[#1a1c19]"
             style={{ outlineStyle: 'none' } as any}
           />
@@ -142,19 +151,19 @@ export function BookingForm({
             <MaterialIcons name="grass" size={24} color="#0d631b" />
           </View>
           <View>
-            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Crop Type</Text>
-            <Text className="text-sm text-[#40493d]">What crop are you harvesting?</Text>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">{t('bookings.process.cropLabel')}</Text>
+            <Text className="text-sm text-[#40493d]">{t('bookings.process.cropHint')}</Text>
           </View>
         </View>
         <View className="flex-row flex-wrap gap-3">
           {CROPS.map(crop => (
             <TouchableOpacity
-              key={crop}
+              key={crop.key}
               activeOpacity={0.7}
-              onPress={() => { setCropType(crop); notifyParent({ cropType: crop }); }}
-              className={`px-5 py-3 rounded-2xl border ${cropType === crop ? 'bg-[#0d631b] border-[#0d631b]' : 'bg-[#e3e3de] border-transparent'}`}
+              onPress={() => { setCropType(crop.key); notifyParent({ cropType: crop.key }); }}
+              className={`px-5 py-3 rounded-2xl border ${cropType === crop.key ? 'bg-[#0d631b] border-[#0d631b]' : 'bg-[#e3e3de] border-transparent'}`}
             >
-              <Text className={`font-bold text-sm ${cropType === crop ? 'text-white' : 'text-[#1a1c19]'}`}>{crop}</Text>
+              <Text className={`font-bold text-sm ${cropType === crop.key ? 'text-white' : 'text-[#1a1c19]'}`}>{crop.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -167,8 +176,8 @@ export function BookingForm({
             <MaterialIcons name="calendar-today" size={24} color="#0d631b" />
           </View>
           <View>
-            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Harvest Date</Text>
-            <Text className="text-sm text-[#40493d]">When do you need the machine?</Text>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">{t('bookings.process.dateLabel')}</Text>
+            <Text className="text-sm text-[#40493d]">{t('bookings.process.dateHint')}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -177,7 +186,7 @@ export function BookingForm({
           className="w-full h-20 bg-[#e3e3de] rounded-2xl px-6 flex-row items-center justify-between"
         >
           <Text className={`text-2xl font-bold ${selectedDate ? 'text-[#1a1c19]' : 'text-[#707a6c]'}`}>
-            {selectedDate ? selectedDate.toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Select Date'}
+            {selectedDate ? selectedDate.toLocaleDateString(i18n.language === 'mr' ? 'mr-IN' : 'en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : t('bookings.process.selectDate')}
           </Text>
           <MaterialIcons name="chevron-right" size={24} color="#707a6c" />
         </TouchableOpacity>
@@ -208,8 +217,8 @@ export function BookingForm({
             <MaterialIcons name="straighten" size={24} color="#0d631b" />
           </View>
           <View>
-            <Text className="text-lg font-bold text-[#1a1c19] font-headline">Land Size</Text>
-            <Text className="text-sm text-[#40493d]">Enter your total harvest area</Text>
+            <Text className="text-lg font-bold text-[#1a1c19] font-headline">{t('bookings.process.landLabel')}</Text>
+            <Text className="text-sm text-[#40493d]">{t('bookings.process.landHint')}</Text>
           </View>
         </View>
         <View className="relative">
@@ -218,12 +227,12 @@ export function BookingForm({
             placeholderTextColor="#707a6c"
             keyboardType="decimal-pad"
             value={landSize}
-            onChangeText={(t) => { setLandSize(t); notifyParent({ landSize: t }); }}
+            onChangeText={(text) => { setLandSize(text); notifyParent({ landSize: text }); }}
             className="w-full h-20 bg-[#e3e3de] rounded-2xl px-8 text-3xl font-bold text-[#1a1c19]"
             style={{ outlineStyle: 'none' } as any}
           />
           <View className="absolute right-8 top-0 bottom-0 justify-center">
-            <Text className="text-lg font-bold text-[#40493d]">acres</Text>
+            <Text className="text-lg font-bold text-[#40493d]">{t('bookings.process.acres')}</Text>
           </View>
         </View>
         <View className="mt-6 flex-row flex-wrap gap-3">
@@ -234,7 +243,7 @@ export function BookingForm({
               className="px-5 py-2.5 rounded-xl bg-[#e3e3de]"
               onPress={() => { setLandSize(val); notifyParent({ landSize: val }); }}
             >
-              <Text className="text-sm font-semibold text-[#1a1c19]">{val} acres</Text>
+              <Text className="text-sm font-semibold text-[#1a1c19]">{val} {t('bookings.process.acres').toLowerCase()}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -242,37 +251,37 @@ export function BookingForm({
 
       {/* ── Price Breakdown ── */}
       <View className="bg-[#f4f4ef] rounded-[2rem] p-8 overflow-hidden relative">
-        <Text className="text-lg font-bold text-[#1a1c19] font-headline mb-6">Payment Summary</Text>
+        <Text className="text-lg font-bold text-[#1a1c19] font-headline mb-6">{t('bookings.process.paymentTitle')}</Text>
         <View style={{ gap: 16 }}>
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
-              <Text className="text-[#40493d]">Base Rate</Text>
-              <Text className="text-xs text-[#707a6c]">(₹{pricePerAcre.toLocaleString()} × {acres} acre)</Text>
+              <Text className="text-[#40493d]">{t('bookings.process.baseRate')}</Text>
+              <Text className="text-xs text-[#707a6c]">(₹{pricePerAcre.toLocaleString()} × {acres} {t('common.acre')})</Text>
             </View>
             <Text className="font-bold text-[#1a1c19]">₹ {baseAmount.toLocaleString()}</Text>
           </View>
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
-              <Text className="text-[#40493d]">Platform Fee</Text>
+              <Text className="text-[#40493d]">{t('bookings.process.platformFee')}</Text>
               <MaterialIcons name="info-outline" size={16} color="#707a6c" />
             </View>
             <Text className="font-bold text-[#1a1c19]">₹ {PLATFORM_FEE}</Text>
           </View>
           <View className="flex-row justify-between items-center">
-            <Text className="text-[#40493d]">Insurance Cover</Text>
+            <Text className="text-[#40493d]">{t('bookings.process.insurance')}</Text>
             <Text className="font-bold text-[#0d631b]">FREE</Text>
           </View>
           <View className="h-[1px] bg-[#bfcaba]/30 my-2" />
           <View className="flex-row justify-between items-end pt-2">
             <View>
-              <Text className="text-sm font-bold text-[#40493d] uppercase tracking-widest leading-loose">Total Estimated</Text>
+              <Text className="text-sm font-bold text-[#40493d] uppercase tracking-widest leading-loose">{t('bookings.process.totalEstimated')}</Text>
               <Text className="text-4xl font-extrabold text-[#0d631b] font-headline">₹ {total.toLocaleString()}</Text>
             </View>
             <View className="items-end">
               <View className="bg-[#ffddb5]/50 px-2 py-0.5 rounded-full mb-1">
-                <Text className="text-[10px] font-bold text-[#835400]">BEST PRICE</Text>
+                <Text className="text-[10px] font-bold text-[#835400]">{t('bookings.process.bestPrice')}</Text>
               </View>
-              <Text className="text-xs text-[#40493d]">Incl. all taxes</Text>
+              <Text className="text-xs text-[#40493d]">{t('bookings.process.taxes')}</Text>
             </View>
           </View>
         </View>
@@ -285,7 +294,7 @@ export function BookingForm({
       <View className="flex-row gap-4 p-4 rounded-2xl border border-[#bfcaba]/30 bg-white/50 mb-8">
         <MaterialIcons name="verified-user" size={24} color="#fcab28" />
         <Text className="flex-1 text-xs leading-relaxed text-[#40493d]">
-          By booking, you agree to our <Text className="font-bold">Fair Crop Policy</Text>. The operator will reach your location within 24 hours of the scheduled time. Payments are held in escrow until completion.
+          {t('bookings.process.policyNotice')}
         </Text>
       </View>
     </View>

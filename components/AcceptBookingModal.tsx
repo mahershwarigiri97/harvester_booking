@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 
 interface AcceptBookingModalProps {
   visible: boolean;
@@ -10,6 +11,8 @@ interface AcceptBookingModalProps {
 }
 
 export function AcceptBookingModal({ visible, onClose, onConfirm, isLoading }: AcceptBookingModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
       <View style={StyleSheet.absoluteFill} className="justify-center items-center">
@@ -40,10 +43,10 @@ export function AcceptBookingModal({ visible, onClose, onConfirm, isLoading }: A
           }}
         >
           <Text className="text-2xl font-headline font-bold text-on-surface mb-2">
-            Accept Booking?
+            {t('common.accept')}?
           </Text>
           <Text className="text-base text-on-surface-variant font-body mb-8 leading-relaxed">
-            Are you ready to accept this booking request? The farmer will be notified immediately.
+            {t('owner.viewRequest')}? {t('login.termsAgree')}
           </Text>
 
           <View className="flex-row justify-end gap-3">
@@ -52,7 +55,7 @@ export function AcceptBookingModal({ visible, onClose, onConfirm, isLoading }: A
               disabled={isLoading}
               className="px-6 py-3 rounded-full active:scale-95 transition-transform bg-surface-container-high"
             >
-              <Text className="text-on-surface font-bold text-sm">Not yet</Text>
+              <Text className="text-on-surface font-bold text-sm">{t('common.goBack')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -64,7 +67,7 @@ export function AcceptBookingModal({ visible, onClose, onConfirm, isLoading }: A
               {isLoading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text className="text-white font-bold text-sm">Yes, Accept</Text>
+                <Text className="text-white font-bold text-sm">{t('common.accept')}</Text>
               )}
             </TouchableOpacity>
           </View>
