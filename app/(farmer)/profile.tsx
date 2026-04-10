@@ -8,11 +8,15 @@ import { useTranslation } from 'react-i18next';
 export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleLogout = async () => {
     await useAuthStore.getState().clearAuth();
     router.replace('/login');
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
   };
 
   return (
@@ -24,9 +28,35 @@ export default function ProfileScreen() {
       <Text className="font-headline font-bold text-2xl text-on-surface mb-2">
         {user?.name || t('common.profile')}
       </Text>
-      <Text className="text-on-surface-variant font-medium mb-12">
+      <Text className="text-on-surface-variant font-medium mb-8">
         +91 {user?.phone}
       </Text>
+
+      {/* Language Selection */}
+      <View className="w-full bg-surface-container-low p-6 rounded-3xl mb-12">
+        <Text className="text-xs font-bold text-primary uppercase tracking-widest mb-4 px-1">
+          {t('common.language')}
+        </Text>
+        <View className="flex-row gap-2">
+          {['en', 'hi', 'mr'].map((lang) => (
+            <TouchableOpacity
+              key={lang}
+              onPress={() => changeLanguage(lang)}
+              className={`flex-1 py-3 rounded-xl items-center justify-center border ${
+                i18n.language === lang 
+                ? 'bg-primary border-primary' 
+                : 'bg-white border-outline-variant'
+              }`}
+            >
+              <Text className={`font-bold ${
+                i18n.language === lang ? 'text-white' : 'text-on-surface'
+              }`}>
+                {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       <TouchableOpacity 
         onPress={handleLogout}

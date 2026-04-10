@@ -5,6 +5,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../utils/authStore';
 
 const COLORS = {
@@ -28,6 +29,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { t, i18n } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -42,7 +44,7 @@ export default function ProfileScreen() {
           >
             <MaterialIcons name="arrow-back" size={24} color={COLORS.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={styles.headerTitle}>{t('common.profile')}</Text>
         </View>
       </View>
 
@@ -70,7 +72,7 @@ export default function ProfileScreen() {
           </View>
           
           <View style={styles.profileInfoText}>
-            <Text style={styles.userName}>{user?.name || 'Owner'}</Text>
+            <Text style={styles.userName}>{user?.name || t('role.ownerTitle')}</Text>
             <View style={styles.ratingLocationRow}>
               <View style={styles.ratingBadge}>
                 <MaterialIcons name="star" size={18} color={COLORS.primary} />
@@ -78,6 +80,30 @@ export default function ProfileScreen() {
               </View>
             </View>
           </View>
+        </View>
+
+        {/* Change Language Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('common.language')}</Text>
+        </View>
+        <View style={styles.languageContainer}>
+          {['en', 'hi', 'mr'].map((lang) => (
+            <TouchableOpacity
+              key={lang}
+              onPress={() => i18n.changeLanguage(lang)}
+              style={[
+                styles.languageButton,
+                i18n.language === lang && styles.languageButtonActive
+              ]}
+            >
+              <Text style={[
+                styles.languageButtonText,
+                i18n.language === lang && styles.languageButtonTextActive
+              ]}>
+                {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Information Section */}
@@ -89,61 +115,8 @@ export default function ProfileScreen() {
             </View>
             <TouchableOpacity style={styles.editButton}>
               <MaterialIcons name="edit" size={20} color={COLORS.onSecondaryContainer} />
-              <Text style={styles.editButtonText}>Edit Profile</Text>
+              <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Bank Details Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Bank Details</Text>
-        </View>
-        
-        <LinearGradient
-          colors={[COLORS.primary, COLORS.primaryContainer]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.bankCard}
-        >
-          {/* Decorative Circle */}
-          <View style={styles.bankCardDecorator} />
-          
-          <View style={styles.bankCardContent}>
-            <View style={styles.bankFields}>
-              <View style={styles.bankField}>
-                <Text style={styles.bankLabel}>Bank Name</Text>
-                <Text style={styles.bankValue}>State Bank of India</Text>
-              </View>
-              <View style={styles.bankField}>
-                <Text style={styles.bankLabel}>Account Number</Text>
-                <Text style={styles.bankValueMono}>•••• •••• •••• 1234</Text>
-              </View>
-              <View style={styles.bankField}>
-                <Text style={styles.bankLabel}>IFSC Code</Text>
-                <Text style={styles.bankValueSemi}>SBIN0001234</Text>
-              </View>
-            </View>
-            <MaterialIcons name="account-balance" size={40} color="rgba(255,255,255,0.4)" />
-          </View>
-        </LinearGradient>
-
-        {/* Home Address Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Home Address</Text>
-        </View>
-        
-        <View style={styles.addressCard}>
-          <View style={styles.addressIconWrapper}>
-            <MaterialIcons name="home-filled" size={24} color={COLORS.primary} />
-          </View>
-          <View style={styles.addressTextContent}>
-            <Text style={styles.addressText}>
-              {user?.address?.village ? `${user.address.village}, ` : ''}
-              {user?.address?.street_address ? `${user.address.street_address}, ` : ''}
-              {user?.address?.district || ''}{'\n'}
-              {user?.address?.state || ''} {user?.address?.pincode ? `- ${user.address.pincode}` : ''}
-            </Text>
-            <Text style={styles.verifiedTag}>Verified Profile</Text>
           </View>
         </View>
 
@@ -157,7 +130,7 @@ export default function ProfileScreen() {
             }}
           >
             <MaterialIcons name="logout" size={20} color={COLORS.error} />
-            <Text style={styles.logoutText}>Logout from Account</Text>
+            <Text style={styles.logoutText}>{t('auth.logout')}</Text>
           </TouchableOpacity>
           <Text style={styles.versionText}>App Version 2.4.0 • Made for the Indian Heartland</Text>
         </View>
@@ -269,14 +242,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.primary,
   },
-  locationContainer: {
+  languageContainer: {
     flexDirection: 'row',
+    gap: 8,
+    marginBottom: 32,
+  },
+  languageButton: {
+    flex: 1,
+    backgroundColor: COLORS.surfaceContainerLowest,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.outlineVariant,
     alignItems: 'center',
   },
-  locationText: {
-    marginLeft: 4,
-    color: COLORS.onSurfaceVariant,
-    fontWeight: '600',
+  languageButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  languageButtonText: {
+    fontWeight: 'bold',
+    color: COLORS.onSurface,
+  },
+  languageButtonTextActive: {
+    color: '#ffffff',
   },
   infoSection: {
     backgroundColor: COLORS.surfaceContainerLow,
@@ -333,93 +322,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.primary,
-  },
-  bankCard: {
-    borderRadius: 32,
-    padding: 32,
-    marginBottom: 32,
-    position: 'relative',
-    overflow: 'hidden',
-    elevation: 12,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 24,
-  },
-  bankCardDecorator: {
-    position: 'absolute',
-    top: -40,
-    right: -40,
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  bankCardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    zIndex: 10,
-  },
-  bankFields: {
-    gap: 24,
-  },
-  bankField: {
-    gap: 4,
-  },
-  bankLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  bankValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  bankValueMono: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    letterSpacing: -1,
-  },
-  bankValueSemi: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  addressCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.surfaceContainerLowest,
-    padding: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(191, 202, 186, 0.3)',
-    gap: 16,
-    marginBottom: 32,
-  },
-  addressIconWrapper: {
-    backgroundColor: 'rgba(13, 99, 27, 0.1)',
-    padding: 12,
-    borderRadius: 16,
-  },
-  addressTextContent: {
-    flex: 1,
-    gap: 4,
-  },
-  addressText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.onSurface,
-    lineHeight: 28,
-  },
-  verifiedTag: {
-    fontSize: 13,
-    color: COLORS.onSurfaceVariant,
-    fontWeight: '600',
   },
   logoutSection: {
     alignItems: 'center',

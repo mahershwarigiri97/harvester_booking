@@ -1,10 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 
@@ -21,9 +22,8 @@ const COLORS = {
 
 const CHART_DATA: Record<string, any> = {
   Today: {
-    total: '₹4,500',
-    change: '8% vs yesterday',
-    title: "Today's Hourly Overview",
+    totalKey: 'owner.todayEarnings',
+    titleKey: 'owner.hourlyOverview',
     range: 'Oct 24, 2026',
     bars: [
       { label: '6 AM', h: '20%', active: false },
@@ -32,15 +32,11 @@ const CHART_DATA: Record<string, any> = {
       { label: '3 PM', h: '95%', active: true },
       { label: '6 PM', h: '60%', active: false },
       { label: '9 PM', h: '30%', active: false },
-    ],
-    jobs: [
-      { id: 101, name: 'Baljit Singh', date: 'Today', type: 'Wheat Harvesting', amount: '+₹4,500', status: 'Settled' },
     ]
   },
   Weekly: {
-    total: '₹28,400',
-    change: '12% from last month',
-    title: 'Weekly Overview',
+    totalKey: 'common.weekly',
+    titleKey: 'owner.weeklyOverview',
     range: 'Oct 18 - Oct 24',
     bars: [
       { label: 'Mon', h: '45%', active: false },
@@ -50,35 +46,24 @@ const CHART_DATA: Record<string, any> = {
       { label: 'Fri', h: '55%', active: false },
       { label: 'Sat', h: '75%', active: false },
       { label: 'Sun', h: '25%', active: false },
-    ],
-    jobs: [
-      { id: 201, name: 'Baljit Singh', date: '24 Oct', type: 'Wheat Harvesting', amount: '+₹4,500', status: 'Settled' },
-      { id: 202, name: 'Gurnam Sidhu', date: '23 Oct', type: 'Soil Prep', amount: '+₹2,800', status: 'Settled' },
-      { id: 203, name: 'Rajesh Kumar', date: '22 Oct', type: 'Paddy Harvest', amount: '+₹8,200', status: 'Pending' },
     ]
   },
   Monthly: {
-    total: '₹1,42,000',
-    change: '15% vs last month',
-    title: 'Monthly Overview',
+    totalKey: 'common.monthly',
+    titleKey: 'owner.monthlyOverview',
     range: 'October 2026',
     bars: [
       { label: 'W1', h: '65%', active: false },
       { label: 'W2', h: '85%', active: false },
       { label: 'W3', h: '70%', active: false },
       { label: 'W4', h: '90%', active: true },
-    ],
-    jobs: [
-      { id: 301, name: 'Sukhdev Sidhu', date: '20 Oct', type: 'Paddy Harvest', amount: '+₹12,400', status: 'Settled' },
-      { id: 302, name: 'Aarav Gupta', date: '15 Oct', type: 'Soil Prep', amount: '+₹8,800', status: 'Settled' },
-      { id: 303, name: 'Manpreet Gill', date: '10 Oct', type: 'Wheat Harvesting', amount: '+₹15,000', status: 'Settled' },
-      { id: 304, name: 'Pritam Singh', date: '5 Oct', type: 'Potato Sowing', amount: '+₹7,200', status: 'Settled' },
     ]
   }
 };
 
 export default function EarningsDashboard() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('Weekly');
 
@@ -103,16 +88,15 @@ export default function EarningsDashboard() {
   const recentJobs = useMemo(() => {
     return completedBookings.slice(0, 10).map((b: any) => ({
       id: b.id,
-      name: b.customer_name || b.farmer?.name || 'Unknown Farmer',
-      date: new Date(b.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-      type: b.crop_type || 'Harvesting',
+      name: b.customer_name || b.farmer?.name || t('role.farmerTitle'),
+      date: new Date(b.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+      type: b.crop_type || t('role.harvester'),
       amount: `+₹${b.price?.toLocaleString()}`,
-      status: 'Settled',
+      status: t('owner.settled'),
     }));
-  }, [completedBookings]);
+  }, [completedBookings, t]);
 
-  // For charts, we'll use limited mock data or simplify for now since we don't have deep history logic yet
-  const data = useMemo(() => CHART_DATA[activeTab] || CHART_DATA.Weekly, [activeTab]);
+  const chartInfo = useMemo(() => CHART_DATA[activeTab] || CHART_DATA.Weekly, [activeTab]);
 
   return (
     <View style={styles.container}>
@@ -123,7 +107,7 @@ export default function EarningsDashboard() {
         <View style={styles.headerContent}>
           <View style={styles.headerTitleContainer}>
             <MaterialIcons name="menu" size={24} color={COLORS.primary} />
-            <Text style={styles.headerTitle}>Earnings Dashboard</Text>
+            <Text style={styles.headerTitle}>{t('owner.earningsDash')}</Text>
           </View>
           <View style={styles.profileCircle}>
             <Image
@@ -140,11 +124,11 @@ export default function EarningsDashboard() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.heroCard}>
-          <Text style={styles.heroLabel}>Total Earnings (Completed Jobs)</Text>
+          <Text style={styles.heroLabel}>{t('owner.totalEarnedLabel')}</Text>
           <Text style={styles.heroAmount}>₹{totalEarnings.toLocaleString()}</Text>
           <View style={styles.tag}>
             <MaterialIcons name="check-circle" size={14} color={COLORS.primary} />
-            <Text style={styles.tagText}>{completedBookings.length} Finished Projects</Text>
+            <Text style={styles.tagText}>{completedBookings.length} {t('owner.finishedProjects')}</Text>
           </View>
         </View>
 
@@ -156,20 +140,20 @@ export default function EarningsDashboard() {
               onPress={() => setActiveTab(tab)}
               style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{t(`common.${tab.toLowerCase()}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Chart Card */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{data.title}</Text>
-          <Text style={styles.sectionRange}>{data.range}</Text>
+          <Text style={styles.sectionTitle}>{t(chartInfo.titleKey)}</Text>
+          <Text style={styles.sectionRange}>{chartInfo.range}</Text>
         </View>
         
         <View style={styles.chartCard}>
           <View style={styles.chartContainer}>
-            {data.bars.map((bar: any, idx: number) => (
+            {chartInfo.bars.map((bar: any, idx: number) => (
               <View key={`${activeTab}-bar-${idx}`} style={styles.barItem}>
                 <View 
                   style={[
@@ -186,18 +170,20 @@ export default function EarningsDashboard() {
 
         {/* Jobs List */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Jobs</Text>
+          <Text style={styles.sectionTitle}>{t('owner.recentJobs')}</Text>
           <View style={styles.viewAll}>
-            <Text style={styles.viewAllText}>View All</Text>
+            <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
             <MaterialIcons name="chevron-right" size={18} color={COLORS.primary} />
           </View>
         </View>
 
         <View style={{ gap: 12 }}>
-          {recentJobs.length === 0 ? (
+          {isLoading ? (
+            <ActivityIndicator color={COLORS.primary} className="py-10" />
+          ) : recentJobs.length === 0 ? (
             <View className="items-center py-10">
               <MaterialIcons name="info-outline" size={32} color={COLORS.onSurfaceVariant} />
-              <Text className="text-on-surface-variant mt-2 font-body">No completed jobs yet</Text>
+              <Text className="text-on-surface-variant mt-2 font-body">{t('owner.noJobsYet')}</Text>
             </View>
           ) : (
             recentJobs.map((job: any) => (

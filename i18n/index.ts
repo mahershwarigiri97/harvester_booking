@@ -15,48 +15,51 @@ const resources = {
 
 const LANGUAGE_KEY = 'user-language';
 
-const languageDetector: any = {
-  type: 'languageDetector',
-  async: true,
-  init: () => {},
-  detect: async (callback: (lng: string) => void) => {
-    try {
-      // 1. Check AsyncStorage for saved preference
-      const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
-      if (savedLanguage) {
-        return callback(savedLanguage);
-      }
+// Define the async init function to setup i18n
+export const initI18n = async () => {
+  let initialLanguage = 'en';
 
-      // 2. Fallback to system settings
-      const supportedLangs = Object.keys(resources);
-      const detectedLocales = Localization.getLocales() || [];
-      const languageMatch = detectedLocales.find(l => l.languageCode && supportedLangs.includes(l.languageCode));
-      
-      callback(languageMatch?.languageCode || 'en');
-    } catch (error) {
-      console.log('Error detecting language:', error);
-      callback('en');
+  try {
+    // 1. Try to get saved language from storage
+    const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+    
+    if (savedLanguage && resources.hasOwnProperty(savedLanguage)) {
+      initialLanguage = savedLanguage;
+    } else {
+      // 2. If no saved pref, use device settings
+      const deviceLocales = Localization.getLocales();
+      if (deviceLocales && deviceLocales.length > 0) {
+        const systemLang = deviceLocales[0].languageCode;
+        if (systemLang && resources.hasOwnProperty(systemLang)) {
+          initialLanguage = systemLang;
+        }
+      }
     }
-  },
-  cacheUserLanguage: async (lng: string) => {
-    try {
-      await AsyncStorage.setItem(LANGUAGE_KEY, lng);
-    } catch (error) {
-      console.log('Error saving language:', error);
-    }
-  },
+  } catch (err) {
+    console.warn('[i18n] Error loading initial language:', err);
+  }
+
+  return i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: initialLanguage,
+      fallbackLng: 'en',
+      interpolation: {
+        escapeValue: false,
+      },
+      compatibilityJSON: 'v4',
+    });
 };
 
-i18n
-  .use(languageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false,
-    },
-    compatibilityJSON: 'v4',
-  });
+// Start initialization immediately
+initI18n();
+
+// Listen for language changes and persist them to AsyncStorage
+i18n.on('languageChanged', (lng) => {
+  AsyncStorage.setItem(LANGUAGE_KEY, lng).catch(err => 
+    console.warn('[i18n] Failed to persist language change:', err)
+  );
+});
 
 export default i18n;

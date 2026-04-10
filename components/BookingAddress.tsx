@@ -1,14 +1,18 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface BookingAddressProps extends TextProps {
   address: any;
   fallback?: string;
 }
 
-export function BookingAddress({ address, fallback = 'Farm Location', ...props }: BookingAddressProps) {
+export function BookingAddress({ address, fallback, ...props }: BookingAddressProps) {
+  const { t } = useTranslation();
+  const defaultFallback = fallback || t('common.farmLocation');
+
   if (!address) {
-    return <Text {...props}>{fallback}</Text>;
+    return <Text {...props}>{defaultFallback}</Text>;
   }
 
   // Extract the most relevant location details provided by Nominatim 
@@ -23,7 +27,7 @@ export function BookingAddress({ address, fallback = 'Farm Location', ...props }
   } else if (region) {
     displayAddress = region;
   } else {
-    displayAddress = fallback;
+    displayAddress = defaultFallback;
   }
 
   // Ensure reasonable character length by truncating if needed

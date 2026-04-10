@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import { BookingAddress } from '../../components/BookingAddress';
@@ -20,6 +21,7 @@ export default function BookingHistory() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { currentLocation } = useCurrentLocation();
+  const { t } = useTranslation();
   const user = useAuthStore(state => state.user);
   const [activeFilter, setActiveFilter] = useState('All');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
@@ -139,22 +141,22 @@ export default function BookingHistory() {
 
     return {
       id: b.id.toString(),
-      name: b.customer_name || b.farmer?.name || 'Farmer',
+      name: b.customer_name || b.farmer?.name || t('role.farmerTitle'),
       latitude: b.full_address?.latitude,
       longitude: b.full_address?.longitude,
-      status: statusInfo.text,
+      status: t(`status.${b.status}`),
       hexBg: statusInfo.hexBg,
       hexColor: statusInfo.hexColor,
       tabCategory: tabCategory,
       rawStatus: b.status,
-      date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: new Date(b.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
       amount: `₹${b.price.toLocaleString()}`,
-      amountLabel: b.status === 'completed' ? 'Earned' : 'Estimated',
+      amountLabel: b.status === 'completed' ? t('owner.earned') : t('owner.estimated'),
       image: b.farmer?.avatar || 'https://via.placeholder.com/150',
       full_address: b.full_address,
       cancel_reason: b.cancel_reason,
       updated_by_user: b.updated_by_user,
-      size: `${b.land_area} Ac`,
+      size: `${b.land_area} ${t('common.acre')}`,
       farm_latitude: b.farm_latitude,
       farm_longitude: b.farm_longitude,
     };
@@ -178,7 +180,7 @@ export default function BookingHistory() {
             <TouchableOpacity className="active:scale-95 transition-transform">
               <MaterialIcons name="menu" size={24} color="#0d631b" />
             </TouchableOpacity>
-            <Text className="font-headline font-bold text-xl text-primary">Booking History</Text>
+            <Text className="font-headline font-bold text-xl text-primary">{t('owner.bookingHistory')}</Text>
           </View>
           <TouchableOpacity className="active:scale-95 transition-transform p-2 rounded-full bg-[#f4f4ef]">
             <MaterialIcons name="filter-list" size={24} color="#0d631b" />
@@ -214,7 +216,7 @@ export default function BookingHistory() {
               >
                 <Text className={`text-sm font-bold whitespace-nowrap ${activeFilter === filter ? 'text-on-primary' : 'text-on-surface-variant'
                   }`}>
-                  {filter}
+                  {t(`common.${filter.toLowerCase()}`)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -227,11 +229,11 @@ export default function BookingHistory() {
               </View>
             ) : filteredBookings.length === 0 ? (
               <View className="items-center justify-center py-20 opacity-50">
-                <Text className="text-on-surface-variant text-base">No bookings found</Text>
+                <Text className="text-on-surface-variant text-base">{t('owner.noBookings')}</Text>
               </View>
             ) : (
               filteredBookings.map((booking: any) => {
-                const isCompleted = booking.status === 'Completed';
+                const isCompleted = booking.rawStatus === 'completed';
                 return (
                   <TouchableOpacity
                     key={booking.id}
@@ -259,14 +261,14 @@ export default function BookingHistory() {
                               {booking.size} • {(() => {
                                 const targetLat = booking.latitude || booking.farm_latitude;
                                 const targetLng = booking.longitude || booking.farm_longitude;
-                                if (!currentLocation || !targetLat || !targetLng) return 'View Location';
+                                if (!currentLocation || !targetLat || !targetLng) return t('owner.viewLocation');
                                 const d = calculateDistance(
                                   currentLocation.coords.latitude,
                                   currentLocation.coords.longitude,
                                   targetLat,
                                   targetLng
                                 );
-                                return `${d} km away`;
+                                return `${d} km ${t('common.away')}`;
                               })()}
                             </Text>
                           </View>
@@ -287,20 +289,20 @@ export default function BookingHistory() {
 
                     <View className="flex-row items-center justify-between border-t pt-6" style={{ borderColor: 'rgba(191,202,186,0.3)', opacity: isCompleted ? 1 : 0.6 }}>
                       <View className="flex-col">
-                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Date & Time</Text>
+                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{t('owner.dateTime')}</Text>
                         <View className="flex-row items-center gap-1.5">
                           <MaterialIcons name="calendar-today" size={20} color={isCompleted ? "#0d631b" : "#444941"} />
                           <Text className="font-body font-bold text-on-surface">{booking.date}</Text>
                         </View>
                       </View>
                       <View className="items-end">
-                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel || 'Earning'}</Text>
+                        <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel}</Text>
                         <Text className={`text-2xl font-headline font-black ${isCompleted ? 'text-primary' : 'text-on-surface'}`}>{booking.amount}</Text>
                       </View>
                     </View>
 
                     {/* Action buttons — Pending status: Cancel + Accept side-by-side */}
-                    {booking.status === 'Pending' && (
+                    {booking.rawStatus === 'requested' && (
                       <View className="mt-4 flex-row gap-3">
                         <TouchableOpacity
                           onPress={(e) => { e.stopPropagation?.(); handleCancelClick(booking.id); }}
@@ -314,7 +316,7 @@ export default function BookingHistory() {
                           ) : (
                             <MaterialIcons name="cancel" size={18} color="#ba1a1a" />
                           )}
-                          <Text className="text-error font-bold text-sm">Cancel</Text>
+                          <Text className="text-error font-bold text-sm">{t('common.cancel')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -329,13 +331,13 @@ export default function BookingHistory() {
                           ) : (
                             <MaterialIcons name="check-circle" size={18} color="#ffffff" />
                           )}
-                          <Text className="text-white font-bold text-sm">Accept</Text>
+                          <Text className="text-white font-bold text-sm">{t('common.accept')}</Text>
                         </TouchableOpacity>
                       </View>
                     )}
 
                     {/* Cancel button only — for active non-pending statuses */}
-                    {booking.status !== 'Completed' && booking.status !== 'Cancelled' && booking.status !== 'Pending' && (
+                    {booking.rawStatus !== 'completed' && booking.rawStatus !== 'cancelled' && booking.rawStatus !== 'requested' && (
                       <TouchableOpacity
                         onPress={(e) => { e.stopPropagation?.(); handleCancelClick(booking.id); }}
                         activeOpacity={0.8}
@@ -348,7 +350,7 @@ export default function BookingHistory() {
                         ) : (
                           <MaterialIcons name="cancel" size={18} color="#ba1a1a" />
                         )}
-                        <Text className="text-error font-bold text-sm">Cancel Booking</Text>
+                        <Text className="text-error font-bold text-sm">{t('bookings.cancelBooking')}</Text>
                       </TouchableOpacity>
                     )}
                   </TouchableOpacity>

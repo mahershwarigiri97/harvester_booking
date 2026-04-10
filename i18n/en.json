@@ -18,7 +18,30 @@
     "earnings": "Earnings",
     "online": "Online",
     "offline": "Offline",
-    "yourLocation": "Your Location"
+    "yourLocation": "Your Location",
+    "farmLocation": "Farm Location",
+    "jobs": "Jobs",
+    "details": "Details",
+    "lastJob": "Last Job",
+    "away": "away",
+    "acre": "Ac",
+    "perHour": "per hour",
+    "perAcre": "per acre",
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "pending": "Pending",
+    "all": "All",
+    "landSize": "Land Size",
+    "totalCost": "Total Cost",
+    "goBack": "Go Back",
+    "accept": "Accept",
+    "cancel": "Cancel",
+    "today": "Today",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "viewAll": "View All",
+    "user": "User"
   },
   "map": {
     "findHarvester": "Find nearby harvesters",
@@ -57,7 +80,8 @@
     "ownerTitle": "Harvester Owner",
     "ownerDesc": "Register your machines and manage bookings. Grow your business by reaching more farmers.",
     "selectToProceed": "Please select a role to proceed",
-    "readyToEnter": "Press continue to enter Harvester Hub"
+    "readyToEnter": "Press continue to enter Harvester Hub",
+    "harvester": "Harvester"
   },
   "owner": {
     "todayEarnings": "Today's Earnings",
@@ -65,6 +89,63 @@
     "totalJobs": "Total Jobs",
     "liveActivity": "Live Activity",
     "noBookings": "No active bookings found",
-    "newRequests": "New requests will appear here"
+    "newRequests": "New requests will appear here",
+    "viewRequest": "View Job Request",
+    "startNavigation": "Start Navigation",
+    "confirmArrival": "Confirm Arrival",
+    "startHarvesting": "Start Harvesting",
+    "monitorWork": "Monitor Work Session",
+    "estPayout": "Est. Payout",
+    "bookingHistory": "Booking History",
+    "earned": "Earned",
+    "estimated": "Estimated",
+    "dateTime": "Date & Time",
+    "viewLocation": "View Location",
+    "earningsDash": "Earnings Dashboard",
+    "totalEarnedLabel": "Total Earnings (Completed Jobs)",
+    "finishedProjects": "Finished Projects",
+    "recentJobs": "Recent Jobs",
+    "noJobsYet": "No completed jobs yet",
+    "settled": "Settled",
+    "hourlyOverview": "Today's Hourly Overview",
+    "weeklyOverview": "Weekly Overview",
+    "monthlyOverview": "Monthly Overview",
+    "lifetime": "Lifetime",
+    "newBadge": "NEW",
+    "activeBadge": "ACTIVE"
+  },
+  "status": {
+    "requested": "Requested",
+    "accepted": "Accepted",
+    "on_the_way": "On the Way",
+    "arrived": "Arrived",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "bookings": {
+    "title": "My Bookings",
+    "trackLive": "Track Live",
+    "trackHarvester": "Track Harvester",
+    "cancelBooking": "Cancel Booking",
+    "viewReason": "View Reason & Details",
+    "downloadReceipt": "Download Receipt",
+    "noBookingsYet": "No bookings yet",
+    "browseHarvesters": "Browse Harvesters",
+    "emptyDesc": "Book your first harvester to start your seasonal harvest with ease."
+  },
+  "cancel": {
+    "title": "Cancel Booking",
+    "reasonSubtitle": "Please provide a reason for cancelling this booking",
+    "specifyReason": "Please specify your reason",
+    "reasons": {
+      "breakdown": "Machine breakdown",
+      "not_available": "Not available at requested time",
+      "already_booked": "Already booked",
+      "weather": "Bad weather",
+      "too_far": "Location too far",
+      "emergency": "Personal emergency",
+      "other": "Other"
+    }
   }
 }

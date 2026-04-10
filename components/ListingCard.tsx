@@ -2,12 +2,13 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { DistanceBadge } from './DistanceBadge';
 
 export interface ListingProps {
   id: string;
   name: string;
-  distance?: string; // Fallback for static data
+  distance?: string; 
   price: string;
   rating: string;
   image: string;
@@ -30,6 +31,7 @@ export function ListingCard({
   farmerLocation
 }: ListingProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View className="bg-surface-container-lowest rounded-[32px] overflow-hidden shadow-sm mb-6 pb-2" style={{ elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
@@ -49,7 +51,7 @@ export function ListingCard({
               <View className="w-[1px] h-3 bg-outline/20" />
               <View className="flex-row items-center gap-1">
                 <MaterialIcons name="history" size={14} color="#0d631b" />
-                <Text className="text-[10px] font-bold text-primary">{jobs} jobs</Text>
+                <Text className="text-[10px] font-bold text-primary">{jobs} {t('common.jobs')}</Text>
               </View>
             </>
           )}
@@ -69,13 +71,13 @@ export function ListingCard({
             {lastJobDuration && lastJobDuration !== 'N/A' && (
               <View className="flex-row items-center gap-1 mt-3 bg-secondary-container/30 self-start px-2 py-0.5 rounded-lg">
                 <MaterialIcons name="history" size={14} color="#835400" />
-                <Text className="text-[10px] font-bold text-on-secondary-container uppercase tracking-tight">Last Job: {lastJobDuration}</Text>
+                <Text className="text-[10px] font-bold text-on-secondary-container uppercase tracking-tight">{t('common.lastJob')}: {lastJobDuration}</Text>
               </View>
             )}
           </View>
           <View className="items-end shrink-0">
             <Text className="text-2xl font-headline font-black text-primary">{price}</Text>
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-outline">per hour</Text>
+            <Text className="text-[10px] font-bold uppercase tracking-widest text-outline">{t('common.perHour')}</Text>
           </View>
         </View>
 
@@ -84,14 +86,14 @@ export function ListingCard({
             onPress={() => router.push({ pathname: '/details/[id]', params: { id } })}
             className="flex-1 bg-primary-container py-4 rounded-2xl items-center justify-center active:scale-95"
           >
-            <Text className="font-bold text-on-primary-container">Details</Text>
+            <Text className="font-bold text-on-primary-container">{t('common.details')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push({ pathname: '/book/[id]', params: { id } } as any)}
             className="flex-[2] bg-secondary-container py-4 rounded-2xl items-center justify-center active:scale-95"
             style={{ elevation: 2, shadowColor: '#fcab28', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }}
           >
-            <Text className="font-bold text-on-secondary-container text-lg">Book Now</Text>
+            <Text className="font-bold text-on-secondary-container text-lg">{t('common.bookNow')}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -11,10 +11,17 @@ import { useAuthStore } from '../utils/authStore';
 export default function RoleSelectionScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'owner' | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const toggleLanguage = () => {
+    const langs = ['en', 'hi', 'mr'];
+    const currentIndex = langs.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % langs.length;
+    i18n.changeLanguage(langs[nextIndex]);
+  };
 
   const handleContinue = async () => {
     if (!selectedRole || !phone) return;
@@ -38,6 +45,17 @@ export default function RoleSelectionScreen() {
     <View style={{ flex: 1, backgroundColor: '#fafaf5', paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar hidden />
+
+      {/* Language Switcher Overlay */}
+      <TouchableOpacity 
+        onPress={toggleLanguage}
+        className="absolute right-6 z-50 flex-row items-center bg-white/80 px-4 py-2 rounded-full border border-outline-variant shadow-sm"
+        style={{ top: insets.top + 20 }}
+      >
+        <MaterialIcons name="language" size={20} color="#0d631b" />
+        <Text className="ml-2 font-bold text-sm text-primary uppercase">{i18n.language}</Text>
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 48 }}>
         {/* Roles */}
         <View style={{ gap: 24 }}>

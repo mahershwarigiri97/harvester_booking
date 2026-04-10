@@ -9,7 +9,7 @@ import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
-import '../i18n';
+import { initI18n } from '../i18n';
 import { useAuthStore } from '../utils/authStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -55,8 +55,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Removed clearAuth to prevent session reset during fast refresh
+      // 1. Initialize i18n from storage
+      await initI18n();
+      
+      // 2. Load auth session
       await useAuthStore.getState().loadAuth();
+      
       if (loaded || error) {
         SplashScreen.hideAsync();
       }

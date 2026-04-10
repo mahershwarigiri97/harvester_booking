@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export interface CancelBookingModalProps {
   visible: boolean;
@@ -10,24 +11,25 @@ export interface CancelBookingModalProps {
   isLoading?: boolean;
 }
 
-const REASONS = [
-  { id: 'machine_breakdown', label: 'Machine breakdown' },
-  { id: 'not_available', label: 'Not available at requested time' },
-  { id: 'already_booked', label: 'Already booked' },
-  { id: 'bad_weather', label: 'Bad weather' },
-  { id: 'too_far', label: 'Location too far' },
-  { id: 'emergency', label: 'Personal emergency' },
-  { id: 'other', label: 'Other' },
-];
-
 export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: CancelBookingModalProps) {
+  const { t } = useTranslation();
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [otherReason, setOtherReason] = useState<string>('');
+
+  const REASONS = [
+    { id: 'breakdown', label: t('cancel.reasons.breakdown') },
+    { id: 'not_available', label: t('cancel.reasons.not_available') },
+    { id: 'already_booked', label: t('cancel.reasons.already_booked') },
+    { id: 'weather', label: t('cancel.reasons.weather') },
+    { id: 'too_far', label: t('cancel.reasons.too_far') },
+    { id: 'emergency', label: t('cancel.reasons.emergency') },
+    { id: 'other', label: t('cancel.reasons.other') },
+  ];
 
   const handleConfirm = () => {
     let finalReason = selectedReason;
     if (selectedReason === 'other') {
-      finalReason = otherReason.trim() || 'Other';
+      finalReason = otherReason.trim() || t('cancel.reasons.other');
     } else {
       finalReason = REASONS.find(r => r.id === selectedReason)?.label || finalReason;
     }
@@ -46,14 +48,11 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
       <View style={StyleSheet.absoluteFill} className="justify-center items-center px-4">
-        {/* Fallback dark tint + blur */}
         <BlurView
           intensity={20}
           tint="dark"
           style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
         />
-
-        {/* Overlay dark tint */}
 
         <View
           className="bg-[#FFFFFF] w-full max-w-sm rounded-xl p-5 space-y-4 my-auto"
@@ -67,12 +66,11 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
         >
           {/* Modal Header */}
           <View className="space-y-1 mb-4">
-            <Text className="text-[#111827] text-xl font-bold font-headline">Cancel Booking</Text>
-            <Text className="text-[#6B7280] text-sm leading-relaxed">Please provide a reason for cancelling this booking</Text>
+            <Text className="text-[#111827] text-xl font-bold font-headline">{t('cancel.title')}</Text>
+            <Text className="text-[#6B7280] text-sm leading-relaxed">{t('cancel.reasonSubtitle')}</Text>
           </View>
 
           {/* Selectable Reasons List */}
-
           <View className="space-y-1">
             {REASONS.map((reason) => (
               <TouchableOpacity
@@ -104,7 +102,7 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
               <TextInput
                 value={otherReason}
                 onChangeText={setOtherReason}
-                placeholder="Please specify your reason"
+                placeholder={t('cancel.specifyReason')}
                 placeholderTextColor="#707a6c"
                 multiline={true}
                 numberOfLines={4}
@@ -129,7 +127,7 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
               {isLoading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text className="text-white font-bold text-base" style={{ opacity: (!selectedReason || (selectedReason === 'other' && !otherReason.trim())) ? 0.6 : 1 }}>Cancel Booking</Text>
+                <Text className="text-white font-bold text-base" style={{ opacity: (!selectedReason || (selectedReason === 'other' && !otherReason.trim())) ? 0.6 : 1 }}>{t('bookings.cancelBooking')}</Text>
               )}
             </TouchableOpacity>
 
@@ -138,7 +136,7 @@ export function CancelBookingModal({ visible, onClose, onConfirm, isLoading }: C
               disabled={isLoading}
               className="w-full border border-outline-variant py-3.5 rounded-xl items-center justify-center active:bg-[#f4f4ef] transition-colors mt-3"
             >
-              <Text className="text-[#374151] font-semibold text-sm">Go Back</Text>
+              <Text className="text-[#374151] font-semibold text-sm">{t('common.goBack')}</Text>
             </TouchableOpacity>
           </View>
         </View>

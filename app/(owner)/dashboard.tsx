@@ -137,7 +137,7 @@ export default function OwnerDashboard() {
           <View className="space-y-4">
             <View className="flex-row items-start justify-between">
               <View>
-                <Text className="font-headline font-extrabold text-3xl tracking-tight text-on-surface">{user?.name || 'User'}</Text>
+                <Text className="font-headline font-extrabold text-3xl tracking-tight text-on-surface">{user?.name || t('common.user')}</Text>
                 <View className="flex-row items-center gap-2 mt-1">
                   <MaterialIcons name="star" size={20} color="#835400" />
                   <Text className="font-bold text-lg text-on-surface">{user?.rating || '0.0'}</Text>
@@ -220,7 +220,7 @@ export default function OwnerDashboard() {
                 <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
                   {totalCompletedJobs}
                 </Text>
-                <Text className="text-xs text-on-surface-variant font-bold mt-2 uppercase">Lifetime</Text>
+                <Text className="text-xs text-on-surface-variant font-bold mt-2 uppercase">{t('owner.lifetime')}</Text>
               </View>
             </View>
           </View>
@@ -231,7 +231,7 @@ export default function OwnerDashboard() {
               <Text className="font-headline font-bold text-xl text-primary">{t('owner.liveActivity')}</Text>
               <View className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'bg-error-container' : 'bg-primary-container'} px-3 py-1 rounded-full`}>
                 <Text className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'text-on-error-container' : 'text-on-primary-container'} text-xs font-bold`}>
-                  {pendingBookings.length} {pendingBookings.some((b: any) => b && b.status === 'requested') ? 'NEW' : 'ACTIVE'}
+                  {pendingBookings.length} {pendingBookings.some((b: any) => b && b.status === 'requested') ? t('owner.newBadge') : t('owner.activeBadge')}
                 </Text>
               </View>
             </View>

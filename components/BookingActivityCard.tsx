@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../utils/api';
 import { calculateDistance } from '../utils/locationUtils';
 
@@ -23,6 +23,7 @@ export default function BookingActivityCard({
   onNavigateToTracker
 }: BookingActivityCardProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const statusMutation = useMutation({
     mutationFn: (status: any) => authApi.updateBookingStatus(booking.id, status),
@@ -55,7 +56,6 @@ export default function BookingActivityCard({
         shadowRadius: 32,
       }}
     >
-      {/* Decorative background element */}
       <View className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12" />
 
       <View className="flex-col gap-4 z-10 w-full mb-6">
@@ -69,13 +69,13 @@ export default function BookingActivityCard({
           </View>
           <View className="flex-1">
             <Text className="font-bold text-lg text-on-surface" numberOfLines={1}>
-              {booking.farmer?.name || booking.customer_name || 'Farmer'}
+              {booking.farmer?.name || booking.customer_name || t('role.farmerTitle')}
             </Text>
             <View className="flex-col gap-0.5 mt-1">
               <View className="flex-row items-center gap-1">
                 <MaterialIcons name="eco" size={14} color="#40493d" />
                 <Text className="text-sm font-medium text-on-surface-variant">
-                  {booking.crop_type || 'General'} • {booking.land_area} Ac
+                  {booking.crop_type || 'General'} • {booking.land_area} {t('common.acre')}
                 </Text>
               </View>
               <View className="flex-row items-center gap-1">
@@ -83,15 +83,12 @@ export default function BookingActivityCard({
                 <Text className="text-primary text-[11px] font-bold uppercase tracking-tight">
                   {(() => {
                     const block = booking.full_address?.village || booking.full_address?.district || booking.address;
-                    
                     let distStr = '';
                     if (distance !== null && distance >= 0) {
-                      distStr = ` • ${distance} km`;
+                      distStr = ` • ${distance} km ${t('common.away')}`;
                     }
-                    
                     if (block) return `${block}${distStr}`;
-                    if (distStr) return `${distStr.replace(' • ', '')} away`;
-                    return 'View Location';
+                    return distStr ? distStr.replace(' • ', '') : 'View Location';
                   })()}
                 </Text>
               </View>
@@ -99,7 +96,7 @@ export default function BookingActivityCard({
           </View>
           <View className="bg-primary/10 px-3 py-1 rounded-full">
             <Text className="text-primary text-[10px] font-bold uppercase">
-              {(booking.status || 'active').replace(/_/g, ' ')}
+              {t(`status.${booking.status}`)}
             </Text>
           </View>
         </View>
@@ -108,7 +105,7 @@ export default function BookingActivityCard({
           <Text className="text-2xl font-headline font-black text-primary">
             ₹{booking.price?.toLocaleString() || '0'}
           </Text>
-          <Text className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-tighter">Est. Payout</Text>
+          <Text className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-tighter">{t('owner.estPayout')}</Text>
         </View>
       </View>
 
@@ -118,7 +115,7 @@ export default function BookingActivityCard({
           style={{ backgroundColor: '#e9f5ea', borderColor: 'rgba(13, 99, 27, 0.15)', borderWidth: 1, borderRadius: 16 }}
           className="w-full py-4 items-center justify-center active:scale-95"
         >
-          <Text className="font-bold text-primary">View Job Request</Text>
+          <Text className="font-bold text-primary">{t('owner.viewRequest')}</Text>
         </TouchableOpacity>
       ) : booking.status === 'accepted' ? (
         <TouchableOpacity
@@ -135,7 +132,7 @@ export default function BookingActivityCard({
             {statusMutation.isPending ? <ActivityIndicator color="white" /> : (
               <>
                 <MaterialIcons name="navigation" size={20} color="white" />
-                <Text className="text-white font-bold uppercase tracking-tight">Start Navigation</Text>
+                <Text className="text-white font-bold uppercase tracking-tight">{t('owner.startNavigation')}</Text>
               </>
             )}
           </LinearGradient>
@@ -155,7 +152,7 @@ export default function BookingActivityCard({
             {statusMutation.isPending ? <ActivityIndicator color="white" /> : (
               <>
                 <MaterialIcons name="check-circle" size={20} color="white" />
-                <Text className="text-white font-bold uppercase tracking-tight">Confirm Arrival</Text>
+                <Text className="text-white font-bold uppercase tracking-tight">{t('owner.confirmArrival')}</Text>
               </>
             )}
           </LinearGradient>
@@ -172,7 +169,7 @@ export default function BookingActivityCard({
             className="w-full py-4 items-center justify-center flex-row gap-2"
           >
             <MaterialIcons name="precision-manufacturing" size={20} color="white" />
-            <Text className="text-white font-bold uppercase tracking-tight">Start Harvesting</Text>
+            <Text className="text-white font-bold uppercase tracking-tight">{t('owner.startHarvesting')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       ) : (
@@ -182,7 +179,7 @@ export default function BookingActivityCard({
           className="w-full py-4 items-center justify-center active:scale-95 flex-row gap-2 shadow-md"
         >
           <MaterialIcons name="timer" size={20} color="white" />
-          <Text className="font-bold text-white uppercase tracking-tight">Monitor Work Session</Text>
+          <Text className="font-bold text-white uppercase tracking-tight">{t('owner.monitorWork')}</Text>
         </TouchableOpacity>
       )}
     </View>

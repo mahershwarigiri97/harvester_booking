@@ -5,6 +5,7 @@ import { Alert, Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import { BookingAddress } from '../../components/BookingAddress';
@@ -16,6 +17,7 @@ export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const user = useAuthStore(state => state.user);
   const [activeTab, setActiveTab] = useState('Active');
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
@@ -76,12 +78,12 @@ export default function BookingsScreen() {
     const statusInfo = getBookingStatusInfo(b.status);
     return {
       id: b.id.toString(),
-      title: b.harvester ? `${b.harvester.brand} ${b.harvester.model}` : 'Harvester',
-      date: new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      title: b.harvester ? `${b.harvester.brand} ${b.harvester.model}` : t('role.harvester'),
+      date: new Date(b.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }),
       latitude: b.full_address?.latitude,
       longitude: b.full_address?.longitude,
-      status: statusInfo.text,
-      size: `${b.land_area} acres`,
+      status: t(`status.${b.status}`),
+      size: `${b.land_area} ${t('common.acre')}`,
       cost: `₹${b.price.toLocaleString()}`,
       image: b.harvester?.images?.[0] || 'https://via.placeholder.com/600',
       statusColor: statusInfo.color,
@@ -89,6 +91,7 @@ export default function BookingsScreen() {
       hexColor: statusInfo.hexColor,
       icon: statusInfo.icon,
       group: statusInfo.group,
+      statusKey: b.status,
       full_address: b.full_address,
     };
   });
@@ -99,13 +102,11 @@ export default function BookingsScreen() {
 
   return (
     <View className="flex-1 bg-[#fafaf5]">
-      {/* Top Header Placeholder spacing since we have no physical NavBar inside Tabs usually, just the title */}
       <View style={{ paddingTop: insets.top + 24 }} className="px-6 pb-6">
         <Text className="font-headline font-extrabold text-4xl text-[#0d631b] tracking-tighter mb-6">
-          My Bookings
+          {t('bookings.title')}
         </Text>
 
-        {/* Tab Navigation */}
         <View style={{ flexDirection: 'row', backgroundColor: '#eeeee9', padding: 6, borderRadius: 16 }}>
           {tabs.map((tab) => {
             const isActive = activeTab === tab;
@@ -127,7 +128,7 @@ export default function BookingsScreen() {
                     color: isActive ? '#0d631b' : '#40493d'
                   }}
                 >
-                  {tab}
+                  {t(`common.${tab.toLowerCase()}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -148,8 +149,6 @@ export default function BookingsScreen() {
             {filteredBookings.map((booking: any) => (
               <View key={booking.id} className="bg-white rounded-[2rem] p-5 shadow-sm" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 3 }}>
                 <View className="flex-col gap-5">
-                  
-                  {/* Image & Header Status */}
                   <View className="w-full h-44 rounded-2xl overflow-hidden shrink-0">
                     <Image source={{ uri: booking.image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                   </View>
@@ -167,7 +166,7 @@ export default function BookingsScreen() {
                           <BookingAddress 
                             address={booking.full_address} 
                             className="text-[#40493d] font-medium flex-1 text-sm" 
-                            fallback="Farm Location"
+                            fallback={t('common.farmLocation')}
                           />
                         </View>
                       </View>
@@ -186,41 +185,39 @@ export default function BookingsScreen() {
                       </View>
                     </View>
 
-                    {/* Stats Box */}
                     <View className="flex-row flex-wrap gap-4 my-4 p-4 bg-[#f4f4ef] rounded-2xl w-full justify-between items-center">
                       <View>
-                        <Text className="text-[11px] font-bold text-[#40493d] uppercase tracking-widest mb-1">Land Size</Text>
+                        <Text className="text-[11px] font-bold text-[#40493d] uppercase tracking-widest mb-1">{t('common.landSize')}</Text>
                         <Text className="text-lg font-bold text-[#1a1c19]">{booking.size}</Text>
                       </View>
                       <View className="w-[1px] h-8 bg-[#bfcaba]/40"></View>
                       <View>
-                        <Text className="text-[11px] font-bold text-[#40493d] uppercase tracking-widest mb-1">Total Cost</Text>
+                        <Text className="text-[11px] font-bold text-[#40493d] uppercase tracking-widest mb-1">{t('common.totalCost')}</Text>
                         <Text className="text-lg font-bold text-[#0d631b]">{booking.cost}</Text>
                       </View>
                     </View>
 
-                    {/* Action Button */}
                     <View className="mt-2 w-full">
-                      {booking.status === 'In Progress' && (
+                      {booking.statusKey === 'in_progress' && (
                         <TouchableOpacity onPress={() => router.push(`/track/${booking.id}` as any)} activeOpacity={0.88} className="overflow-hidden rounded-2xl">
                           <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-14 flex-row items-center justify-center gap-2 px-6">
                             <MaterialIcons name="my-location" size={20} color="#fff" />
-                            <Text className="text-white font-headline font-bold text-[17px]">Track Live</Text>
+                            <Text className="text-white font-headline font-bold text-[17px]">{t('bookings.trackLive')}</Text>
                           </LinearGradient>
                         </TouchableOpacity>
                       )}
                       
-                      {booking.status === 'Accepted' || booking.status === 'On The Way' || booking.status === 'Arrived' ? (
+                      {(booking.statusKey === 'accepted' || booking.statusKey === 'on_the_way' || booking.statusKey === 'arrived') ? (
                         <View className="flex-row gap-3">
                           <TouchableOpacity onPress={() => router.push(`/track/${booking.id}` as any)} activeOpacity={0.88} className="flex-1 overflow-hidden rounded-2xl">
                             <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-14 flex-row items-center justify-center px-4">
-                              <Text className="text-white font-headline font-bold text-[16px]">Track Harvester</Text>
+                              <Text className="text-white font-headline font-bold text-[16px]">{t('bookings.trackHarvester')}</Text>
                             </LinearGradient>
                           </TouchableOpacity>
                         </View>
                       ) : null}
 
-                      {booking.status === 'Pending' && (
+                      {booking.statusKey === 'requested' && (
                         <TouchableOpacity
                           activeOpacity={0.88}
                           disabled={cancellingBookingId === booking.id && cancelMutation.isPending}
@@ -230,46 +227,44 @@ export default function BookingsScreen() {
                           {cancellingBookingId === booking.id && cancelMutation.isPending ? (
                             <ActivityIndicator size="small" color="#ba1a1a" />
                           ) : (
-                            <Text className="text-[#ba1a1a] font-headline font-bold text-[16px]">Cancel Booking</Text>
+                            <Text className="text-[#ba1a1a] font-headline font-bold text-[16px]">{t('bookings.cancelBooking')}</Text>
                           )}
                         </TouchableOpacity>
                       )}
                       
-                      {booking.status === 'Cancelled' && (
+                      {booking.statusKey === 'cancelled' && (
                         <TouchableOpacity
                           ripple-color="#ff0000"
                           onPress={() => router.push(`/track/${booking.id}` as any)}
                           activeOpacity={0.88}
                           className="h-14 rounded-2xl border-2 border-[#bfcaba] flex-row items-center justify-center px-6"
                         >
-                          <Text className="text-[#40493d] font-headline font-bold text-[16px]">View Reason & Details</Text>
+                          <Text className="text-[#40493d] font-headline font-bold text-[16px]">{t('bookings.viewReason')}</Text>
                         </TouchableOpacity>
                       )}
                       
-                      {booking.status === 'Completed' && (
+                      {booking.statusKey === 'completed' && (
                         <TouchableOpacity activeOpacity={0.88} className="h-14 rounded-2xl bg-[#e3e3de] flex-row items-center justify-center px-6">
-                          <Text className="text-[#1a1c19] font-headline font-bold text-[16px]">Download Receipt</Text>
+                          <Text className="text-[#1a1c19] font-headline font-bold text-[16px]">{t('bookings.downloadReceipt')}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
-
                   </View>
                 </View>
               </View>
             ))}
           </View>
         ) : (
-          /* Empty State for other tabs */
           <View className="mt-8 bg-[#f4f4ef] rounded-[2.5rem] p-10 items-center justify-center border-2 border-dashed border-[#bfcaba]/40">
             <View className="w-20 h-20 bg-[#e3e3de] rounded-full flex items-center justify-center mb-5">
               <MaterialIcons name="agriculture" size={36} color="#707a6c" />
             </View>
-            <Text className="font-headline font-bold text-2xl text-[#1a1c19] mb-2">No bookings yet</Text>
-            <Text className="text-[#40493d] mb-6 text-center leading-relaxed">Book your first harvester to start your seasonal harvest with ease. High-quality machines are waiting for you.</Text>
+            <Text className="font-headline font-bold text-2xl text-[#1a1c19] mb-2">{t('bookings.noBookingsYet')}</Text>
+            <Text className="text-[#40493d] mb-6 text-center leading-relaxed">{t('bookings.emptyDesc')}</Text>
             
-            <TouchableOpacity activeOpacity={0.88} className="w-full h-14 overflow-hidden rounded-[16px]">
+            <TouchableOpacity onPress={() => router.push('/(farmer)')} activeOpacity={0.88} className="w-full h-14 overflow-hidden rounded-[16px]">
               <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-full items-center justify-center">
-                <Text className="text-white font-headline font-bold text-lg">Browse Harvesters</Text>
+                <Text className="text-white font-headline font-bold text-lg">{t('bookings.browseHarvesters')}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
