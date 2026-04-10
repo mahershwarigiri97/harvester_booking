@@ -82,29 +82,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Change Language Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('common.language')}</Text>
-        </View>
-        <View style={styles.languageContainer}>
-          {['en', 'hi', 'mr'].map((lang) => (
-            <TouchableOpacity
-              key={lang}
-              onPress={() => i18n.changeLanguage(lang)}
-              style={[
-                styles.languageButton,
-                i18n.language === lang && styles.languageButtonActive
-              ]}
-            >
-              <Text style={[
-                styles.languageButtonText,
-                i18n.language === lang && styles.languageButtonTextActive
-              ]}>
-                {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
 
         {/* Information Section */}
         <View style={styles.infoSection}>

@@ -9,6 +9,7 @@ interface User {
   is_profile_complete: boolean;
   avatar?: string;
   rating?: number;
+  lang?: string;
   address?: {
     village?: string;
     street_address?: string;

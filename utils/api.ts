@@ -3,8 +3,8 @@ import storage from './storage';
 
 // Replace with your machine's IP address for physical device testing
 // Example: http://192.168.1.5:3000/api
-const BASE_URL = 'https://kapniseva.calcbz.com/api';
-// const BASE_URL = 'http://192.168.1.5:3001/api';
+// const BASE_URL = 'https://kapniseva.calcbz.com/api';
+const BASE_URL = 'http://192.168.1.5:3001/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -30,7 +30,7 @@ api.interceptors.request.use(
 export const authApi = {
   sendOtp: (phone: string) => api.post('/auth/send-otp', { phone }),
   verifyOtp: (phone: string, otp: string) => api.post('/auth/verify-otp', { phone, otp }),
-  register: (data: { phone: string; role: string; name?: string; address?: any }) => api.post('/auth/register', data),
+  register: (data: { phone: string; role: string; name?: string; address?: any; lang?: string }) => api.post('/auth/register', data),
   completeOwnerProfile: (data: any) => api.post('/auth/owner/complete-profile', data),
   uploadImages: async (formData: FormData, folder: string) => {
     // We use native fetch for uploads in React Native as it handles multipart boundaries 

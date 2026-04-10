@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
 import { Alert, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface Step3Props {
   workSpeed: string;
@@ -11,6 +12,7 @@ interface Step3Props {
 }
 
 export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages }: Step3Props) {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [activeSlot, setActiveSlot] = React.useState<number | null>(null);
 
@@ -37,7 +39,7 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
       if (type === 'camera') {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission needed', 'Camera access is required to take a new photo.');
+          Alert.alert(t('common.tryAgain'), t('registration.snapFresh'));
           return;
         }
         const result = await ImagePicker.launchCameraAsync({
@@ -60,24 +62,24 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
     <View style={{ gap: 32 }}>
       {/* Work Speed Input */}
       <View style={{ backgroundColor: '#f4f4ef', borderRadius: 24, padding: 24 }}>
-        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#707a6c', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>Work Speed <Text style={{ color: 'red', textTransform: 'none' }}>*</Text></Text>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#707a6c', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>{t('registration.workSpeedLabel')} <Text style={{ color: 'red', textTransform: 'none' }}>*</Text></Text>
         <View style={{ position: 'relative' }}>
           <TextInput value={workSpeed} onChangeText={setWorkSpeed} keyboardType="numeric" placeholder="0.0" style={{ width: '100%', height: 64, backgroundColor: '#e3e3de', borderRadius: 16, paddingHorizontal: 24, fontSize: 20, fontWeight: 'bold', color: '#1a1c19' }} />
           <View style={{ position: 'absolute', right: 24, top: '50%', marginTop: -10 }}>
-            <Text style={{ color: '#707a6c', fontWeight: 'bold', fontSize: 16 }}>Acres / Hour</Text>
+            <Text style={{ color: '#707a6c', fontWeight: 'bold', fontSize: 16 }}>{t('registration.acresPerHour')}</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
           <MaterialIcons name="info" size={16} color="#707a6c" />
-          <Text style={{ fontSize: 14, color: '#707a6c' }}>Average speed for standard wheat or paddy harvest.</Text>
+          <Text style={{ fontSize: 14, color: '#707a6c' }}>{t('registration.workSpeedHint')}</Text>
         </View>
       </View>
 
       {/* Image Upload Section */}
       <View style={{ gap: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 20, color: '#1a1c19' }}>Upload Images</Text>
-          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#0d631b' }}>1-3 Photos required</Text>
+          <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 20, color: '#1a1c19' }}>{t('registration.uploadImages')}</Text>
+          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#0d631b' }}>{t('registration.photosRequired')}</Text>
         </View>
 
         {/* Bento-style Upload Grid */}
@@ -91,8 +93,8 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
                 <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(46, 125, 50, 0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                   <MaterialIcons name="add-a-photo" size={32} color="#0d631b" />
                 </View>
-                <Text style={{ fontWeight: 'bold', color: '#1a1c19', fontSize: 16 }}>Front & Side View</Text>
-                <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 4 }}>Primary Harvester Photo</Text>
+                <Text style={{ fontWeight: 'bold', color: '#1a1c19', fontSize: 16 }}>{t('registration.frontSideView')}</Text>
+                <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 4 }}>{t('registration.primaryPhoto')}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -123,8 +125,8 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
           <MaterialIcons name="lightbulb" size={20} color="#694300" />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontWeight: 'bold', color: '#1a1c19', marginBottom: 4 }}>Photo Tip</Text>
-          <Text style={{ fontSize: 14, color: '#40493d', lineHeight: 22 }}>Ensure photos are taken in daylight and clearly show the condition of the cutter bar and engine.</Text>
+          <Text style={{ fontWeight: 'bold', color: '#1a1c19', marginBottom: 4 }}>{t('registration.photoTipTitle')}</Text>
+          <Text style={{ fontSize: 14, color: '#40493d', lineHeight: 22 }}>{t('registration.photoTipDesc')}</Text>
         </View>
       </View>
 
@@ -134,12 +136,12 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
           <TouchableOpacity style={{ flex: 1 }} onPress={() => setModalVisible(false)} activeOpacity={1} />
           <View style={{ backgroundColor: '#fafaf5', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, paddingBottom: 48, elevation: 24 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 24, color: '#1a1c19' }}>Upload Photo</Text>
+              <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 24, color: '#1a1c19' }}>{t('registration.uploadPhotoModal')}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={{ padding: 8, backgroundColor: '#f4f4ef', borderRadius: 20 }}>
                 <MaterialIcons name="close" size={24} color="#707a6c" />
               </TouchableOpacity>
             </View>
-            <Text style={{ fontSize: 16, color: '#40493d', marginBottom: 24 }}>Select how you'd like to add your image.</Text>
+            <Text style={{ fontSize: 16, color: '#40493d', marginBottom: 24 }}>{t('registration.uploadPhotoDesc')}</Text>
 
             <View style={{ gap: 16 }}>
               {/* Gallery Option */}
@@ -148,8 +150,8 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
                   <MaterialIcons name="photo-library" size={24} color="#0d631b" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 18, color: '#1a1c19' }}>Choose from Gallery</Text>
-                  <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 2 }}>Pick a saved photo from your phone.</Text>
+                  <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 18, color: '#1a1c19' }}>{t('registration.chooseGallery')}</Text>
+                  <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 2 }}>{t('registration.pickSaved')}</Text>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#bfcaba" />
               </TouchableOpacity>
@@ -160,8 +162,8 @@ export function Step3WorkCapability({ workSpeed, setWorkSpeed, images, setImages
                   <MaterialIcons name="camera-alt" size={24} color="#0d631b" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 18, color: '#1a1c19' }}>Take New Photo</Text>
-                  <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 2 }}>Open camera and snap a fresh picture.</Text>
+                  <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 18, color: '#1a1c19' }}>{t('registration.takeNew')}</Text>
+                  <Text style={{ fontSize: 14, color: '#707a6c', marginTop: 2 }}>{t('registration.snapFresh')}</Text>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#bfcaba" />
               </TouchableOpacity>

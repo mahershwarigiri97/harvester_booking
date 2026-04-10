@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Stepper } from '../components/Stepper';
 import { Step1BasicInfo } from '../components/registration/Step1BasicInfo';
 import { Step2MachineDetails } from '../components/registration/Step2MachineDetails';
@@ -16,7 +17,9 @@ import { useAuthStore } from '../utils/authStore';
 export default function OwnerRegistrationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t, i18n } = useTranslation();
   const { userId } = useLocalSearchParams<{ userId: string }>();
+  
 
   useEffect(() => {
     console.log('[OwnerRegistrationScreen] Received userId:', userId);
@@ -52,9 +55,9 @@ export default function OwnerRegistrationScreen() {
   const [images, setImages] = useState<string[]>([]);
 
   const stepContent = {
-    1: { title: 'Basic Info', desc: "Let's start with your profile to get your fleet registered.", cta: 'Continue to Machine Details', ctaIcon: 'arrow-forward' },
-    2: { title: 'Machine Details', desc: 'Add your vehicle details & licenses to match with farmers.', cta: 'Continue to Photos', ctaIcon: 'photo-camera' },
-    3: { title: 'Work Capability', desc: 'Add your vehicle details & licenses to match with farmers.', cta: 'Complete Registration', ctaIcon: 'check-circle' }
+    1: { title: t('registration.basicInfoStep'), desc: t('registration.basicInfoDesc'), cta: t('registration.ctaContinueMachine'), ctaIcon: 'arrow-forward' },
+    2: { title: t('registration.machineDetailsStep'), desc: t('registration.machineDetailsDesc'), cta: t('registration.ctaContinuePhotos'), ctaIcon: 'photo-camera' },
+    3: { title: t('registration.workCapabilityStep'), desc: t('registration.workCapabilityDesc'), cta: t('registration.ctaComplete'), ctaIcon: 'check-circle' }
   } as const;
 
   const currentStatus = stepContent[step as keyof typeof stepContent];
@@ -143,7 +146,8 @@ export default function OwnerRegistrationScreen() {
           model: year,
           pricePerHour: rate,
           pricePerAcre: rate,
-          images: imageUrls
+          images: imageUrls,
+          lang: i18n.language
         });
 
         console.log('[Registration] Profile completed successfully');
@@ -185,7 +189,7 @@ export default function OwnerRegistrationScreen() {
             </TouchableOpacity>
           )}
           <Text style={{ fontFamily: 'headline', fontWeight: 'bold', fontSize: 20, color: '#0d631b', letterSpacing: -0.5 }}>
-            {step === 1 ? 'User Details' : step === 2 ? 'Machine Details' : 'Work Capability'}
+            {step === 1 ? t('registration.step1Title') : step === 2 ? t('registration.step2Title') : t('registration.step3Title')}
           </Text>
         </View>
       </View>
@@ -208,6 +212,7 @@ export default function OwnerRegistrationScreen() {
               pincode={pincode} setPincode={setPincode}
               profileImage={profileImage} setProfileImage={setProfileImage}
               loadingLocation={loadingLocation} onUseLocation={fetchLiveLocation}
+              phone={useAuthStore.getState().user?.phone}
             />
           ) : step === 2 ? (
             <Step2MachineDetails
@@ -231,9 +236,9 @@ export default function OwnerRegistrationScreen() {
                 <MaterialIcons name="info" size={20} color="#005312" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: 'bold', color: '#1a1c19', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Why we need this?</Text>
+                <Text style={{ fontWeight: 'bold', color: '#1a1c19', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{t('registration.whyNeedThis')}</Text>
                 <Text style={{ fontSize: 14, color: '#40493d', lineHeight: 22 }}>
-                  Your location helps farmers nearby find your machinery quickly during harvest peak seasons.
+                  {t('registration.locationReason')}
                 </Text>
               </View>
             </View>
@@ -251,7 +256,7 @@ export default function OwnerRegistrationScreen() {
           >
             <LinearGradient colors={['#0d631b', '#2e7d32']} style={{ height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
               <Text style={{ color: '#fff', fontFamily: 'headline', fontWeight: 'bold', fontSize: 20 }}>
-                {loading ? 'Uploading...' : currentStatus.cta}
+                {loading ? t('registration.uploading') : currentStatus.cta}
               </Text>
               {!loading && (currentStatus as any).ctaIcon && (
                 <MaterialIcons name={(currentStatus as any).ctaIcon} size={24} color="#fff" />
