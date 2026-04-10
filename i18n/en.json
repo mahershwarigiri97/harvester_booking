@@ -14,7 +14,11 @@
     "notifications": "Notifications",
     "availableNearYou": "Available Near You",
     "continue": "Continue",
-    "selectRole": "Select Role"
+    "selectRole": "Select Role",
+    "earnings": "Earnings",
+    "online": "Online",
+    "offline": "Offline",
+    "yourLocation": "Your Location"
   },
   "map": {
     "findHarvester": "Find nearby harvesters",
@@ -54,5 +58,13 @@
     "ownerDesc": "Register your machines and manage bookings. Grow your business by reaching more farmers.",
     "selectToProceed": "Please select a role to proceed",
     "readyToEnter": "Press continue to enter Harvester Hub"
+  },
+  "owner": {
+    "todayEarnings": "Today's Earnings",
+    "activeJobs": "Active Jobs",
+    "totalJobs": "Total Jobs",
+    "liveActivity": "Live Activity",
+    "noBookings": "No active bookings found",
+    "newRequests": "New requests will appear here"
   }
 }

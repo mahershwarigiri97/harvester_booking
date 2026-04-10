@@ -1,8 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 function OwnerTabBar({ state, descriptors, navigation }: any) {
+  const { t } = useTranslation();
   return (
     <View
       className="absolute bottom-0 left-0 right-0 w-full flex-row justify-around items-center px-4 pt-3 pb-6 bg-surface dark:bg-inverse-surface rounded-t-3xl z-50"
@@ -37,16 +39,16 @@ function OwnerTabBar({ state, descriptors, navigation }: any) {
         };
 
         let iconName: any = 'home';
-        let label = 'Home';
+        let label = t('common.home');
         if (route.name === 'bookings') {
           iconName = 'history';
-          label = 'Bookings';
+          label = t('common.bookings');
         } else if (route.name === 'earnings') {
           iconName = 'payments';
-          label = 'Earnings';
+          label = t('common.earnings');
         } else if (route.name === 'profile') {
           iconName = 'person';
-          label = 'Profile';
+          label = t('common.profile');
         }
 
         return (

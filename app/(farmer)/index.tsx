@@ -18,13 +18,6 @@ export default function HomeScreen() {
   const { locationName, currentLocation } = useCurrentLocation();
   const { t, i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const langs = ['en', 'hi', 'mr'];
-    const currentIndex = langs.indexOf(i18n.language);
-    const nextIndex = (currentIndex + 1) % langs.length;
-    i18n.changeLanguage(langs[nextIndex]);
-  };
-
   const { data: harvesters = [], isLoading } = useQuery({
     queryKey: ['harvesters', currentLocation?.coords.latitude, currentLocation?.coords.longitude],
     queryFn: async () => {
@@ -77,12 +70,6 @@ export default function HomeScreen() {
       <View className="flex-1 px-4 pt-4">
         <View className="flex-row items-center justify-between">
           <SearchBar />
-          <TouchableOpacity 
-            onPress={toggleLanguage}
-            className="ml-2 p-2 bg-secondary/10 rounded-full"
-          >
-            <MaterialIcons name="language" size={24} color="#0d631b" />
-          </TouchableOpacity>
         </View>
 
         {isLoading ? (

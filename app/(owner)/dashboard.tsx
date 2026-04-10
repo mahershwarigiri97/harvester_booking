@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../utils/api';
 import { useAuthStore } from '../../utils/authStore';
 import BookingRequestPopup from '../../components/BookingRequestPopup';
@@ -16,6 +17,7 @@ import { useRouter } from 'expo-router';
 
 export default function OwnerDashboard() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { locationName, currentLocation } = useCurrentLocation(true);
   const [isOnline, setIsOnline] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -81,7 +83,7 @@ export default function OwnerDashboard() {
       !['completed', 'cancelled'].includes(b.status)
     );
   }, [user]);
-  console.log(user, "user");
+
   if (isLoading && !user) {
     return <DashboardSkeleton />;
   }
@@ -104,7 +106,7 @@ export default function OwnerDashboard() {
               />
             </View>
             <View className="flex-col">
-              <Text className="font-headline font-bold text-lg text-primary">{user?.name || 'Harvester Owner'}</Text>
+              <Text className="font-headline font-bold text-lg text-primary">{user?.name || t('role.ownerTitle')}</Text>
               <View className="flex-row items-center gap-1">
                 <MaterialIcons name="location-on" size={14} color="#0d631b" />
                 <Text className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
@@ -151,7 +153,7 @@ export default function OwnerDashboard() {
                     style={Platform.OS === 'ios' ? { transform: [{ scale: 0.85 }] } : undefined}
                   />
                 </View>
-                <Text className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1 mr-1">{isOnline ? 'Online' : 'Offline'}</Text>
+                <Text className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1 mr-1">{isOnline ? t('common.online') : t('common.offline')}</Text>
               </View>
             </View>
           </View>
@@ -175,11 +177,11 @@ export default function OwnerDashboard() {
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                   className="w-full p-6"
                 >
-                  <Text className="text-on-primary/80 text-sm font-semibold">Today's Earnings</Text>
+                  <Text className="text-on-primary/80 text-sm font-semibold">{t('owner.todayEarnings')}</Text>
                   <Text className="text-4xl font-headline font-black text-on-primary mt-2">₹{todayEarnings.toLocaleString()}</Text>
                   <View className="mt-4 flex-row items-center gap-1 bg-white/20 px-3 py-1 rounded-full self-start">
                     <MaterialIcons name="trending-up" size={16} color="white" />
-                    <Text className="text-on-primary text-xs">Dynamic from Completed Jobs</Text>
+                    <Text className="text-on-primary text-xs">{t('common.earnings')}</Text>
                   </View>
                 </LinearGradient>
               </View>
@@ -197,11 +199,11 @@ export default function OwnerDashboard() {
                   shadowRadius: 20,
                 }}
               >
-                <Text className="text-on-surface-variant text-sm font-semibold">Bookings</Text>
+                <Text className="text-on-surface-variant text-sm font-semibold">{t('common.bookings')}</Text>
                 <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
                   {activeBookingsCount}
                 </Text>
-                <Text className="text-xs text-primary font-bold mt-2 uppercase">Active Jobs</Text>
+                <Text className="text-xs text-primary font-bold mt-2 uppercase">{t('owner.activeJobs')}</Text>
               </View>
 
               <View
@@ -214,7 +216,7 @@ export default function OwnerDashboard() {
                   shadowRadius: 20,
                 }}
               >
-                <Text className="text-on-surface-variant text-sm font-semibold">Total Jobs</Text>
+                <Text className="text-on-surface-variant text-sm font-semibold">{t('owner.totalJobs')}</Text>
                 <Text className="text-3xl font-headline font-bold text-on-surface mt-1">
                   {totalCompletedJobs}
                 </Text>
@@ -226,7 +228,7 @@ export default function OwnerDashboard() {
           {/* New Booking Requests */}
           <View className="flex-col mt-4">
             <View className="flex-row items-center justify-between mb-6">
-              <Text className="font-headline font-bold text-xl text-primary">Live Activity</Text>
+              <Text className="font-headline font-bold text-xl text-primary">{t('owner.liveActivity')}</Text>
               <View className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'bg-error-container' : 'bg-primary-container'} px-3 py-1 rounded-full`}>
                 <Text className={`${pendingBookings.some((b: any) => b && b.status === 'requested') ? 'text-on-error-container' : 'text-on-primary-container'} text-xs font-bold`}>
                   {pendingBookings.length} {pendingBookings.some((b: any) => b && b.status === 'requested') ? 'NEW' : 'ACTIVE'}
@@ -238,8 +240,8 @@ export default function OwnerDashboard() {
               {pendingBookings.length === 0 ? (
                 <View className="items-center py-12 bg-surface-container-lowest rounded-[32px] border border-outline/10">
                   <MaterialIcons name="event-note" size={48} color="#bfcaba" />
-                  <Text className="text-on-surface-variant font-bold mt-4">No active bookings found</Text>
-                  <Text className="text-on-surface-variant text-xs mt-1">New requests will appear here</Text>
+                  <Text className="text-on-surface-variant font-bold mt-4">{t('owner.noBookings')}</Text>
+                  <Text className="text-on-surface-variant text-xs mt-1">{t('owner.newRequests')}</Text>
                 </View>
               ) : (
                 pendingBookings.map((booking: any) => (
@@ -269,7 +271,7 @@ export default function OwnerDashboard() {
                 <MaterialIcons name="social-distance" size={24} color="#0d631b" />
               </View>
               <View>
-                <Text className="text-xs font-bold text-on-surface-variant uppercase">Your Location</Text>
+                <Text className="text-xs font-bold text-on-surface-variant uppercase">{t('common.yourLocation')}</Text>
                 <Text className="font-bold text-on-surface">{locationName}</Text>
               </View>
             </View>

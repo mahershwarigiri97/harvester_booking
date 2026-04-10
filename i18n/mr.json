@@ -14,7 +14,11 @@
     "notifications": "सूचना",
     "availableNearYou": "तुमच्या जवळ उपलब्ध",
     "continue": "पुढे चला",
-    "selectRole": "निवडा"
+    "selectRole": "निवडा",
+    "earnings": "कमाई",
+    "online": "सुरू",
+    "offline": "बंद",
+    "yourLocation": "तुमचे ठिकाण"
   },
   "map": {
     "findHarvester": "जवळचे हार्वेस्टर शोधा",
@@ -54,5 +58,13 @@
     "ownerDesc": "तुमच्या मशिन्सची नोंदणी करा आणि बुकिंग मिळवा. आपला व्यवसाय वाढवा.",
     "selectToProceed": "पुढे जाण्यासाठी एक पर्याय निवडा",
     "readyToEnter": "हार्वेस्टर हबमध्ये जाण्यासाठी क्लिक करा"
+  },
+  "owner": {
+    "todayEarnings": "आजची कमाई",
+    "activeJobs": "सध्याची कामे",
+    "totalJobs": "एकूण कामे",
+    "liveActivity": "सध्याची हालचाल",
+    "noBookings": "कोणतेही बुकिंग मिळाले नाही",
+    "newRequests": "नवीन बुकिंग इथे दिसतील"
   }
 }
