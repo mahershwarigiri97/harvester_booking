@@ -1,8 +1,10 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
+  const { t } = useTranslation();
   return (
     <View 
       className="absolute bottom-0 left-0 w-full h-24 bg-white flex-row justify-around items-center px-4 pb-2 rounded-t-[32px] z-50"
@@ -34,16 +36,16 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         let label = 'Tab';
         if (route.name === 'index') {
           iconName = 'home-work';
-          label = 'Home';
+          label = t('common.home');
         } else if (route.name === 'bookings') {
           iconName = 'agriculture';
-          label = 'Bookings';
+          label = t('common.bookings');
         } else if (route.name === 'profile') {
           iconName = 'person';
-          label = 'Profile';
+          label = t('common.profile');
         } else if (route.name === 'map') {
           iconName = 'map';
-          label = 'Map';
+          label = t('common.map');
         }
 
         return (

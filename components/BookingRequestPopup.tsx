@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, Animated, Easing, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle } from 'react-native-svg';
-import MapView, { Marker, UrlTile, Polyline } from 'react-native-maps';
+import { LeafletMap } from './LeafletMap';
 import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../utils/api';
-import { Alert } from 'react-native';
 import SuccessModal from './SuccessModal';
 
 interface BookingRequestPopupProps {
@@ -40,60 +38,6 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
   });
 
   if (!booking && visible) return null;
-
-  const destLat = booking?.full_address?.latitude;
-  const destLng = booking?.full_address?.longitude;
-  const sourceLat = currentLocation?.coords?.latitude;
-  const sourceLng = currentLocation?.coords?.longitude;
-
-  const initialRegion = sourceLat && sourceLng && destLat && destLng ? {
-    latitude: (sourceLat + destLat) / 2,
-    longitude: (sourceLng + destLng) / 2,
-    latitudeDelta: Math.abs(sourceLat - destLat) * 1.5 + 0.01,
-    longitudeDelta: Math.abs(sourceLng - destLng) * 1.5 + 0.01,
-  } : {
-    latitude: destLat || 20.5937,
-    longitude: destLng || 78.9629,
-    latitudeDelta: 0.02,
-    longitudeDelta: 0.02,
-  };
-
-  const [routeCoords, setRouteCoords] = useState<{latitude: number, longitude: number}[]>([]);
-
-  useEffect(() => {
-    if (sourceLat && sourceLng && destLat && destLng) {
-      const fetchRoute = async () => {
-        try {
-          const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${sourceLng},${sourceLat};${destLng},${destLat}?overview=full&geometries=geojson`);
-          const data = await res.json();
-          if (data.routes && data.routes.length > 0) {
-            const coords = data.routes[0].geometry.coordinates.map((c: any) => ({
-              latitude: c[1],
-              longitude: c[0]
-            }));
-            setRouteCoords(coords);
-          } else {
-             setRouteCoords([{ latitude: sourceLat, longitude: sourceLng }, { latitude: destLat, longitude: destLng }]);
-          }
-        } catch (e) {
-          setRouteCoords([{ latitude: sourceLat, longitude: sourceLng }, { latitude: destLat, longitude: destLng }]);
-        }
-      };
-      fetchRoute();
-    }
-  }, [sourceLat, sourceLng, destLat, destLng]);
-  const mapRef = React.useRef<MapView>(null);
-
-  useEffect(() => {
-    if (routeCoords.length > 0 && mapRef.current) {
-      setTimeout(() => {
-        mapRef.current?.fitToCoordinates(routeCoords, {
-          edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
-          animated: true,
-        });
-      }, 500);
-    }
-  }, [routeCoords]);
 
   return (
     <Modal 
@@ -170,72 +114,28 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
                 </Text>
               </View>
               <View className="h-48 w-full rounded-[32px] overflow-hidden bg-surface-container-highest relative">
-                <MapView
-                  ref={mapRef}
-                  style={{ width: '100%', height: '100%' }}
-                  initialRegion={initialRegion}
-                  scrollEnabled={true}
-                  zoomEnabled={true}
-                  pitchEnabled={false}
-                  rotateEnabled={false}
-                  mapType="none"
-                >
-                  <UrlTile
-                    urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
-                    maximumZ={19}
-                    flipY={false}
-                    tileSize={512}
-                  />
-                  {(booking?.full_address?.latitude && booking?.full_address?.longitude && currentLocation?.coords) && (
-                    <>
-                      <Polyline 
-                        coordinates={routeCoords.length > 0 ? routeCoords : [
-                          {
-                            latitude: currentLocation.coords.latitude,
-                            longitude: currentLocation.coords.longitude,
-                          },
-                          {
-                            latitude: booking.full_address.latitude,
-                            longitude: booking.full_address.longitude,
-                          }
-                        ]}
-                        strokeColor="#0d631b"
-                        strokeWidth={4}
-                      />
-                      <Marker
-                        coordinate={{
-                          latitude: currentLocation.coords.latitude,
-                          longitude: currentLocation.coords.longitude,
-                        }}
-                        anchor={{ x: 0.5, y: 0.5 }}
-                        title="Your Location"
-                      >
-                        <View className="items-center justify-center">
-                          <View className="w-6 h-6 bg-secondary-fixed rounded-full border-[3px] border-white flex items-center justify-center shadow-sm">
-                            <View className="w-2 h-2 bg-[#2a1800] rounded-full" />
-                          </View>
-                        </View>
-                      </Marker>
-                    </>
-                  )}
-                  <Marker
-                    coordinate={{
+                <LeafletMap
+                  initialRegion={{
+                    latitude: booking?.full_address?.latitude || 20.5937,
+                    longitude: booking?.full_address?.longitude || 78.9629,
+                  }}
+                  markers={[
+                    ...(currentLocation?.coords ? [{
+                      id: 'owner',
+                      latitude: currentLocation.coords.latitude,
+                      longitude: currentLocation.coords.longitude,
+                      icon: 'owner' as const,
+                      title: 'Your Location'
+                    }] : []),
+                    {
+                      id: 'farmer',
                       latitude: booking?.full_address?.latitude || 20.5937,
                       longitude: booking?.full_address?.longitude || 78.9629,
-                    }}
-                    title="Farmer's Location"
-                  >
-                    <View className="items-center justify-center">
-                      <View 
-                        className="w-10 h-10 bg-primary rounded-full flex items-center justify-center border-2 border-white" 
-                        style={{ elevation: 12, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
-                      >
-                        <MaterialIcons name="agriculture" size={20} color="white" />
-                      </View>
-                      <View className="mt-1 w-4 h-1 bg-black/40 rounded-full" />
-                    </View>
-                  </Marker>
-                </MapView>
+                      icon: 'farmer' as const,
+                      title: 'Farmer Location'
+                    }
+                  ]}
+                />
                 <LinearGradient 
                   colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)']} 
                   className="absolute inset-x-0 bottom-0 h-1/3" 

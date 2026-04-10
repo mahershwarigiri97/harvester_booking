@@ -1,22 +1,41 @@
-import MapView, { Marker, UrlTile } from 'react-native-maps';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DistanceBadge } from './DistanceBadge';
+import { LeafletMap } from './LeafletMap';
 
 // ─────────────────────────────────────────────────────
 export function HarvesterMap({
   ownerLocation,
-  farmerLocation
+  farmerLocation,
+  availableHarvesters = []
 }: {
   ownerLocation?: { current_latitude: number; current_longitude: number } | null;
   farmerLocation?: { latitude: number; longitude: number } | null;
+  availableHarvesters?: any[];
 }) {
-  const initialRegion = {
-    latitude: ownerLocation?.current_latitude || farmerLocation?.latitude || 20.5937,
-    longitude: ownerLocation?.current_longitude || farmerLocation?.longitude || 78.9629,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  };
+  const markers = React.useMemo(() => {
+    const m = [];
+    if (ownerLocation) {
+      m.push({
+        id: 'owner',
+        latitude: ownerLocation.current_latitude,
+        longitude: ownerLocation.current_longitude,
+        icon: 'harvester' as const,
+        title: 'Harvester'
+      });
+    }
+    if (farmerLocation) {
+      m.push({
+        id: 'farmer',
+        latitude: farmerLocation.latitude,
+        longitude: farmerLocation.longitude,
+        icon: 'farmer' as const,
+        title: 'You'
+      });
+    }
+    return m;
+  }, [ownerLocation, farmerLocation]);
 
   return (
     <View style={{ marginBottom: 32 }}>
@@ -54,41 +73,13 @@ export function HarvesterMap({
           shadowRadius: 6,
         }}
       >
-        <MapView
-          style={{ flex: 1 }}
-          initialRegion={initialRegion}
-          scrollEnabled={false}
-          zoomEnabled={false}
-          rotateEnabled={false}
-          pitchEnabled={false}
-          mapType="none"
-        >
-          <UrlTile
-            urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
-            maximumZ={19}
-            flipY={false}
-            tileSize={512}
-          />
-          {ownerLocation && (
-            <Marker
-              coordinate={{
-                latitude: ownerLocation.current_latitude,
-                longitude: ownerLocation.current_longitude,
-              }}
-              title="Harvester"
-            />
-          )}
-          {farmerLocation && (
-            <Marker
-              coordinate={{
-                latitude: farmerLocation.latitude,
-                longitude: farmerLocation.longitude,
-              }}
-              title="You"
-              pinColor="blue"
-            />
-          )}
-        </MapView>
+        <LeafletMap
+          initialRegion={{
+            latitude: ownerLocation?.current_latitude || farmerLocation?.latitude || 20.5937,
+            longitude: ownerLocation?.current_longitude || farmerLocation?.longitude || 78.9629,
+          }}
+          markers={markers}
+        />
 
         {/* Subtle overlay (for non-interactive look) */}
         <View

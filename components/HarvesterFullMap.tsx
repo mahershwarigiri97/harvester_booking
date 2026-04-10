@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Image, Text } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { LeafletMap } from './LeafletMap';
 import { MaterialIcons } from '@expo/vector-icons';
 
 interface Harvester {
@@ -10,6 +10,12 @@ interface Harvester {
   rating: string;
   image?: string | null;
   ownerLocation?: {
+    current_latitude: number;
+    current_longitude: number;
+  } | null;
+  brand?: string;
+  model?: string;
+  owner?: {
     current_latitude: number;
     current_longitude: number;
   } | null;
@@ -24,122 +30,40 @@ interface HarvesterFullMapProps {
   onPressMarker?: (id: string) => void;
 }
 
-function HarvesterMarker({ image, price }: { image?: string | null; price: string }) {
-  return (
-    <View style={markerStyles.wrapper}>
-      {/* Pin circle */}
-      <View style={markerStyles.circle}>
-        {image ? (
-          <Image source={{ uri: image }} style={markerStyles.image} />
-        ) : (
-          <View style={markerStyles.fallback}>
-            <MaterialIcons name="agriculture" size={22} color="#fff" />
-          </View>
-        )}
-      </View>
-      {/* Price badge */}
-      <View style={markerStyles.badge}>
-        <Text style={markerStyles.badgeText}>{price}</Text>
-      </View>
-      {/* Pin tail */}
-      <View style={markerStyles.tail} />
-    </View>
-  );
-}
-
 export function HarvesterFullMap({ harvesters, userLocation, onPressMarker }: HarvesterFullMapProps) {
-  const mapRef = React.useRef<MapView>(null);
+  const markers = React.useMemo(() => {
+    return harvesters.map(h => ({
+      id: h.id.toString(),
+      latitude: h.owner?.current_latitude || h.ownerLocation?.current_latitude || 0,
+      longitude: h.owner?.current_longitude || h.ownerLocation?.current_longitude || 0,
+      icon: 'harvester' as any,
+      title: (h.brand || h.name || '') + ' ' + (h.model || '')
+    }));
+  }, [harvesters]);
 
-  React.useEffect(() => {
-    if (userLocation && harvesters.length > 0 && mapRef.current) {
-      const sorted = [...harvesters]
-        .filter(h => h.ownerLocation?.current_latitude && h.ownerLocation?.current_longitude)
-        .sort((a, b) => {
-          const latA = a.ownerLocation!.current_latitude;
-          const lngA = a.ownerLocation!.current_longitude;
-          const latB = b.ownerLocation!.current_latitude;
-          const lngB = b.ownerLocation!.current_longitude;
-          const distA = Math.pow(latA - userLocation.latitude, 2) + Math.pow(lngA - userLocation.longitude, 2);
-          const distB = Math.pow(latB - userLocation.latitude, 2) + Math.pow(lngB - userLocation.longitude, 2);
-          return distA - distB;
-        });
-
-      const nearest = sorted.slice(0, 3);
-      if (nearest.length > 0) {
-        const coordsToFit = [
-          userLocation,
-          ...nearest.map(h => ({
-            latitude: h.ownerLocation!.current_latitude,
-            longitude: h.ownerLocation!.current_longitude
-          }))
-        ];
-
-        setTimeout(() => {
-          mapRef.current?.fitToCoordinates(coordsToFit, {
-            edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
-            animated: true,
-          });
-        }, 500);
-      }
+  const finalMarkers = React.useMemo(() => {
+    const list = [...markers];
+    if (userLocation) {
+      list.push({
+        id: 'user',
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        icon: 'farmer' as const,
+        title: 'Your Location'
+      });
     }
-  }, [harvesters, userLocation]);
-
-  const initialRegion = {
-    latitude: userLocation?.latitude || 20.5937,
-    longitude: userLocation?.longitude || 78.9629,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  };
+    return list;
+  }, [markers, userLocation]);
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={initialRegion}
-        mapType="none"
-      >
-        <UrlTile
-          urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
-          maximumZ={19}
-          flipY={false}
-          tileSize={512}
-        />
-
-        {/* User location marker */}
-        {userLocation && (
-          <Marker
-            coordinate={userLocation}
-            title="You"
-            description="Your current location"
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View style={markerStyles.userMarker}>
-              <MaterialIcons name="person-pin-circle" size={36} color="#1565C0" />
-            </View>
-          </Marker>
-        )}
-
-        {/* Harvester markers */}
-        {harvesters.map((item) => {
-          const lat = item.ownerLocation?.current_latitude;
-          const lng = item.ownerLocation?.current_longitude;
-          if (!lat || !lng) return null;
-
-          return (
-            <Marker
-              key={item.id}
-              coordinate={{ latitude: lat, longitude: lng }}
-              title={item.name}
-              description={`${item.price}  •  ⭐ ${item.rating}  •  Tap to view`}
-              onPress={() => onPressMarker?.(item.id)}
-              anchor={{ x: 0.5, y: 1 }}
-            >
-              <HarvesterMarker image={item.image} price={item.price} />
-            </Marker>
-          );
-        })}
-      </MapView>
+      <LeafletMap
+        initialRegion={{
+          latitude: userLocation?.latitude || 20.5937,
+          longitude: userLocation?.longitude || 78.9629,
+        }}
+        markers={finalMarkers}
+      />
     </View>
   );
 }

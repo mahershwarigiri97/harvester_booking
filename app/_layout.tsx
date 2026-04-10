@@ -9,6 +9,7 @@ import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
+import '../i18n';
 import { useAuthStore } from '../utils/authStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 

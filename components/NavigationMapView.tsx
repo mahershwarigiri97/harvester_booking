@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native';
-import MapView, { Marker, UrlTile, Polyline } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LeafletMap } from './LeafletMap';
 
 import { fetchRouteCoordinates, calculateDistance } from '../utils/locationUtils';
 
@@ -15,8 +15,8 @@ interface NavigationMapProps {
   ownerHeading?: number | null;
 }
 
+
 export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords, ownerHeading }: NavigationMapProps) {
-  const mapRef = React.useRef<MapView>(null);
   const [routeCoordinates, setRouteCoordinates] = React.useState<{ latitude: number; longitude: number }[]>([]);
   const [navigationSteps, setNavigationSteps] = React.useState<any[]>([]);
   const [stableHeading, setStableHeading] = React.useState<number>(0);
@@ -30,16 +30,6 @@ export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords
       }
     }
   }, [ownerHeading]);
-
-  React.useEffect(() => {
-    if (ownerCoords && mapRef.current) {
-      mapRef.current.animateToRegion({
-        ...ownerCoords,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      }, 500);
-    }
-  }, [ownerCoords?.latitude, ownerCoords?.longitude]);
 
   const lastRouteFetchPos = React.useRef<{ latitude: number; longitude: number } | null>(null);
 
@@ -95,82 +85,38 @@ export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords
     });
   }, [ownerCoords?.latitude, ownerCoords?.longitude, navigationSteps]);
 
-  const renderFarmerMarker = React.useMemo(() => {
-    if (!farmerCoords) return null;
-    return (
-      <Marker coordinate={farmerCoords} title="Farmer's Field">
-        <View className="items-center justify-center">
-          <View className="bg-red-500 p-2 rounded-full border-2 border-white shadow-lg">
-            <MaterialIcons name="location-on" size={20} color="white" />
-          </View>
-        </View>
-      </Marker>
-    );
-  }, [farmerCoords?.latitude, farmerCoords?.longitude]);
-
-  const renderOwnerMarker = React.useMemo(() => {
-    if (!ownerCoords) return null;
-    return (
-      <Marker 
-        coordinate={ownerCoords} 
-        title="Your Location"
-        anchor={{ x: 0.5, y: 0.5 }}
-        rotation={stableHeading}
-        flat={true}
-      >
-        <View className="items-center justify-center">
-          <View 
-            className="bg-primary p-2 rounded-full border-2 border-white shadow-lg"
-            style={{ 
-              shadowColor: '#0d631b',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8
-            }}
-          >
-            <MaterialIcons 
-              name="navigation" 
-              size={20} 
-              color="white" 
-              style={{ transform: [{ rotate: '-45deg' }] }} 
-            />
-          </View>
-        </View>
-      </Marker>
-    );
-  }, [ownerCoords?.latitude, ownerCoords?.longitude, stableHeading]);
+  const markers = React.useMemo(() => {
+    const list = [];
+    if (farmerCoords) {
+      list.push({
+        id: 'farmer',
+        latitude: farmerCoords.latitude,
+        longitude: farmerCoords.longitude,
+        icon: 'farmer' as const
+      });
+    }
+    if (ownerCoords) {
+      list.push({
+        id: 'owner',
+        latitude: ownerCoords.latitude,
+        longitude: ownerCoords.longitude,
+        icon: 'owner' as const,
+        heading: stableHeading
+      });
+    }
+    return list;
+  }, [farmerCoords, ownerCoords, stableHeading]);
 
   return (
     <View style={StyleSheet.absoluteFillObject}>
-      <MapView
-        ref={mapRef}
-        style={{ flex: 1 }}
+      <LeafletMap
         initialRegion={{
           latitude: center.latitude,
           longitude: center.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
         }}
-        mapType="none"
-      >
-        <UrlTile
-          urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
-          maximumZ={19}
-          flipY={false}
-          tileSize={512}
-        />
-
-        {renderFarmerMarker}
-        {renderOwnerMarker}
-
-        {routeCoordinates.length > 0 && (
-          <Polyline
-            coordinates={routeCoordinates}
-            strokeColor={navigationStarted ? '#0d631b' : '#fcab28'}
-            strokeWidth={4}
-          />
-        )}
-      </MapView>
+        markers={markers}
+        polyLine={routeCoordinates}
+      />
 
       {/* Single Navigation Guidance Card (Focused) */}
       {navigationStarted && upcomingSteps.length > 0 && (

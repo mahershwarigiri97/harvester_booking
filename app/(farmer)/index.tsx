@@ -3,6 +3,7 @@ import { View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '../../components/HomeHeader';
 import { SearchBar } from '../../components/SearchBar';
 import { ListingCard } from '../../components/ListingCard';
@@ -13,9 +14,16 @@ import { authApi } from '../../utils/api';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { getLastJobDuration } from '../../utils/bookingUtils';
 
-
 export default function HomeScreen() {
   const { locationName, currentLocation } = useCurrentLocation();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const langs = ['en', 'hi', 'mr'];
+    const currentIndex = langs.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % langs.length;
+    i18n.changeLanguage(langs[nextIndex]);
+  };
 
   const { data: harvesters = [], isLoading } = useQuery({
     queryKey: ['harvesters', currentLocation?.coords.latitude, currentLocation?.coords.longitude],
@@ -67,7 +75,15 @@ export default function HomeScreen() {
       <HomeHeader location={locationName} />
 
       <View className="flex-1 px-4 pt-4">
-        <SearchBar />
+        <View className="flex-row items-center justify-between">
+          <SearchBar />
+          <TouchableOpacity 
+            onPress={toggleLanguage}
+            className="ml-2 p-2 bg-secondary/10 rounded-full"
+          >
+            <MaterialIcons name="language" size={24} color="#0d631b" />
+          </TouchableOpacity>
+        </View>
 
         {isLoading ? (
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
@@ -77,8 +93,10 @@ export default function HomeScreen() {
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
             <View className="pt-2">
               <View className="flex-row items-baseline justify-between mb-4">
-                <Text className="text-2xl font-headline font-extrabold text-primary tracking-tight">Available Near You</Text>
-                <Text className="text-sm font-bold text-secondary">{harvesters.length} Units</Text>
+                <Text className="text-2xl font-headline font-extrabold text-primary tracking-tight">
+                  {t('common.availableNearYou')}
+                </Text>
+                <Text className="text-sm font-bold text-secondary">{harvesters.length} {t('common.units')}</Text>
               </View>
 
               {harvesters.map((item: any) => (

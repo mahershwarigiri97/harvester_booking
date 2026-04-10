@@ -6,18 +6,27 @@ import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { OtpCounter } from '../components/OtpCounter';
 import { authApi } from '../utils/api';
 import { useAuthStore } from '../utils/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const insets = useSafeAreaInsets();
+
+  const toggleLanguage = () => {
+    const langs = ['en', 'hi', 'mr'];
+    const currentIndex = langs.indexOf(i18n.language);
+    const nextIndex = (currentIndex + 1) % langs.length;
+    i18n.changeLanguage(langs[nextIndex]);
+  };
 
   const sendOtpMutation = useMutation({
     mutationFn: (phone: string) => authApi.sendOtp(phone),
@@ -27,7 +36,7 @@ export default function LoginScreen() {
     },
     onError: (error: any) => {
       console.error('Send OTP Error:', error);
-      setPhoneError(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+      setPhoneError(error.response?.data?.message || t('login.invalidPhone'));
     }
   });
 
@@ -43,7 +52,7 @@ export default function LoginScreen() {
       }
     },
     onError: (error: any) => {
-      setPhoneError(error.response?.data?.message || 'Verification failed');
+      setPhoneError(error.response?.data?.message || t('login.verifyOtp'));
     }
   });
 
@@ -68,7 +77,7 @@ export default function LoginScreen() {
 
   const handleSendOTP = () => {
     if (phoneNumber.length !== 10) {
-      setPhoneError('Please enter a valid 10-digit mobile number.');
+      setPhoneError(t('login.invalidPhone'));
       return;
     }
     sendOtpMutation.mutate(phoneNumber);
@@ -83,6 +92,16 @@ export default function LoginScreen() {
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <StatusBar hidden />
+      
+      {/* Language Switcher */}
+      <TouchableOpacity 
+        onPress={toggleLanguage}
+        className="absolute top-12 right-6 z-50 flex-row items-center bg-white/80 px-4 py-2 rounded-full border border-outline-variant shadow-sm"
+      >
+        <MaterialIcons name="language" size={20} color="#0d631b" />
+        <Text className="ml-2 font-bold text-sm text-primary uppercase">{i18n.language}</Text>
+      </TouchableOpacity>
+
       <View className="absolute top-[-100px] right-[-100px] w-64 h-64 bg-[#a3f69c] opacity-20 rounded-full" />
       <View className="absolute bottom-[-150px] left-[-150px] w-80 h-80 bg-[#ffddb5] opacity-20 rounded-full" />
 
@@ -97,10 +116,10 @@ export default function LoginScreen() {
               <MaterialIcons name="agriculture" size={40} color="white" />
             </View>
             <Text className="font-headline font-extrabold text-3xl text-primary tracking-tighter">
-              Harvester Hub
+              {t('login.appName')}
             </Text>
-            <Text className="text-on-surface-variant mt-2 font-medium">
-              Welcome to your digital harvest partner
+            <Text className="text-on-surface-variant mt-2 font-medium text-center px-4">
+              {t('login.welcomeSubtitle')}
             </Text>
           </View>
 
@@ -108,17 +127,17 @@ export default function LoginScreen() {
             <View className="w-full bg-surface-container-low p-8 rounded-[40px]" style={styles.cardShadow}>
               <View className="mb-6">
                 <Text className="font-headline font-bold text-xl text-on-surface mb-2">
-                  Get Started
+                  {t('login.getStarted')}
                 </Text>
                 <Text className="text-on-surface-variant text-sm">
-                  Enter your phone number to continue
+                  {t('login.enterPhone')}
                 </Text>
               </View>
 
               <View className="space-y-4">
                 <View>
                   <Text className="text-xs font-bold text-primary mb-2 uppercase tracking-widest px-1">
-                    Mobile Number
+                    {t('login.mobileNumber')}
                   </Text>
                   <View className={`flex-row items-center bg-surface-container-lowest rounded-xl px-4 h-16 border ${phoneError ? 'border-error' : 'border-transparent focus:border-primary/20'}`} style={styles.inputShadow}>
                     <View className="border-r border-outline-variant pr-4 mr-4">
@@ -158,7 +177,7 @@ export default function LoginScreen() {
                     style={styles.buttonShadow}
                   >
                     <Text className="text-on-primary font-headline font-bold text-lg mr-3">
-                      {loading ? 'Sending...' : 'Send OTP'}
+                      {loading ? t('login.sending') : t('login.sendOtp')}
                     </Text>
                     {!loading && <MaterialIcons name="arrow-forward" size={24} color="white" />}
                   </LinearGradient>
@@ -169,10 +188,10 @@ export default function LoginScreen() {
             <View className="w-full bg-surface-container-low p-8 rounded-[40px]" style={styles.cardShadow}>
               <View className="mb-6">
                 <Text className="font-headline font-bold text-xl text-on-surface mb-2">
-                  Verify OTP
+                  {t('login.verifyOtp')}
                 </Text>
                 <Text className="text-on-surface-variant text-sm">
-                  Sent to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, '$1 $2')}
+                  {t('login.sentTo')} +91 {phoneNumber.replace(/(\d{5})(\d{5})/, '$1 $2')}
                 </Text>
               </View>
 
@@ -218,13 +237,13 @@ export default function LoginScreen() {
                     style={isOtpComplete && !loading ? styles.buttonShadow : undefined}
                   >
                     <Text className={`font-headline font-bold text-lg ${isOtpComplete && !loading ? 'text-on-secondary-container' : 'text-outline-variant'}`}>
-                      {loading ? 'Verifying...' : 'Verify & Login'}
+                      {loading ? t('login.verifying') : t('login.verifyLogin')}
                     </Text>
                   </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => { setStep('phone'); setPhoneError(''); }} className="mt-4 pt-2 items-center" style={{ outlineStyle: 'none' } as any}>
-                  <Text className="text-outline text-xs underline">Change number</Text>
+                  <Text className="text-outline text-xs underline">{t('login.changeNumber')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -233,11 +252,11 @@ export default function LoginScreen() {
           <View className="mt-12 items-center gap-4">
             <TouchableOpacity className="flex-row items-center px-6 py-3 rounded-full bg-surface-container mb-4">
               <MaterialIcons name="help-outline" size={20} color="#40493d" />
-              <Text className="text-on-surface-variant font-bold text-sm ml-2">Need help?</Text>
+              <Text className="text-on-surface-variant font-bold text-sm ml-2">{t('login.needHelp')}</Text>
             </TouchableOpacity>
             <Text className="text-xs text-on-surface-variant font-medium text-center leading-relaxed px-6">
-              By signing in, you agree to Harvester Hub&apos;s{"\n"}
-              <Text className="text-primary font-bold">Terms of Service</Text> & <Text className="text-primary font-bold">Privacy Policy</Text>
+              {t('login.termsAgree')}{"\n"}
+              <Text className="text-primary font-bold">{t('login.terms')}</Text> & <Text className="text-primary font-bold">{t('login.privacy')}</Text>
             </Text>
           </View>
 

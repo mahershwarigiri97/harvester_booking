@@ -23,7 +23,8 @@
       "permissions": [
         "INTERNET"
       ],
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "package": "com.baliram123giri.client"
     },
     "web": {
       "bundler": "metro",
@@ -44,11 +45,30 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true,
+            "enableSeparateBuildPerCPUArchitecture": true
+          }
+        }
+      ],
+      "expo-asset",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "69d841ce-09fa-4113-988f-84e73bbfa733"
+      }
     }
   }
 }

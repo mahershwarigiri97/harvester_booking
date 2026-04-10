@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface OtpCounterProps {
   initialSeconds?: number;
@@ -7,6 +8,7 @@ interface OtpCounterProps {
 }
 
 export function OtpCounter({ initialSeconds = 24, onResend }: OtpCounterProps) {
+  const { t } = useTranslation();
   const [seconds, setSeconds] = useState(initialSeconds);
   const [canResend, setCanResend] = useState(false);
 
@@ -35,13 +37,13 @@ export function OtpCounter({ initialSeconds = 24, onResend }: OtpCounterProps) {
             activeOpacity={0.8}
           >
             <Text className="font-bold text-sm text-primary">
-              Resend OTP
+              {t('login.resendOtp')}
             </Text>
           </TouchableOpacity>
         )}
       </View>
       <Text className="text-on-surface-variant text-xs font-medium">
-        {seconds > 0 ? `0:${seconds.toString().padStart(2, '0')} remaining` : ''}
+        {seconds > 0 ? `0:${seconds.toString().padStart(2, '0')} ${t('login.remaining')}` : ''}
       </Text>
     </View>
   );

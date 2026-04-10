@@ -1,0 +1,58 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "bookNow": "Book Now",
+    "search": "Search Harvesters",
+    "searchHint": "Search for harvesters...",
+    "settings": "Settings",
+    "language": "Language",
+    "profile": "Profile",
+    "bookings": "My Bookings",
+    "home": "Home",
+    "map": "Map",
+    "units": "Units",
+    "notifications": "Notifications",
+    "availableNearYou": "Available Near You",
+    "continue": "Continue",
+    "selectRole": "Select Role"
+  },
+  "map": {
+    "findHarvester": "Find nearby harvesters",
+    "requestBooking": "Request Booking",
+    "availableUnits": "Units Available"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "login": {
+    "appName": "Harvester Hub",
+    "welcomeSubtitle": "Welcome to your digital harvest partner",
+    "getStarted": "Get Started",
+    "enterPhone": "Enter your phone number to continue",
+    "mobileNumber": "Mobile Number",
+    "invalidPhone": "Please enter a valid 10-digit mobile number.",
+    "sending": "Sending...",
+    "sendOtp": "Send OTP",
+    "verifyOtp": "Verify OTP",
+    "sentTo": "Sent to",
+    "verifying": "Verifying...",
+    "verifyLogin": "Verify & Login",
+    "changeNumber": "Change number",
+    "needHelp": "Need help?",
+    "termsAgree": "By signing in, you agree to Harvester Hub's",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "resendOtp": "Resend OTP",
+    "remaining": "remaining"
+  },
+  "role": {
+    "farmerTitle": "Farmer",
+    "farmerDesc": "Book harvesters and manage your crops with ease. Access modern machinery for your fields.",
+    "ownerTitle": "Harvester Owner",
+    "ownerDesc": "Register your machines and manage bookings. Grow your business by reaching more farmers.",
+    "selectToProceed": "Please select a role to proceed",
+    "readyToEnter": "Press continue to enter Harvester Hub"
+  }
+}

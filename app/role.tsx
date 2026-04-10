@@ -4,12 +4,14 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../utils/api';
 import { useAuthStore } from '../utils/authStore';
 
 export default function RoleSelectionScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const [selectedRole, setSelectedRole] = useState<'farmer' | 'owner' | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,13 +60,13 @@ export default function RoleSelectionScreen() {
               <MaterialIcons name="eco" size={36} color="#005312" />
             </View>
 
-            <Text style={{ fontFamily: 'headline', fontSize: 26, fontWeight: 'bold', color: '#0d631b', marginBottom: 12 }}>Farmer</Text>
+            <Text style={{ fontFamily: 'headline', fontSize: 26, fontWeight: 'bold', color: '#0d631b', marginBottom: 12 }}>{t('role.farmerTitle')}</Text>
             <Text style={{ fontSize: 16, color: '#40493d', lineHeight: 24, marginBottom: 32 }}>
-              Book harvesters and manage your crops with ease. Access modern machinery for your fields.
+              {t('role.farmerDesc')}
             </Text>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#0d631b', marginRight: 8 }}>Select Role</Text>
+              <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#0d631b', marginRight: 8 }}>{t('common.selectRole')}</Text>
               <MaterialIcons name="arrow-forward" size={20} color="#0d631b" />
             </View>
           </TouchableOpacity>
@@ -87,13 +89,13 @@ export default function RoleSelectionScreen() {
               <MaterialIcons name="precision-manufacturing" size={36} color="#694300" />
             </View>
 
-            <Text style={{ fontFamily: 'headline', fontSize: 26, fontWeight: 'bold', color: '#835400', marginBottom: 12 }}>Harvester Owner</Text>
+            <Text style={{ fontFamily: 'headline', fontSize: 26, fontWeight: 'bold', color: '#835400', marginBottom: 12 }}>{t('role.ownerTitle')}</Text>
             <Text style={{ fontSize: 16, color: '#40493d', lineHeight: 24, marginBottom: 32 }}>
-              Register your machines and manage bookings. Grow your business by reaching more farmers.
+              {t('role.ownerDesc')}
             </Text>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#835400', marginRight: 8 }}>Select Role</Text>
+              <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#835400', marginRight: 8 }}>{t('common.selectRole')}</Text>
               <MaterialIcons name="arrow-forward" size={20} color="#835400" />
             </View>
           </TouchableOpacity>
@@ -105,7 +107,7 @@ export default function RoleSelectionScreen() {
       <View style={{ paddingHorizontal: 24, paddingBottom: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)', backgroundColor: '#fafaf5' }}>
         <TouchableOpacity
           activeOpacity={0.88}
-          disabled={!selectedRole}
+          disabled={!selectedRole || loading}
           onPress={handleContinue}
           style={[
             { width: '100%', height: 64, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
@@ -113,12 +115,12 @@ export default function RoleSelectionScreen() {
           ]}
         >
           <Text style={{ fontFamily: 'headline', fontSize: 20, fontWeight: 'bold', color: selectedRole ? '#ffffff' : '#707a6c' }}>
-            Continue
+            {loading ? t('login.verifying') : t('common.continue')}
           </Text>
           {!selectedRole && <MaterialIcons name="lock" size={20} color="#707a6c" />}
         </TouchableOpacity>
         <Text style={{ marginTop: 12, fontSize: 13, color: '#707a6c', fontWeight: '500', textAlign: 'center' }}>
-          {selectedRole ? 'Press continue to enter Harvester Hub' : 'Please select a role to proceed'}
+          {selectedRole ? t('role.readyToEnter') : t('role.selectToProceed')}
         </Text>
       </View>
     </View>
