@@ -15,7 +15,7 @@ export function calculateDistance(lat1: string | number, lon1: string | number, 
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in km
-  return Number(d.toFixed(1));
+  return d;
 }
 
 function deg2rad(deg: number): number {

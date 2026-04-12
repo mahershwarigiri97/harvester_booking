@@ -47,7 +47,13 @@
     "busy": "Busy",
     "modelYear": "Model Year",
     "rentalRate": "Rental Rate",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "select": "Select",
+    "noOptions": "No options found",
+    "wait": "Wait",
+    "liveStatus": "Live Status",
+    "updating": "Updating...",
+    "loading": "Loading..."
   },
   "map": {
     "findHarvester": "Find nearby harvesters",
@@ -118,7 +124,29 @@
     "monthlyOverview": "Monthly Overview",
     "lifetime": "Lifetime",
     "newBadge": "NEW",
-    "activeBadge": "ACTIVE"
+    "activeBadge": "ACTIVE",
+    "acceptTitle": "Accept Booking?",
+    "acceptSubtitle": "By accepting, you commit to reaching the farmer's location as per the schedule.",
+    "incomingRequest": "Incoming Request",
+    "incomingRequestSubtitle": "Respond immediately to secure the booking",
+    "acceptSuccess": "You've successfully accepted {{name}}'s request.",
+    "reject": "Reject",
+    "workInProgress": "Work in Progress",
+    "totalWorkSession": "Total Work Session",
+    "activeWorkTimer": "Active Work Timer",
+    "sessionFinalized": "Session Finalized",
+    "timerRunning": "Timer running...",
+    "finalEarnings": "Final Earnings",
+    "estimatedEarnings": "Estimated Earnings",
+    "startWork": "Start Work",
+    "endWork": "End Work",
+    "completeJobTitle": "Complete Job?",
+    "completeJobDesc": "Are you sure you have finished the work? This will mark the booking as completed and notify the farmer.",
+    "contactOwner": "Contact Owner ({{phone}})",
+    "operatedBy": "Operated by: {{name}}",
+    "confirmArrivalTitle": "Confirm Arrival?",
+    "confirmArrivalDesc": "Have you reached the farmer's location? Marking arrival will notify the farmer immediately.",
+    "yesArrived": "Yes, Arrived"
   },
   "status": {
     "requested": "Requested",
@@ -168,7 +196,8 @@
       "totalEstimated": "Total Estimated",
       "bestPrice": "BEST PRICE",
       "taxes": "Incl. all taxes",
-      "policyNotice": "By booking, you agree to our Fair Crop Policy. The operator will reach your location within 24 hours of the scheduled time. Payments are held in escrow until completion."
+      "policyNotice": "By booking, you agree to our Fair Crop Policy. The operator will reach your location within 24 hours of the scheduled time. Payments are held in escrow until completion.",
+      "progressTitle": "Harvest Progress"
     },
     "confirmation": {
       "title": "Booking Confirmed!",
@@ -179,7 +208,22 @@
       "failedDesc": "Something went wrong while processing your request. Please try again or contact support.",
       "contactSupport": "Contact Support",
       "secureNotice": "Secure Agricultural Services"
-    }
+    },
+    "timeline": {
+      "requested": "Requested",
+      "requestedDesc": "Booking sent to owner",
+      "accepted": "Confirmed",
+      "acceptedDesc": "Harvester owner accepted",
+      "on_the_way": "On the Way",
+      "on_the_wayDesc": "Harvester is en route",
+      "arrived": "Arrived",
+      "arrivedDesc": "Harvester at location",
+      "in_progress": "Working",
+      "in_progressDesc": "Harvesting in progress",
+      "completed": "Completed",
+      "completedDesc": "Work finished"
+    },
+    "cancelledHere": "(Cancelled Here)"
   },
   "cancel": {
     "title": "Cancel Booking",
@@ -271,6 +315,11 @@
     "perAcre": "Per Acre",
     "perHour": "Per Hour",
     "averageRateLabel": "Average rate:",
-    "rateRange": "₹850 - ₹1,200"
+    "rateRange": "₹850 - ₹1,200",
+    "state": "State",
+    "district": "District",
+    "selectState": "Select State",
+    "selectDistrict": "Select District",
+    "unknownRegion": "Unknown Region"
   }
 }

@@ -156,7 +156,7 @@ export function Step1BasicInfo({ name, setName, location, setLocation, village, 
         <View style={{ position: 'absolute', bottom: 16, left: 16, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(250, 250, 245, 0.9)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 }}>
           <MaterialIcons name="location-pin" size={16} color="#0d631b" />
           <Text style={{ fontSize: 12, fontWeight: '700', color: '#1a1c19', maxWidth: 200 }} numberOfLines={1}>
-            {location || 'Unknown Region'} {pincode ? `• ${pincode}` : ''}
+            {location || t('registration.unknownRegion')} {pincode ? `• ${pincode}` : ''}
           </Text>
         </View>
       </View>

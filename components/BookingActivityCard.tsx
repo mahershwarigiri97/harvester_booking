@@ -85,7 +85,7 @@ export default function BookingActivityCard({
                     const block = booking.full_address?.village || booking.full_address?.district || booking.address;
                     let distStr = '';
                     if (distance !== null && distance >= 0) {
-                      distStr = ` • ${distance} km ${t('common.away')}`;
+                      distStr = ` • ${distance.toFixed(1)} km ${t('common.away')}`;
                     }
                     if (block) return `${block}${distStr}`;
                     return distStr ? distStr.replace(' • ', '') : 'View Location';

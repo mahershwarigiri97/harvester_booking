@@ -46,7 +46,7 @@ export default function BookingsScreen() {
   );
 
   const cancelMutation = useMutation({
-    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) => 
+    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
       authApi.updateBookingStatus(bookingId, 'cancelled', undefined, reason, 'farmer'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'farmer'] });
@@ -102,8 +102,8 @@ export default function BookingsScreen() {
 
   return (
     <View className="flex-1 bg-[#fafaf5]">
-      <View style={{ paddingTop: insets.top + 24 }} className="px-6 pb-6">
-        <Text className="font-headline font-extrabold text-4xl text-[#0d631b] tracking-tighter mb-6">
+      <View style={{ paddingTop: Math.max(insets.top, 44) + 8 }} className="px-6 pb-6">
+        <Text className="font-headline font-extrabold text-2xl text-[#0d631b] tracking-tighter mb-6">
           {t('bookings.title')}
         </Text>
 
@@ -136,7 +136,7 @@ export default function BookingsScreen() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       >
@@ -163,20 +163,20 @@ export default function BookingsScreen() {
                         </View>
                         <View className="flex-row items-center gap-1.5 mt-1">
                           <MaterialIcons name="location-on" size={14} color="#40493d" />
-                          <BookingAddress 
-                            address={booking.full_address} 
-                            className="text-[#40493d] font-medium flex-1 text-sm" 
+                          <BookingAddress
+                            address={booking.full_address}
+                            className="text-[#40493d] font-medium flex-1 text-sm"
                             fallback={t('common.farmLocation')}
                           />
                         </View>
                       </View>
-                      
-                      <View 
+
+                      <View
                         className="px-4 py-1.5 rounded-full flex-row items-center gap-1.5"
                         style={{ backgroundColor: booking.hexBg }}
                       >
                         <MaterialIcons name={booking.icon as any} size={14} color={booking.hexColor} />
-                        <Text 
+                        <Text
                           className="text-sm font-bold"
                           style={{ color: booking.hexColor }}
                         >
@@ -206,8 +206,8 @@ export default function BookingsScreen() {
                           </LinearGradient>
                         </TouchableOpacity>
                       )}
-                      
-                      {(booking.statusKey === 'accepted' || booking.statusKey === 'on_the_way' || booking.statusKey === 'arrived') ? (
+
+                      {booking.statusKey === 'on_the_way' ? (
                         <View className="flex-row gap-3">
                           <TouchableOpacity onPress={() => router.push(`/track/${booking.id}` as any)} activeOpacity={0.88} className="flex-1 overflow-hidden rounded-2xl">
                             <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-14 flex-row items-center justify-center px-4">
@@ -215,6 +215,16 @@ export default function BookingsScreen() {
                             </LinearGradient>
                           </TouchableOpacity>
                         </View>
+                      ) : (booking.statusKey === 'accepted' || booking.statusKey === 'arrived' || booking.statusKey === 'in_progress' || booking.statusKey === 'completed' || booking.statusKey === 'cancelled') ? (
+                        <TouchableOpacity 
+                          onPress={() => router.push(`/track/${booking.id}` as any)} 
+                          activeOpacity={0.88} 
+                          className="h-14 rounded-2xl border-2 border-[#bfcaba] flex-row items-center justify-center px-6"
+                        >
+                          <Text className="text-[#40493d] font-headline font-bold text-[16px]">
+                            {booking.statusKey === 'completed' ? t('bookings.viewReason') : t('nav.viewProgress')}
+                          </Text>
+                        </TouchableOpacity>
                       ) : null}
 
                       {booking.statusKey === 'requested' && (
@@ -231,7 +241,7 @@ export default function BookingsScreen() {
                           )}
                         </TouchableOpacity>
                       )}
-                      
+
                       {booking.statusKey === 'cancelled' && (
                         <TouchableOpacity
                           ripple-color="#ff0000"
@@ -242,7 +252,7 @@ export default function BookingsScreen() {
                           <Text className="text-[#40493d] font-headline font-bold text-[16px]">{t('bookings.viewReason')}</Text>
                         </TouchableOpacity>
                       )}
-                      
+
                       {booking.statusKey === 'completed' && (
                         <TouchableOpacity activeOpacity={0.88} className="h-14 rounded-2xl bg-[#e3e3de] flex-row items-center justify-center px-6">
                           <Text className="text-[#1a1c19] font-headline font-bold text-[16px]">{t('bookings.downloadReceipt')}</Text>
@@ -261,7 +271,7 @@ export default function BookingsScreen() {
             </View>
             <Text className="font-headline font-bold text-2xl text-[#1a1c19] mb-2">{t('bookings.noBookingsYet')}</Text>
             <Text className="text-[#40493d] mb-6 text-center leading-relaxed">{t('bookings.emptyDesc')}</Text>
-            
+
             <TouchableOpacity onPress={() => router.push('/(farmer)')} activeOpacity={0.88} className="w-full h-14 overflow-hidden rounded-[16px]">
               <LinearGradient colors={['#0d631b', '#2e7d32']} className="h-full items-center justify-center">
                 <Text className="text-white font-headline font-bold text-lg">{t('bookings.browseHarvesters')}</Text>

@@ -6,6 +6,7 @@ import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../utils/api';
 import { getBookingStatusInfo } from '../../utils/bookingHelpers';
 import { useBookingSocket } from '../../hooks/useBookingSocket';
@@ -14,6 +15,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 
 export default function BookingStatusScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
@@ -23,9 +25,12 @@ export default function BookingStatusScreen() {
   // Initialize Socket.io for real-time tracking
   useBookingSocket(Number(id));
 
-  const { data: response, isLoading } = useQuery({
+  const { data: booking, isLoading } = useQuery({
     queryKey: ['booking', id],
-    queryFn: () => authApi.getBookingById(id as string),
+    queryFn: async () => {
+      const res = await authApi.getBookingById(id as string);
+      return res.data.data;
+    },
     enabled: !!id,
   });
 
@@ -49,16 +54,16 @@ export default function BookingStatusScreen() {
     },
   });
 
-  const booking = response?.data?.data;
+  // const booking is already defined above
   const trackingData = trackingResponse?.data?.data || [];
 
   const timelineSteps = [
-    { key: 'requested', icon: 'pending-actions', title: 'Requested', desc: 'Booking sent to owner' },
-    { key: 'accepted', icon: 'check-circle', title: 'Confirmed', desc: 'Harvester owner accepted' },
-    { key: 'on_the_way', icon: 'local-shipping', title: 'On the Way', desc: 'Harvester is en route' },
-    { key: 'arrived', icon: 'place', title: 'Arrived', desc: 'Harvester at location' },
-    { key: 'in_progress', icon: 'precision-manufacturing', title: 'Working', desc: 'Harvesting in progress' },
-    { key: 'completed', icon: 'task-alt', title: 'Completed', desc: 'Work finished' },
+    { key: 'requested', icon: 'pending-actions', title: t('bookings.timeline.requested'), desc: t('bookings.timeline.requestedDesc') },
+    { key: 'accepted', icon: 'check-circle', title: t('bookings.timeline.accepted'), desc: t('bookings.timeline.acceptedDesc') },
+    { key: 'on_the_way', icon: 'local-shipping', title: t('bookings.timeline.on_the_way'), desc: t('bookings.timeline.on_the_wayDesc') },
+    { key: 'arrived', icon: 'place', title: t('bookings.timeline.arrived'), desc: t('bookings.timeline.arrivedDesc') },
+    { key: 'in_progress', icon: 'precision-manufacturing', title: t('bookings.timeline.in_progress'), desc: t('bookings.timeline.in_progressDesc') },
+    { key: 'completed', icon: 'task-alt', title: t('bookings.timeline.completed'), desc: t('bookings.timeline.completedDesc') },
   ];
 
   const currentStatus = booking?.status || 'requested';
@@ -91,7 +96,7 @@ export default function BookingStatusScreen() {
       <StatusBar style="dark" translucent backgroundColor="transparent" />
 
       {/* TopAppBar */}
-      <View style={{ paddingTop: insets.top, backgroundColor: 'rgba(250, 250, 245, 0.6)', zIndex: 50 }}>
+      <View style={{ paddingTop: Math.max(insets.top, 44), backgroundColor: 'rgba(250, 250, 245, 0.6)', zIndex: 50 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, height: 64 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginLeft: -8, borderRadius: 20 }}>
@@ -119,10 +124,10 @@ export default function BookingStatusScreen() {
             <View style={{ backgroundColor: '#ffffff', borderRadius: 32, padding: 24, marginBottom: 32, overflow: 'hidden', position: 'relative', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 }}>
               <View style={{ zIndex: 10 }}>
                 <View style={{ backgroundColor: getBookingStatusInfo(booking.status).hexBg, alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 4, borderRadius: 20, marginBottom: 16 }}>
-                  <Text style={{ color: getBookingStatusInfo(booking.status).hexColor, fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Live Status</Text>
+                  <Text style={{ color: getBookingStatusInfo(booking.status).hexColor, fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>{t('common.liveStatus')}</Text>
                 </View>
-                <Text style={{ fontFamily: 'headline', fontSize: 30, fontWeight: '900', color: '#0d631b', marginBottom: 8 }}>{getBookingStatusInfo(booking.status).text}</Text>
-                <Text style={{ color: '#40493d', fontWeight: '600', marginBottom: 24 }}>Booked with {booking.owner?.name || 'Owner'}</Text>
+                <Text style={{ fontFamily: 'headline', fontSize: 30, fontWeight: '900', color: '#0d631b', marginBottom: 8 }}>{t(`status.${booking.status}`)}</Text>
+                <Text style={{ color: '#40493d', fontWeight: '600', marginBottom: 24 }}>{t('owner.operatedBy', { name: booking.owner?.name || t('common.user') })}</Text>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: '#f4f4ef', padding: 16, borderRadius: 16 }}>
                   <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#a3f69c', alignItems: 'center', justifyContent: 'center' }}>
@@ -130,7 +135,7 @@ export default function BookingStatusScreen() {
                   </View>
                   <View>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1a1c19' }}>{booking.harvester?.brand} {booking.harvester?.model}</Text>
-                    <Text style={{ fontSize: 12, color: '#40493d', marginTop: 2 }}>{booking.owner?.name ? `Operated by: ${booking.owner.name}` : 'Owner details loading...'}</Text>
+                    <Text style={{ fontSize: 12, color: '#40493d', marginTop: 2 }}>{booking.owner?.name ? t('owner.operatedBy', { name: booking.owner.name }) : t('common.loading')}</Text>
                   </View>
                 </View>
               </View>
@@ -158,16 +163,16 @@ export default function BookingStatusScreen() {
                   <MaterialIcons name="cancel" size={24} color="#fff" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#991b1b', marginBottom: 4 }}>Booking Cancelled</Text>
-                  <Text style={{ fontSize: 14, color: '#b91c1c', fontWeight: '600' }}>Reason: {booking.cancel_reason || 'No reason provided'}</Text>
-                  <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>Cancelled by {booking.updated_by_user === 'owner' ? 'Harvester Owner' : 'Farmer'}</Text>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#991b1b', marginBottom: 4 }}>{t('common.cancelled')}</Text>
+                  <Text style={{ fontSize: 14, color: '#b91c1c', fontWeight: '600' }}>{t('cancel.reasonTitle')}: {booking.cancel_reason || t('cancel.noReason')}</Text>
+                  <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{t('cancel.cancelledBy')} {booking.updated_by_user === 'owner' ? t('role.ownerTitle') : t('role.farmerTitle')}</Text>
                 </View>
               </View>
             )}
 
             {/* Booking Timeline */}
             <View style={{ backgroundColor: '#f4f4ef', borderRadius: 40, padding: 32, marginBottom: 32 }}>
-              <Text style={{ fontFamily: 'headline', fontSize: 20, color: '#0d631b', fontWeight: 'bold', marginBottom: 32 }}>Harvest Progress</Text>
+              <Text style={{ fontFamily: 'headline', fontSize: 20, color: '#0d631b', fontWeight: 'bold', marginBottom: 32 }}>{t('bookings.process.progressTitle')}</Text>
 
               <View style={{ position: 'relative' }}>
                 {/* Vertical Line Background */}
@@ -195,7 +200,7 @@ export default function BookingStatusScreen() {
                   }
 
                   const trackRecord = trackingData.find((t: any) => t.status === step.key);
-                  const timeString = trackRecord ? `${new Date(trackRecord.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(trackRecord.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : '';
+                  const timeString = trackRecord ? `${new Date(trackRecord.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, ${new Date(trackRecord.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}` : '';
                   const isFuture = !isDone && !isNext;
 
                   return (
@@ -221,7 +226,7 @@ export default function BookingStatusScreen() {
                           color: isCancelledOnThisStep ? '#ba1a1a' : (isNext ? '#835400' : (isDone ? '#1a1c19' : '#707a6c')), 
                           lineHeight: 22 
                         }}>
-                          {step.title} {isCancelledOnThisStep && '(Cancelled Here)'}
+                          {step.title} {isCancelledOnThisStep && t('bookings.cancelledHere')}
                         </Text>
                         <Text style={{ fontSize: 14, color: isFuture ? '#bfcaba' : '#40493d', marginTop: 4 }}>
                           {timeString || step.desc}
@@ -238,29 +243,32 @@ export default function BookingStatusScreen() {
               <TouchableOpacity onPress={() => {/* call action logic placeholder */}} activeOpacity={0.88} style={{ borderRadius: 16, overflow: 'hidden', elevation: 4, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }}>
                 <LinearGradient colors={['#0d631b', '#2e7d32']} style={{ height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                   <MaterialIcons name="call" size={24} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Contact Owner ({booking.owner?.phone || 'Loading'})</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>{t('owner.contactOwner', { phone: booking.owner?.phone || t('common.loading') })}</Text>
                 </LinearGradient>
               </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.88} style={{ height: 64, borderRadius: 16, backgroundColor: '#e8e8e3', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-                <MaterialIcons name="map" size={24} color="#1a1c19" />
-                <Text style={{ color: '#1a1c19', fontWeight: 'bold', fontSize: 18 }}>View Address Location</Text>
-              </TouchableOpacity>
+              
+              {booking?.status === 'on_the_way' && (
+                <TouchableOpacity activeOpacity={0.88} style={{ height: 64, borderRadius: 16, backgroundColor: '#e8e8e3', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                  <MaterialIcons name="map" size={24} color="#1a1c19" />
+                  <Text style={{ color: '#1a1c19', fontWeight: 'bold', fontSize: 18 }}>{t('owner.viewLocation')}</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {/* Order Summary Bento */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
               <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', padding: 20, borderRadius: 24, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4 }}>
-                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Total Area</Text>
-                <Text style={{ fontSize: 24, fontWeight: '900', color: '#0d631b' }}>{booking.land_area} Ac</Text>
+                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>{t('common.landSize')}</Text>
+                <Text style={{ fontSize: 24, fontWeight: '900', color: '#0d631b' }}>{booking.land_area} {t('common.acre')}</Text>
               </View>
               <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', padding: 20, borderRadius: 24, elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4 }}>
-                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Est. Cost</Text>
+                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>{t('bookings.process.totalEstimated')}</Text>
                 <Text style={{ fontSize: 24, fontWeight: '900', color: '#835400' }}>₹{booking.price?.toLocaleString() || '0'}</Text>
               </View>
               <View style={{ width: '100%', backgroundColor: '#ffffff', padding: 20, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4 }}>
                 <View>
-                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Crop Type</Text>
-                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1c19' }}>{booking.crop_type || 'General Crop'}</Text>
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#40493d', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{t('bookings.process.cropLabel')}</Text>
+                  <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1c19' }}>{booking.crop_type || t('crops.other')}</Text>
                 </View>
                 <View style={{ width: 48, height: 48, backgroundColor: '#ffdbcf', borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
                   <MaterialIcons name="eco" size={24} color="#993300" />
@@ -286,7 +294,7 @@ export default function BookingStatusScreen() {
                 }}
               >
                 <MaterialIcons name="cancel" size={24} color="#ba1a1a" />
-                <Text style={{ color: '#ba1a1a', fontWeight: 'bold', fontSize: 18 }}>Cancel Booking</Text>
+                <Text style={{ color: '#ba1a1a', fontWeight: 'bold', fontSize: 18 }}>{t('bookings.cancelBooking')}</Text>
               </TouchableOpacity>
             )}
           </View>

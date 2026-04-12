@@ -268,7 +268,7 @@ export default function BookingHistory() {
                                   targetLat,
                                   targetLng
                                 );
-                                return `${d} km ${t('common.away')}`;
+                                return `${d.toFixed(1)} km ${t('common.away')}`;
                               })()}
                             </Text>
                           </View>

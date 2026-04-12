@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../utils/api';
 import { BookingAddress } from '../components/BookingAddress';
 import { ConfirmEndWorkModal } from '../components/ConfirmEndWorkModal';
@@ -27,6 +28,7 @@ const COLORS = {
 };
 
 export default function WorkTracker() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -35,20 +37,23 @@ export default function WorkTracker() {
   const [workStarted, setWorkStarted] = useState(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
 
-  const { data: bookingResponse } = useQuery({
+  const { data: booking, isLoading: isBookingLoading } = useQuery({
     queryKey: ['booking', bookingId],
-    queryFn: () => authApi.getBookingById(bookingId as string),
+    queryFn: async () => {
+      const res = await authApi.getBookingById(bookingId as string);
+      return res.data.data;
+    },
     enabled: !!bookingId,
   });
 
-  const { data: trackingResponse } = useQuery({
+  const { data: trackingData = [] } = useQuery({
     queryKey: ['tracking', bookingId],
-    queryFn: () => authApi.getBookingTracking(bookingId as string),
+    queryFn: async () => {
+      const res = await authApi.getBookingTracking(bookingId as string);
+      return res.data.data || [];
+    },
     enabled: !!bookingId,
   });
-
-  const booking = bookingResponse?.data?.data;
-  const trackingData = trackingResponse?.data?.data || [];
 
   // Sync internal state with server status
   useEffect(() => {
@@ -117,7 +122,7 @@ export default function WorkTracker() {
           >
             <MaterialIcons name="arrow-back" size={22} color={COLORS.primary} />
           </TouchableOpacity>
-          <Text className="font-headline font-bold text-lg" style={{ color: COLORS.primary }}>Work in Progress</Text>
+          <Text className="font-headline font-bold text-lg" style={{ color: COLORS.primary }}>{t('owner.workInProgress')}</Text>
         </View>
       </View>
 
@@ -126,159 +131,166 @@ export default function WorkTracker() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: insets.top + 80, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-
-        {/* ── TIMER CARD — always shown for completed or active work ── */}
-        {(workStarted || booking?.status === 'completed') && (
-          <View className="items-center py-8 bg-surface-container-low rounded-3xl mb-8 border border-outline/10">
-            <Text className="text-on-surface-variant font-bold text-xs uppercase tracking-widest mb-2">
-              {booking?.status === 'completed' ? 'Total Work Session' : 'Active Work Timer'}
-            </Text>
-            <Text className="text-4xl font-headline font-black text-on-surface mb-2">
-              {booking?.status === 'completed' ? getLastJobDuration([booking]) : formatTime(seconds)}
-            </Text>
-            <View className="flex-row items-center gap-2">
-              <View className={`w-2 h-2 rounded-full ${booking?.status === 'completed' ? 'bg-outline' : 'bg-primary'}`} />
-              <Text className="text-on-surface-variant font-medium text-sm">
-                {booking?.status === 'completed' ? 'Session Finalized' : 'Timer running...'}
-              </Text>
-            </View>
+        {isBookingLoading && !booking ? (
+          <View className="flex-1 items-center justify-center py-20">
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text className="mt-4 text-on-surface-variant font-medium">{t('common.loading')}</Text>
           </View>
-        )}
-
-        {/* ── EARNINGS & RATE CARDS ── */}
-        <View className="gap-4 mb-6">
-          {/* Earnings: from-primary to-primary-container, text-on-primary-container = #cbffc2 */}
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.primaryContainer,]}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={{ borderRadius: 20 }}
-            className="p-6 rounded-3xl flex-row items-center justify-between"
-          >
-            <View>
-              <Text className="text-sm font-medium mb-2" style={{ color: `${COLORS.onPrimaryContainer}cc` }}>
-                {booking?.status === 'completed' ? 'Final Earnings' : 'Estimated Earnings'}
-              </Text>
-              <View style={{ backgroundColor: 'rgba(203,255,194,0.2)', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'flex-start', marginTop: 4 }}>
-                <Text className="text-3xl font-headline font-extrabold" style={{ color: COLORS.onPrimaryContainer }}>
-                  ₹{booking?.price?.toLocaleString() || '0'}
+        ) : (
+          <>
+            {/* ── TIMER CARD — always shown for completed or active work ── */}
+            {(workStarted || booking?.status === 'completed') && (
+              <View className="items-center py-8 bg-surface-container-low rounded-3xl mb-8 border border-outline/10">
+                <Text className="text-on-surface-variant font-bold text-xs uppercase tracking-widest mb-2">
+                  {booking?.status === 'completed' ? t('owner.totalWorkSession') : t('owner.activeWorkTimer')}
                 </Text>
+                <Text className="text-4xl font-headline font-black text-on-surface mb-2">
+                  {booking?.status === 'completed' ? getLastJobDuration([booking]) : formatTime(seconds)}
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className={`w-2 h-2 rounded-full ${booking?.status === 'completed' ? 'bg-outline' : 'bg-primary'}`} />
+                  <Text className="text-on-surface-variant font-medium text-sm">
+                    {booking?.status === 'completed' ? t('owner.sessionFinalized') : t('owner.timerRunning')}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* ── EARNINGS & RATE CARDS ── */}
+            <View className="gap-4 mb-6">
+              {/* Earnings: from-primary to-primary-container, text-on-primary-container = #cbffc2 */}
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.primaryContainer,]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={{ borderRadius: 20 }}
+                className="p-6 rounded-3xl flex-row items-center justify-between"
+              >
+                <View>
+                  <Text className="text-sm font-medium mb-2" style={{ color: `${COLORS.onPrimaryContainer}cc` }}>
+                    {booking?.status === 'completed' ? t('owner.finalEarnings') : t('owner.estimatedEarnings')}
+                  </Text>
+                  <View style={{ backgroundColor: 'rgba(203,255,194,0.2)', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8, alignSelf: 'flex-start', marginTop: 4 }}>
+                    <Text className="text-3xl font-headline font-extrabold" style={{ color: COLORS.onPrimaryContainer }}>
+                      ₹{booking?.price?.toLocaleString() || '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View className="p-3 rounded-2xl" style={{ backgroundColor: 'rgba(203,255,194,0.2)' }}>
+                  <MaterialIcons name="payments" size={32} color={COLORS.onPrimaryContainer} />
+                </View>
+              </LinearGradient>
+
+              {/* Work Rate: Use land area if available */}
+              <View className="bg-surface-container-low p-6 rounded-3xl flex-row items-center justify-between">
+                <View>
+                  <Text className="text-sm font-medium text-on-surface-variant mb-1">{t('common.landSize')}</Text>
+                  <Text className="text-2xl font-headline font-bold text-on-surface">{booking?.land_area ? `${booking.land_area} ${t('common.acre')}` : 'N/A'}</Text>
+                </View>
+                <MaterialIcons name="layers" size={32} color="#835400" />
               </View>
             </View>
-            <View className="p-3 rounded-2xl" style={{ backgroundColor: 'rgba(203,255,194,0.2)' }}>
-              <MaterialIcons name="payments" size={32} color={COLORS.onPrimaryContainer} />
-            </View>
-          </LinearGradient>
 
-          {/* Work Rate: Use land area if available */}
-          <View className="bg-surface-container-low p-6 rounded-3xl flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-medium text-on-surface-variant mb-1">Land Area</Text>
-              <Text className="text-2xl font-headline font-bold text-on-surface">{booking?.land_area ? `${booking.land_area} Ac` : 'N/A'}</Text>
-            </View>
-            <MaterialIcons name="layers" size={32} color="#835400" />
-          </View>
-        </View>
-
-        {/* ── JOB DETAILS ── line by line */}
-        <View className="mb-8 gap-3">
-          {/* Farmer row */}
-          <View
-            className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
-          >
-            <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
-              <MaterialIcons name="person" size={20} color={COLORS.primary} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Farmer</Text>
-              <Text className="font-headline font-bold text-on-surface">{booking?.customer_name || booking?.farmer?.name || 'Loading...'}</Text>
-            </View>
-            <TouchableOpacity className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center">
-              <MaterialIcons name="call" size={20} color={COLORS.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Location row */}
-          <View
-            className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
-          >
-            <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
-              <MaterialIcons name="location-on" size={20} color={COLORS.primary} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Field Location</Text>
-              <BookingAddress address={booking?.full_address} className="font-headline font-bold text-on-surface" />
-            </View>
-          </View>
-
-          {/* Crop Type row */}
-          <View
-            className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
-          >
-            <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
-              <MaterialIcons name="grass" size={20} color={COLORS.primary} />
-            </View>
-            <View>
-              <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Crop Type</Text>
-              <Text className="font-headline font-bold text-on-surface">{booking?.crop_type || 'Rice'}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ── ACTION CONTROLS ── */}
-        <View className="gap-4">
-          {!workStarted ? (
-            <TouchableOpacity
-              onPress={() => startWorkMutation.mutate()}
-              disabled={startWorkMutation.isPending}
-              activeOpacity={0.9}
-              style={{ shadowColor: '#835400', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 15, elevation: 12 }}
-            >
-              <LinearGradient
-                colors={['#835400', '#fcab28']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+            {/* ── JOB DETAILS ── line by line */}
+            <View className="mb-8 gap-3">
+              {/* Farmer row */}
+              <View
+                className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
+                style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
               >
-                {startWorkMutation.isPending ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <>
-                    <MaterialIcons name="play-circle-filled" size={32} color="white" />
-                    <Text style={{ color: 'white', fontSize: 20, fontWeight: '800', letterSpacing: 2, marginTop: 2 }}>Start Work</Text>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          ) : (
-            booking?.status !== 'completed' && (
-              <TouchableOpacity
-                onPress={() => setIsConfirmModalVisible(true)}
-                disabled={endWorkMutation.isPending}
-                activeOpacity={0.98}
-                style={{ shadowColor: COLORS.error, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}
+                <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
+                  <MaterialIcons name="person" size={20} color={COLORS.primary} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{t('role.farmerTitle')}</Text>
+                  <Text className="font-headline font-bold text-on-surface">{booking?.customer_name || booking?.farmer?.name || t('common.loading')}</Text>
+                </View>
+                <TouchableOpacity className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center">
+                  <MaterialIcons name="call" size={20} color={COLORS.primary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Location row */}
+              <View
+                className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
+                style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
               >
-                <LinearGradient
-                  colors={[COLORS.error, '#93000a']}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                  style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+                <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
+                  <MaterialIcons name="location-on" size={20} color={COLORS.primary} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{t('common.location')}</Text>
+                  <BookingAddress address={booking?.full_address} className="font-headline font-bold text-on-surface" />
+                </View>
+              </View>
+
+              {/* Crop Type row */}
+              <View
+                className="bg-surface-container-low p-4 rounded-3xl flex-row items-center gap-4"
+                style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 }}
+              >
+                <View className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: 'rgba(13,99,27,0.1)' }}>
+                  <MaterialIcons name="grass" size={20} color={COLORS.primary} />
+                </View>
+                <View>
+                  <Text className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{t('bookings.process.cropLabel')}</Text>
+                  <Text className="font-headline font-bold text-on-surface">{booking?.crop_type || t('crops.rice')}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* ── ACTION CONTROLS ── */}
+            <View className="gap-4">
+              {!workStarted ? (
+                <TouchableOpacity
+                  onPress={() => startWorkMutation.mutate()}
+                  disabled={startWorkMutation.isPending}
+                  activeOpacity={0.9}
+                  style={{ shadowColor: '#835400', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 15, elevation: 12 }}
                 >
-                  {endWorkMutation.isPending ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <>
-                      <MaterialIcons name="stop-circle" size={32} color="white" />
-                      <Text style={{ color: 'white', fontSize: 20, fontWeight: '800' }}>End Work</Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            )
-          )}
-        </View>
+                  <LinearGradient
+                    colors={['#835400', '#fcab28']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+                  >
+                    {startWorkMutation.isPending ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <>
+                        <MaterialIcons name="play-circle-filled" size={32} color="white" />
+                        <Text style={{ color: 'white', fontSize: 20, fontWeight: '800', letterSpacing: 2, marginTop: 2 }}>{t('owner.startWork')}</Text>
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              ) : (
+                booking?.status !== 'completed' && (
+                  <TouchableOpacity
+                    onPress={() => setIsConfirmModalVisible(true)}
+                    disabled={endWorkMutation.isPending}
+                    activeOpacity={0.98}
+                    style={{ shadowColor: COLORS.error, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}
+                  >
+                    <LinearGradient
+                      colors={[COLORS.error, '#93000a']}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={{ height: 80, borderRadius: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+                    >
+                      {endWorkMutation.isPending ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <>
+                          <MaterialIcons name="stop-circle" size={32} color="white" />
+                          <Text style={{ color: 'white', fontSize: 20, fontWeight: '800' }}>{t('owner.endWork')}</Text>
+                        </>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
-
       <ConfirmEndWorkModal
         visible={isConfirmModalVisible}
         onClose={() => setIsConfirmModalVisible(false)}

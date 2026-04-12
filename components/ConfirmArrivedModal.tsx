@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, ActivityIndicator, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmArrivedModalProps {
   visible: boolean;
@@ -10,6 +11,8 @@ interface ConfirmArrivedModalProps {
 }
 
 export function ConfirmArrivedModal({ visible, onClose, onConfirm, isLoading }: ConfirmArrivedModalProps) {
+  const { t } = useTranslation();
+  
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
       <View style={StyleSheet.absoluteFill} className="justify-center items-center">
@@ -40,10 +43,10 @@ export function ConfirmArrivedModal({ visible, onClose, onConfirm, isLoading }: 
           }}
         >
           <Text className="text-2xl font-headline font-bold text-on-surface mb-3 tracking-tight">
-            Confirm Arrival?
+            {t('owner.confirmArrivalTitle')}
           </Text>
           <Text className="text-base text-on-surface-variant font-body mb-10 leading-relaxed">
-            Have you reached the farmer's location? Marking arrival will notify the farmer immediately.
+            {t('owner.confirmArrivalDesc')}
           </Text>
 
           <View className="flex-row gap-4">
@@ -52,7 +55,7 @@ export function ConfirmArrivedModal({ visible, onClose, onConfirm, isLoading }: 
               disabled={isLoading}
               className="flex-1 h-14 rounded-2xl items-center justify-center bg-surface-container-high active:scale-95 transition-transform"
             >
-              <Text className="text-on-surface font-black text-sm uppercase tracking-widest">Wait</Text>
+              <Text className="text-on-surface font-black text-sm uppercase tracking-widest">{t('common.wait')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -64,7 +67,7 @@ export function ConfirmArrivedModal({ visible, onClose, onConfirm, isLoading }: 
               {isLoading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text className="text-white font-black text-sm uppercase tracking-widest">Yes, Arrived</Text>
+                <Text className="text-white font-black text-sm uppercase tracking-widest">{t('owner.yesArrived')}</Text>
               )}
             </TouchableOpacity>
           </View>

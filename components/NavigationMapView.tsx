@@ -20,7 +20,21 @@ export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords
   const [routeCoordinates, setRouteCoordinates] = React.useState<{ latitude: number; longitude: number }[]>([]);
   const [navigationSteps, setNavigationSteps] = React.useState<any[]>([]);
   const [stableHeading, setStableHeading] = React.useState<number>(0);
-  const center = ownerCoords || farmerCoords || { latitude: 20.5937, longitude: 78.9629 };
+  const [mapInitialized, setMapInitialized] = React.useState(false);
+  
+  // Set the map center - prioritize owner position for navigation focus
+  const center = React.useMemo(() => {
+    if (ownerCoords) return ownerCoords;
+    if (farmerCoords) return farmerCoords;
+    return { latitude: 20.5937, longitude: 78.9629 };
+  }, [ownerCoords?.latitude, ownerCoords?.longitude, farmerCoords?.latitude, farmerCoords?.longitude]);
+
+  // Handle auto-focus on screen open
+  React.useEffect(() => {
+    if (ownerCoords && !mapInitialized) {
+      setMapInitialized(true);
+    }
+  }, [ownerCoords, mapInitialized]);
 
   // Smoothing the heading to prevent flickering
   React.useEffect(() => {
@@ -85,6 +99,28 @@ export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords
     });
   }, [ownerCoords?.latitude, ownerCoords?.longitude, navigationSteps]);
 
+  // Sync polyline with current position - trim already passed points
+  const syncedPolyline = React.useMemo(() => {
+    if (!ownerCoords || routeCoordinates.length === 0) return routeCoordinates;
+
+    // Find the closest point index on the polyline
+    let minDistance = Infinity;
+    let closestIndex = 0;
+
+    for (let i = 0; i < Math.min(routeCoordinates.length, 10); i++) { // Only check first 10 points to avoid jumping to nearby parallel roads
+      const p = routeCoordinates[i];
+      const dist = calculateDistance(ownerCoords.latitude, ownerCoords.longitude, p.latitude, p.longitude);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = i;
+      }
+    }
+
+    // Slice from closest point and prepend current position for perfect sync
+    const trimmed = routeCoordinates.slice(closestIndex);
+    return [ownerCoords, ...trimmed];
+  }, [ownerCoords, routeCoordinates]);
+
   const markers = React.useMemo(() => {
     const list = [];
     if (farmerCoords) {
@@ -113,9 +149,11 @@ export function NavigationMapView({ navigationStarted, farmerCoords, ownerCoords
         initialRegion={{
           latitude: center.latitude,
           longitude: center.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
         }}
         markers={markers}
-        polyLine={routeCoordinates}
+        polyLine={syncedPolyline}
       />
 
       {/* Single Navigation Guidance Card (Focused) */}

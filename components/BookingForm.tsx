@@ -45,15 +45,20 @@ export function BookingForm({
   const notifyParent = (updates: Partial<{ name: string; phone: string; cropType: string; landSize: string; date: Date | null }>) => {
     const n = updates.name ?? name;
     const p = updates.phone ?? phone;
-    const c = updates.cropType ?? cropType;
+    const cKey = updates.cropType ?? cropType;
     const l = updates.landSize ?? landSize;
     const d = updates.date !== undefined ? updates.date : selectedDate;
+    
+    // Find the current translated label for the selected crop key
+    const selectedCrop = CROPS.find(crop => crop.key === cKey);
+    const exactCropLabel = selectedCrop ? selectedCrop.label : cKey;
+
     const a = parseFloat(l) || 0;
     const tVal = pricePerAcre * a + PLATFORM_FEE;
     onFormChange?.({
       customer_name: n,
       customer_phone: p,
-      crop_type: c,
+      crop_type: exactCropLabel,
       land_area: a,
       price: tVal,
       start_time: d?.toISOString(),

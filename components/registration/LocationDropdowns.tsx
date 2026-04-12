@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 
 export interface LocationData {
@@ -13,6 +14,7 @@ interface LocationDropdownsProps {
 }
 
 export function LocationDropdowns({ location, setLocation }: LocationDropdownsProps) {
+  const { t } = useTranslation();
   const [states, setStates] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
 
@@ -80,9 +82,13 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
 
   // Sync external location changes (like GPS fetch) into dropdown states
   useEffect(() => {
+    if (!location) return;
+
+    const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/,+/g, ',');
     const currentGenerated = [selectedDistrict, selectedState].filter(Boolean).join(', ');
+    
     // If location is provided but it doesn't match what we generated, it came from outside!
-    if (location && location !== currentGenerated) {
+    if (normalize(location) !== normalize(currentGenerated)) {
       const parts = location.split(',').map(s => s.trim());
       
       let matchedState = '';
@@ -97,26 +103,17 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
             break;
           }
         }
-      } else if (parts.length >= 2) {
-         // Fallback guess if states not loaded: usually second to last or last depending on pincode
-         const lastPart = parts[parts.length - 1];
-         const isNumbers = /^\d+$/.test(lastPart);
-         matchedState = isNumbers ? parts[parts.length - 2] : parts[parts.length - 1];
       }
 
       // Identify district based on state position
-      if (matchedState && parts.length >= 2) {
+      if (matchedState) {
          const stateIndex = parts.findIndex(p => p.toLowerCase() === matchedState.toLowerCase());
          if (stateIndex > 0) {
             matchedDistrict = parts[stateIndex - 1];
-         } else if (stateIndex === -1 && parts.length >= 3) {
-            // State wasn't exact match, just guess district is position -3
-            const isNumbers = /^\d+$/.test(parts[parts.length - 1]);
-            matchedDistrict = isNumbers ? parts[parts.length - 3] : parts[parts.length - 2];
          }
       }
       
-      // Commit recognized chunks
+      // Commit recognized chunks only if they actually changed
       if (matchedState && matchedState !== selectedState) {
         setSelectedState(matchedState);
         loadDistrictsForState(matchedState);
@@ -125,7 +122,7 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
         setSelectedDistrict(matchedDistrict);
       }
     }
-  }, [location, states]);
+  }, [location, states, selectedState, selectedDistrict]); // Added dependencies for stability
 
   const handleStateSelect = async (state: string) => {
     setSelectedState(state);
@@ -159,14 +156,14 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
     <View style={{ gap: 16 }}>
       {/* State Selection */}
       <View>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#40493d', marginBottom: 8, paddingHorizontal: 4 }}>State <Text style={{ color: 'red' }}>*</Text></Text>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#40493d', marginBottom: 8, paddingHorizontal: 4 }}>{t('registration.state')} <Text style={{ color: 'red' }}>*</Text></Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => openSelection('state')}
           style={{ backgroundColor: '#e8e8e3', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 20 }}
         >
           <Text style={{ fontSize: selectedState ? 18 : 16, color: selectedState ? '#1a1c19' : '#bfcaba', fontWeight: '500' }}>
-            {selectedState || 'Select State'}
+            {selectedState || t('registration.selectState')}
           </Text>
           {loadingStates ? <ActivityIndicator color="#0d631b" /> : <MaterialIcons name="keyboard-arrow-down" size={24} color="#707a6c" />}
         </TouchableOpacity>
@@ -174,7 +171,7 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
 
       {/* District Selection */}
       <View style={{ opacity: selectedState ? 1 : 0.5 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#40493d', marginBottom: 8, paddingHorizontal: 4 }}>District <Text style={{ color: 'red' }}>*</Text></Text>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#40493d', marginBottom: 8, paddingHorizontal: 4 }}>{t('registration.district')} <Text style={{ color: 'red' }}>*</Text></Text>
         <TouchableOpacity
           disabled={!selectedState}
           activeOpacity={0.8}
@@ -182,7 +179,7 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
           style={{ backgroundColor: '#e8e8e3', borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 20 }}
         >
           <Text style={{ fontSize: selectedDistrict ? 18 : 16, color: selectedDistrict ? '#1a1c19' : '#bfcaba', fontWeight: '500' }}>
-            {selectedDistrict || 'Select District'}
+            {selectedDistrict || t('registration.selectDistrict')}
           </Text>
           {loadingDistricts ? <ActivityIndicator color="#0d631b" /> : <MaterialIcons name="keyboard-arrow-down" size={24} color="#707a6c" />}
         </TouchableOpacity>
@@ -194,7 +191,7 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
           <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, maxHeight: '70%', padding: 24 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1c19', textTransform: 'capitalize' }}>
-                Select {modalType}
+                {t('common.select')} {modalType === 'state' ? t('registration.state') : t('registration.district')}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <MaterialIcons name="close" size={24} color="#707a6c" />
@@ -221,7 +218,7 @@ export function LocationDropdowns({ location, setLocation }: LocationDropdownsPr
                   </TouchableOpacity>
                 )}
                 ListEmptyComponent={() => (
-                  <View style={{ padding: 20, alignItems: 'center' }}><Text style={{ color: '#707a6c' }}>No options found</Text></View>
+                  <View style={{ padding: 20, alignItems: 'center' }}><Text style={{ color: '#707a6c' }}>{t('common.noOptions')}</Text></View>
                 )}
               />
             )}

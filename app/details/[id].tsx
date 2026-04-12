@@ -11,6 +11,7 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getHarvesterById } from '../../constants/harvesterData';
@@ -33,6 +34,7 @@ export default function HarvesterDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [activeSlide, setActiveSlide] = useState(0);
 
   const { data: harvester, isLoading } = useQuery({
@@ -102,10 +104,9 @@ export default function HarvesterDetails() {
     <View className="flex-1 bg-background">
       <StatusBar style="light" translucent backgroundColor="transparent" />
 
-      {/* ── Floating Nav ── */}
       <View
         className="absolute top-0 w-full z-20 flex-row justify-between items-center px-5"
-        style={{ paddingTop: 52 }}
+        style={{ paddingTop: Math.max(insets.top, 52) }}
       >
         <TouchableOpacity
           onPress={() => router.back()}

@@ -94,12 +94,12 @@ export default function BookingConfirmation() {
               {/* Success Visual */}
               <View className="items-center mb-5">
                 <View
-                  className="w-24 h-24 bg-[#2e7d32] rounded-full items-center justify-center mb-6"
+                  className="w-24 h-24 bg-[#2e7d32] rounded-full items-center justify-center mb-7"
                   style={{ elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.04, shadowRadius: 24 }}
                 >
                   <MaterialIcons name="check-circle" size={48} color="#cbffc2" />
                 </View>
-                <Text className="font-headline font-extrabold text-4xl text-[#0d631b] tracking-tight mb-3 text-center">
+                <Text className="font-headline font-extrabold text-4xl text-[#0d631b] tracking-tight mb-3 pt-2 text-center">
                   {t('bookings.confirmation.title')}
                 </Text>
                 <Text className="text-[#40493d] text-base leading-relaxed text-center mb-6 max-w-xs">

@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Animated, Dimensions, PanResponder, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../utils/api';
 import { ConfirmArrivedModal } from '../components/ConfirmArrivedModal';
 import { Alert } from 'react-native';
@@ -17,6 +18,7 @@ const SWIPE_THRESHOLD = 30;
 const MINIMIZED_OFFSET = 300;
 
 export default function DriverNavigation() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -37,17 +39,15 @@ export default function DriverNavigation() {
     }
   }, [currentLocation?.coords.latitude, currentLocation?.coords.longitude, currentLocation?.coords.heading, bookingId]);
 
-  const { data: bookingResponse, isLoading } = useQuery({
+  const { data: booking, isLoading } = useQuery({
     queryKey: ['booking', bookingId],
     queryFn: async () => {
       if (!bookingId) return null;
       const res = await authApi.getBookingById(bookingId);
-      return res.data;
+      return res.data.data;
     },
     enabled: !!bookingId,
   });
-
-  const booking = bookingResponse?.data;
 
   const translateY = React.useRef(new Animated.Value(600)).current;
   const lastOffset = React.useRef(0);
@@ -222,7 +222,7 @@ export default function DriverNavigation() {
             color="white" 
           />
           <Text className="text-white font-headline font-bold text-lg uppercase tracking-tight">
-            {arrivedMutation.isPending ? 'Updating...' : (navigationStarted ? 'Arrived' : 'Start Navigation')}
+            {arrivedMutation.isPending ? t('common.updating') : (navigationStarted ? t('owner.confirmArrival') : t('owner.startNavigation'))}
           </Text>
         </TouchableOpacity>
       </View>

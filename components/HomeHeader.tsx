@@ -2,9 +2,15 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 export function HomeHeader({ location, title }: { location: string; title?: string }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View className="w-full z-50 pt-16 pb-4 px-6 bg-[#fafaf5]/90 border-b border-surface-container-high/50">
+    <View 
+      className="w-full z-50 pb-4 px-6 bg-[#fafaf5]/90 border-b border-surface-container-high/50"
+      style={{ paddingTop: Math.max(insets.top, 48) + 4 }}
+    >
       <View className="flex-row items-center justify-between w-full max-w-screen-xl mx-auto">
         <View className="flex-row items-center gap-2 flex-1">
           {title ? (

@@ -126,7 +126,7 @@ export default function BookHarvester() {
       {/* ── Header ── */}
       <View
         className="w-full flex-row items-center justify-between px-6 pb-4 bg-white/95"
-        style={{ paddingTop: Math.max(insets.top, 20) + 16, zIndex: 10 }}
+        style={{ paddingTop: Math.max(insets.top, 48) + 4, zIndex: 10 }}
       >
         <View className="flex-row items-center gap-4">
           <TouchableOpacity

@@ -43,10 +43,10 @@ export function AcceptBookingModal({ visible, onClose, onConfirm, isLoading }: A
           }}
         >
           <Text className="text-2xl font-headline font-bold text-on-surface mb-2">
-            {t('common.accept')}?
+            {t('owner.acceptTitle')}
           </Text>
           <Text className="text-base text-on-surface-variant font-body mb-8 leading-relaxed">
-            {t('owner.viewRequest')}? {t('login.termsAgree')}
+            {t('owner.acceptSubtitle')}
           </Text>
 
           <View className="flex-row justify-end gap-3">

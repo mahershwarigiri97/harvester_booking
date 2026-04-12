@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { LeafletMap } from './LeafletMap';
 import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ interface BookingRequestPopupProps {
 }
 
 export default function BookingRequestPopup({ visible, onClose, booking }: BookingRequestPopupProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { currentLocation } = useCurrentLocation();
   const [showSuccess, setShowSuccess] = useState(false);
@@ -33,7 +35,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
       }
     },
     onError: () => {
-      Alert.alert('Error', 'Failed to update booking. Please check your connection.');
+      Alert.alert(t('common.error'), t('common.tryAgain'));
     }
   });
 
@@ -63,8 +65,8 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
           {/* Header & Timer Section */}
           <View className="p-6 bg-primary-container flex-row justify-between items-center overflow-hidden gap-4">
             <View className="z-10 flex-1">
-              <Text className="font-headline font-bold text-lg text-on-primary-container leading-tight">Incoming Request</Text>
-              <Text className="text-xs font-medium mt-1" style={{ color: 'rgba(255,255,255,0.9)' }}>Respond immediately to secure the booking</Text>
+              <Text className="font-headline font-bold text-lg text-on-primary-container leading-tight">{t('owner.incomingRequest')}</Text>
+              <Text className="text-xs font-medium mt-1" style={{ color: 'rgba(255,255,255,0.9)' }}>{t('owner.incomingRequestSubtitle')}</Text>
             </View>
             <TouchableOpacity 
               onPress={onClose} 
@@ -86,7 +88,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
                   <MaterialIcons name="person" size={24} color="#002204" />
                 </View>
                 <View className="flex-shrink">
-                  <Text className="text-xs text-on-surface-variant font-medium">Farmer</Text>
+                  <Text className="text-xs text-on-surface-variant font-medium">{t('role.farmerTitle')}</Text>
                   <Text className="font-headline font-bold text-on-surface" numberOfLines={1}>
                     {booking?.farmer?.name || booking?.customer_name || 'Farmer'}
                   </Text>
@@ -97,7 +99,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
                   <MaterialIcons name="grass" size={24} color="#2a1800" />
                 </View>
                 <View className="flex-shrink">
-                  <Text className="text-xs text-on-surface-variant font-medium">Crop Type</Text>
+                  <Text className="text-xs text-on-surface-variant font-medium">{t('bookings.process.cropLabel')}</Text>
                   <Text className="font-headline font-bold text-on-surface" numberOfLines={1}>
                     {booking?.crop_type || 'General'}
                   </Text>
@@ -110,7 +112,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
               <View className="flex-row items-center gap-2 mb-3 px-2">
                 <MaterialIcons name="location-on" size={24} color="#0d631b" />
                 <Text className="font-headline font-bold text-on-surface text-lg">
-                  {booking?.full_address?.village || booking?.full_address?.district || 'Location Details'}
+                  {booking?.full_address?.village || booking?.full_address?.district || t('common.location')}
                 </Text>
               </View>
               <View className="h-48 w-full rounded-[32px] overflow-hidden bg-surface-container-highest relative">
@@ -125,14 +127,14 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
                       latitude: currentLocation.coords.latitude,
                       longitude: currentLocation.coords.longitude,
                       icon: 'owner' as const,
-                      title: 'Your Location'
+                      title: t('common.yourLocation')
                     }] : []),
                     {
                       id: 'farmer',
                       latitude: booking?.full_address?.latitude || 20.5937,
                       longitude: booking?.full_address?.longitude || 78.9629,
                       icon: 'farmer' as const,
-                      title: 'Farmer Location'
+                      title: t('common.farmLocation')
                     }
                   ]}
                 />
@@ -147,14 +149,14 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
             {/* Financials & Duration Bento */}
             <View className="flex-row gap-4 w-full mt-4">
               <View className="flex-1 bg-surface-container-low p-5 rounded-[32px]">
-                <Text className="text-xs text-on-surface-variant font-medium mb-1">Total land Area</Text>
+                <Text className="text-xs text-on-surface-variant font-medium mb-1">{t('common.landSize')}</Text>
                 <View className="flex-row items-center gap-2">
                   <MaterialIcons name="map" size={22} color="#0d631b" />
-                  <Text className="font-headline font-extrabold text-xl text-on-surface">{booking?.land_area} Ac</Text>
+                  <Text className="font-headline font-extrabold text-xl text-on-surface">{booking?.land_area} {t('common.acre')}</Text>
                 </View>
               </View>
               <View className="flex-1 bg-secondary-container/10 border-[2px] p-5 rounded-[32px]" style={{ borderColor: 'rgba(252, 171, 40, 0.2)' }}>
-                <Text className="text-xs font-medium mb-1" style={{ color: '#694300' }}>Total Earning</Text>
+                <Text className="text-xs font-medium mb-1" style={{ color: '#694300' }}>{t('owner.estimated')}</Text>
                 <Text className="font-headline font-extrabold text-2xl mt-1" style={{ color: '#694300' }}>₹{booking?.price?.toLocaleString() || '0'}</Text>
               </View>
             </View>
@@ -168,7 +170,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
               className="flex-1 h-16 rounded-3xl bg-surface-container-highest flex-row items-center justify-center gap-2 active:scale-95"
             >
               <MaterialIcons name="close" size={24} color="#1a1c19" />
-              <Text className="font-headline font-bold text-on-surface text-lg">Reject</Text>
+              <Text className="font-headline font-bold text-on-surface text-lg">{t('owner.reject')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -185,7 +187,7 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
               ) : (
                 <>
                   <MaterialIcons name="check-circle" size={24} color="white" />
-                  <Text className="font-headline font-extrabold text-white text-lg ml-1">Accept</Text>
+                  <Text className="font-headline font-extrabold text-white text-lg ml-1">{t('common.accept')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -200,9 +202,9 @@ export default function BookingRequestPopup({ visible, onClose, booking }: Booki
           setShowSuccess(false);
           onClose();
         }}
-        title="Accepted!"
-        message={`You've successfully accepted ${booking?.farmer?.name || booking?.customer_name}'s request.`}
-        buttonLabel="Go to Dashboard"
+        title={t('status.accepted')}
+        message={t('owner.acceptSuccess', { name: booking?.farmer?.name || booking?.customer_name || t('role.farmerTitle') })}
+        buttonLabel={t('common.home')}
       />
     </Modal>
   );

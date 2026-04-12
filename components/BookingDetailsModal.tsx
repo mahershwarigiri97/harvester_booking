@@ -68,7 +68,7 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
                   className="font-headline font-bold text-xs tracking-wider uppercase"
                   style={{ color: booking.hexColor }}
                 >
-                  {booking.status}
+                  {t(`status.${booking.rawStatus || booking.status}`)}
                 </Text>
               </View>
             </View>
@@ -81,7 +81,7 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
               </View>
               <View className="flex-1 min-w-[140px] bg-surface-container-low p-5 rounded-3xl">
                 <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{booking.amountLabel === 'Earned' ? t('owner.earned') : t('owner.estimated')}</Text>
-                <Text className="text-xl font-headline font-bold text-primary">{booking.amount}</Text>
+                <Text className="text-xl font-headline font-bold text-on-surface">{booking.amount}</Text>
               </View>
               <View className="w-full bg-surface-container-low p-5 rounded-3xl">
                 <Text className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">{t('common.location')}</Text>
@@ -94,6 +94,17 @@ export function BookingDetailsModal({ visible, onClose, booking, onNavigateToTra
                   />
                 </View>
               </View>
+            </View>
+
+            {/* Sub-Details for Crop etc. */}
+            <View className="bg-surface-container-low p-6 rounded-3xl mb-8">
+              <View className="flex-row items-center gap-2 mb-4">
+                <MaterialIcons name="grass" size={20} color="#0d631b" />
+                <Text className="text-on-surface-variant font-bold uppercase text-xs tracking-widest">{t('bookings.process.cropLabel')}</Text>
+              </View>
+              <Text className="text-on-surface text-lg font-bold">
+                {booking.crop_type || 'General'}
+              </Text>
             </View>
 
             {/* Cancellation Reason if applicable */}

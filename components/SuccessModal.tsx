@@ -13,13 +13,13 @@ interface SuccessModalProps {
   onButtonPress?: () => void;
 }
 
-export default function SuccessModal({ 
-  visible, 
-  onClose, 
-  title, 
-  message, 
-  buttonLabel = 'Great!', 
-  onButtonPress 
+export default function SuccessModal({
+  visible,
+  onClose,
+  title,
+  message,
+  buttonLabel = 'Great!',
+  onButtonPress
 }: SuccessModalProps) {
   const scaleValue = useRef(new Animated.Value(0.8)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
@@ -54,10 +54,10 @@ export default function SuccessModal({
     >
       <View className="flex-1 items-center justify-center bg-black/40 px-6">
         <BlurView intensity={20} className="absolute inset-0" tint="dark" />
-        
-        <Animated.View 
-          style={{ 
-            transform: [{ scale: scaleValue }], 
+
+        <Animated.View
+          style={{
+            transform: [{ scale: scaleValue }],
             opacity: opacityValue,
             width: '100%',
             maxWidth: 400
@@ -66,25 +66,25 @@ export default function SuccessModal({
         >
           {/* Decorative background element */}
           <View className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
-          
+
           <View className="p-8 items-center">
             {/* Icon Circle */}
-            <View 
+            <View
               className="w-24 h-24 bg-primary-container rounded-full items-center justify-center mb-6 shadow-lg shadow-primary/20"
               style={{ elevation: 8 }}
             >
               <MaterialIcons name="check-circle" size={56} color="#0d631b" />
             </View>
 
-            <Text className="font-headline font-extrabold text-3xl text-on-surface text-center mb-3">
+            <Text className="font-headline font-extrabold text-3xl text-on-surface text-center pt-2 mb-3">
               {title}
             </Text>
-            
+
             <Text className="text-on-surface-variant text-center text-lg leading-relaxed mb-8 px-4">
               {message}
             </Text>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
                 if (onButtonPress) onButtonPress();

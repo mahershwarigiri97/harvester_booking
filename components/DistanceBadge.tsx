@@ -30,7 +30,7 @@ export const DistanceBadge = ({
         ownerLocation.current_latitude,
         ownerLocation.current_longitude
       );
-      return `${d} km`;
+      return `${d.toFixed(1)} km`;
     }
     return staticDistance || 'Distance unknown';
   }, [farmerLocation, ownerLocation, staticDistance]);

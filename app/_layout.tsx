@@ -57,10 +57,11 @@ export default function RootLayout() {
     const init = async () => {
       // 1. Initialize i18n from storage
       await initI18n();
-      
+
       // 2. Load auth session
+      // await useAuthStore.getState().clearAuth();
       await useAuthStore.getState().loadAuth();
-      
+
       if (loaded || error) {
         SplashScreen.hideAsync();
       }

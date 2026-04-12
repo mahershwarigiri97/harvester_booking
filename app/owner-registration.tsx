@@ -13,13 +13,14 @@ import { Step3WorkCapability } from '../components/registration/Step3WorkCapabil
 import { useLocation } from '../hooks/useLocation';
 import { authApi } from '../utils/api';
 import { useAuthStore } from '../utils/authStore';
+import { useMemo } from 'react';
 
 export default function OwnerRegistrationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const { userId } = useLocalSearchParams<{ userId: string }>();
-  
+
 
   useEffect(() => {
     console.log('[OwnerRegistrationScreen] Received userId:', userId);
@@ -34,11 +35,15 @@ export default function OwnerRegistrationScreen() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { locationStr: location, setLocationStr: setLocation, fetchLiveLocation, loadingLocation } = useLocation((data) => {
-    if (data.city) setVillage(data.city);
-    if (data.street) setStreetAddress(data.street);
-    if (data.pincode) setPincode(data.pincode);
-  });
+  const { locationStr: location, setLocationStr: setLocation, fetchLiveLocation, loadingLocation } = useLocation(
+    React.useCallback((data: any) => {
+      if (data.city) setVillage(data.city);
+      if (data.street) setStreetAddress(data.street);
+      if (data.pincode) setPincode(data.pincode);
+    }, [])
+  );
+
+  const user = useAuthStore((state) => state.user);
 
   // Automatically fetch layout details instantly on load
   useEffect(() => {
@@ -62,16 +67,18 @@ export default function OwnerRegistrationScreen() {
 
   const currentStatus = stepContent[step as keyof typeof stepContent];
 
-  // Validate current step
-  let isStepValid = false;
-  if (step === 1) {
-    const isFullName = name.trim().split(/\s+/).length >= 2;
-    isStepValid = isFullName && location.trim().length > 0 && village.trim().length > 0 && pincode.trim().length >= 6;
-  } else if (step === 2) {
-    isStepValid = machineType.trim().length > 0 && brand.trim().length > 0 && year.trim().length > 0 && pricingModel.trim().length > 0 && rate.trim().length > 0;
-  } else if (step === 3) {
-    isStepValid = workSpeed.trim().length > 0 && images.filter(Boolean).length > 0;
-  }
+  // Validate current step - useMemo to prevent frequent recalculation and flickering
+  const isStepValid = useMemo(() => {
+    if (step === 1) {
+      const isFullName = name.trim().split(/\s+/).length >= 2;
+      return isFullName && location.trim().length > 0 && village.trim().length > 0 && pincode.trim().length >= 6;
+    } else if (step === 2) {
+      return machineType.trim().length > 0 && brand.trim().length > 0 && year.trim().length > 0 && pricingModel.trim().length > 0 && rate.trim().length > 0;
+    } else if (step === 3) {
+      return workSpeed.trim().length > 0 && images.filter(Boolean).length > 0;
+    }
+    return false;
+  }, [step, name, location, village, pincode, machineType, brand, year, pricingModel, rate, workSpeed, images]);
 
   const handleNextStep = async () => {
     if (step < 3) {
@@ -141,7 +148,7 @@ export default function OwnerRegistrationScreen() {
             district: dist,
             state: st,
           },
-          type: machineType,
+          type: machineType === 'combine' ? t('registration.combine') : t('registration.tractor'),
           brand,
           model: year,
           pricePerHour: rate,
@@ -194,7 +201,7 @@ export default function OwnerRegistrationScreen() {
         </View>
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 64 }}>
 
           {/* Step Indicator & Header */}
@@ -212,7 +219,7 @@ export default function OwnerRegistrationScreen() {
               pincode={pincode} setPincode={setPincode}
               profileImage={profileImage} setProfileImage={setProfileImage}
               loadingLocation={loadingLocation} onUseLocation={fetchLiveLocation}
-              phone={useAuthStore.getState().user?.phone}
+              phone={user?.phone}
             />
           ) : step === 2 ? (
             <Step2MachineDetails
@@ -250,9 +257,18 @@ export default function OwnerRegistrationScreen() {
         <View style={{ paddingHorizontal: 24, paddingBottom: Math.max(insets.bottom, 24), paddingTop: 16, backgroundColor: '#fafaf5', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' }}>
           <TouchableOpacity
             disabled={!isStepValid || loading}
-            activeOpacity={0.88}
+            activeOpacity={0.8}
             onPress={handleNextStep}
-            style={{ opacity: isStepValid && !loading ? 1 : 0.4, borderRadius: 16, overflow: 'hidden', elevation: isStepValid ? 4 : 0, shadowColor: '#0d631b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: isStepValid ? 0.2 : 0, shadowRadius: 8 }}
+            style={{
+              opacity: isStepValid && !loading ? 1 : 0.5,
+              borderRadius: 16,
+              overflow: 'hidden',
+              elevation: isStepValid ? 2 : 0,
+              shadowColor: '#0d631b',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: isStepValid ? 0.2 : 0,
+              shadowRadius: 8
+            }}
           >
             <LinearGradient colors={['#0d631b', '#2e7d32']} style={{ height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
               <Text style={{ color: '#fff', fontFamily: 'headline', fontWeight: 'bold', fontSize: 20 }}>
