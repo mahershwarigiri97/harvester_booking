@@ -9,7 +9,8 @@
       "package": "com.baliram123giri.harvester",
       "permissions": [
         "INTERNET"
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
@@ -27,6 +28,12 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "54d9262c-65ff-4b4d-a38c-b3c62409aa1d"
+      }
+    },
+    "owner": "baliram123giri"
   }
 }

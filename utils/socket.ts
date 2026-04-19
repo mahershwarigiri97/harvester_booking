@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 // Extract base URL without /api suffix
-const SOCKET_URL = 'http://192.168.1.5:3001';
+const SOCKET_URL = 'https://kapniseva.calcbz.com';
 
 class SocketService {
   private socket: Socket | null = null;
