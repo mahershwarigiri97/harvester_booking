@@ -250,6 +250,19 @@ export default function LoginScreen() {
           )}
 
           <View className="mt-12 items-center gap-4">
+            <TouchableOpacity 
+              className="flex-row items-center px-6 py-3 rounded-full bg-surface-container mb-4"
+              onPress={() => {
+                // Testing with a default ID or showing a prompt could work here
+                authApi.testNotificationToUser(1)
+                  .then(() => alert('Global Test Notification sent to User ID 1!'))
+                  .catch(err => alert('Test failed: ' + err.message));
+              }}
+            >
+              <MaterialIcons name="notifications-active" size={20} color="#0d631b" />
+              <Text className="text-primary font-bold text-sm ml-2">Test Push Logic</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity className="flex-row items-center px-6 py-3 rounded-full bg-surface-container mb-4">
               <MaterialIcons name="help-outline" size={20} color="#40493d" />
               <Text className="text-on-surface-variant font-bold text-sm ml-2">{t('login.needHelp')}</Text>

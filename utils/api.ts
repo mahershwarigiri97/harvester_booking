@@ -2,9 +2,9 @@ import axios from 'axios';
 import storage from './storage';
 
 // Replace with your machine's IP address for physical device testing
-// Example: http://192.168.1.5:3000/api
-// const BASE_URL = 'https://kapniseva.calcbz.com/api';
-const BASE_URL = 'http://192.168.1.5:3001/api';
+// Example: http://192.168.1.5:3001/api
+const BASE_URL = 'https://kapniseva.calcbz.com/api';
+// const BASE_URL = 'http://192.168.1.5:3001/api'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -69,6 +69,8 @@ export const authApi = {
     api.patch(`/bookings/${id}/status`, { status, note, cancelReason, updatedByUser, duration }),
   getBookingTracking: (id: string) => api.get(`/bookings/${id}/tracking`),
   updateProfile: (userId: number, data: any) => api.patch('/auth/profile/update', { userId, ...data }),
+  testNotification: () => api.post('/notifications/test'),
+  testNotificationToUser: (userId: number) => api.post('/notifications/test-to-user', { userId }),
 };
 
 export default api;

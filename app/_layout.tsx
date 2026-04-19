@@ -20,10 +20,13 @@ export const unstable_settings = {
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
+import { useNotifications } from '../hooks/useNotifications';
+
 SplashScreen.preventAutoHideAsync();
 
 function StackLayout() {
   const colorScheme = useColorScheme();
+  useNotifications();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

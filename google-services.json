@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374091125562",
+    "project_id": "harvestor-booking",
+    "storage_bucket": "harvestor-booking.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374091125562:android:ff1343085d520e5560b603",
+        "android_client_info": {
+          "package_name": "com.baliram123giri.harvester"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaKdJCJtaXyMwT3dFi3oM1_zbCD_pBzbM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

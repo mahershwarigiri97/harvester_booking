@@ -116,7 +116,14 @@ export default function OwnerDashboard() {
             </View>
           </View>
           <View className="flex-row items-center gap-4">
-            <TouchableOpacity className="hover:bg-[#f4f4ef] dark:hover:bg-[#2e312c] p-2 rounded-full active:scale-95 duration-200">
+            <TouchableOpacity 
+              className="hover:bg-[#f4f4ef] dark:hover:bg-[#2e312c] p-2 rounded-full active:scale-95 duration-200"
+              onLongPress={() => {
+                authApi.testNotification()
+                  .then(() => alert('Test notification queued! Check your notification bar in a few seconds.'))
+                  .catch(err => alert('Failed to queue test notification: ' + err.message));
+              }}
+            >
               <MaterialIcons name="notifications" size={24} color="#0d631b" />
             </TouchableOpacity>
           </View>
